@@ -1,44 +1,64 @@
- function changeContent(page) {
-        const content = document.getElementById("content");
-        let pageContent = "";
+function changeContent(page) {
+  const content = document.getElementById("content");
+  let pagePath = "";
+  let scriptPath = "";
 
-        switch (page) {
-          case "home":
-            pageContent =
-              "<h2>مرحبًا بك في الصفحة الرئيسية</h2><p>اختر قسمًا من القائمة لعرض المحتوى.</p>";
-            break;
-          case "cars":
-            pageContent =
-              "<h2>قسم السيارات</h2><p>هنا يمكنك إدارة السيارات.</p>";
-            break;
-          case "drivers":
-            pageContent =
-              "<h2>قسم السائقين</h2><p>هنا يمكنك إدارة السائقين.</p>";
-            break;
-          case "orders":
-            pageContent =
-              "<h2>قسم الطلبات</h2><p>هنا يمكنك عرض وإدارة الطلبات.</p>";
-            break;
-          case "consumables":
-            pageContent =
-              "<h2>قسم المستهلكات</h2><p>هنا يمكنك متابعة المستهلكات وغيرها.</p>";
-            break;
-          case "spareParts":
-            pageContent =
-              "<h2>قسم قطع الغيار</h2><p>هنا يمكنك إدارة قطع الغيار المتوفرة.</p>";
-            break;
-          case "reports":
-            pageContent =
-              "<h2>قسم التقارير</h2><p>هنا يمكنك عرض التقارير التفصيلية.</p>";
-            break;
-          default:
-            pageContent = "<h2>مرحبًا بك</h2><p>اختر قسمًا من القائمة.</p>";
-        }
+  switch (page) {
+    case "home":
+      pagePath = "../../Pages/dash-Boards/index.html";
+      scriptPath = ""; 
+      break;
+    case "cars":
+      pagePath = "../../Pages/car-Managment/carList.html";
+      scriptPath = "../../Java script/car-Managment/carList.js";
+      break;
+    case "drivers":
+      pagePath = "../../Pages/driver-Managment/driverList.html";
+      scriptPath = "../../Java script/driver-Managment/driverList.js";
+      break;
+    case "orders":
+      pagePath = "../../Pages/dash-Boards/orders.html";
+      scriptPath = "";
+      break;
+    case "consumables":
+      pagePath = "../../Pages/car-Managment/consumables.html";
+      scriptPath = "";
+      break;
+    case "spareParts":
+      pagePath = "../../Pages/car-Managment/spareParts.html";
+      scriptPath = "";
+      break;
+    case "reports":
+      pagePath = "../../Pages/dash-Boards/reports.html";
+      scriptPath = "";
+      break;
+    default:
+      pagePath = "../../Pages/dash-Boards/index.html";
+      scriptPath = "";
+  }
 
-        content.innerHTML = pageContent;
+  fetch(pagePath)
+    .then((res) => res.text())
+    .then((html) => {
+      content.innerHTML = html;
 
-        const menuItems = document.querySelectorAll(".menu li");
-        menuItems.forEach((item) => item.classList.remove("active"));
+      if (scriptPath) {
+        const existingScript = document.querySelector(`script[src="${scriptPath}"]`);
+        if (existingScript) existingScript.remove();
 
-        event.currentTarget.classList.add("active");
+        const script = document.createElement("script");
+        script.src = scriptPath;
+        script.defer = true;
+        document.body.appendChild(script);
       }
+    })
+    .catch((err) => {
+      content.innerHTML = "<p>حدث خطأ أثناء تحميل الصفحة.</p>";
+      console.error(err);
+    });
+
+  const menuItems = document.querySelectorAll(".menu li");
+  menuItems.forEach((item) => item.classList.remove("active"));
+
+  event.currentTarget.classList.add("active");
+}
