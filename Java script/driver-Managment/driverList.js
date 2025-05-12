@@ -10,38 +10,51 @@ function closePop() {
 
 function submitDriver() {
   const name = document.getElementById("driver-name").value.trim();
-  const status = document.getElementById("driver-status").value.trim();
+  const nationalNo = document.getElementById("nationalNum").value.trim();
   const phone = document.getElementById("driver-phone").value.trim();
-  const carId = document.getElementById("driver-car-id").value.trim();
+  const vehicleID = parseInt(document.getElementById("vehicleID").value);
 
-  if (!name || !status || !phone || !carId) {
-    alert("يرجى ملء جميع الحقول");
+  const statusText = document.getElementById("driver-status").value;
+const statusMap = {
+  "متاح": 0,
+  "غائب": 1,
+  "مشغول": 2
+};
+const status = statusMap[statusText];
+
+if (!validate()) {
+    alert("يرجى ملء جميع الحقول بشكل صحيح");
     return;
   }
 
-  const newDriver = { name, status, phone, carId };
+  const newDriver = {
+    driverID: 0,
+    name,
+    nationalNo,
+    status,
+    phone,
+    vehicleID
+  };
+
   addDriver(newDriver);
 
   document.getElementById("driver-name").value = "";
+  document.getElementById("nationalNum").value = "";
   document.getElementById("driver-status").value = "";
   document.getElementById("driver-phone").value = "";
-  document.getElementById("driver-car-id").value = "";
-  closeModal();
-}
+  document.getElementById("vehicleID").value = "";
 
+  closePop();
+}
 
 async function loadDriver() {
   try {
-    const response = await fetch("/api/drivers");
+    const response = await fetch("https://movesmartapi.runasp.net/api/Drivers/All");
     const data = await response.json();
+    const driversList = Array.isArray(data.$values) ? data.$values : [];
 
-    if (!Array.isArray(data)) {
-      console.error("البيانات المستلمة ليست في شكل مصفوفة", data);
-      return;
-    }
-
-    drivers = data;
-    displayDriver(drivers);
+    drivers = driversList;
+    displayDriver(driversList);
   } catch (error) {
     console.error("خطأ في جلب البيانات:", error);
   }
@@ -54,8 +67,8 @@ function searchDriver() {
     (driver) =>
       driver.name.toLowerCase().includes(searchTerm) ||
       driver.phone.includes(searchTerm) ||
-      driver.carId.toLowerCase().includes(searchTerm) ||
-      driver.status.toLowerCase().includes(searchTerm)
+      String(driver.vehicleID).includes(searchTerm) ||
+      String(driver.status).includes(searchTerm)
   );
 
   displayDriver(filteredDrivers);
@@ -70,8 +83,9 @@ function filterDriver() {
   }
 
   const filteredDrivers = drivers.filter(
-    (driver) => driver.status === selectedStatus
+    (driver) => String(driver.status) === selectedStatus
   );
+
   displayDriver(filteredDrivers);
 }
 
@@ -79,17 +93,23 @@ function displayDriver(list) {
   const container = document.getElementById("driver-container");
   container.innerHTML = "";
 
+  const driverStatusMap = {
+    0: "متاح",
+    1: "غائب",
+    2: "مشغول",
+  };
+
   list.forEach((driver) => {
     const driverCard = document.createElement("div");
     driverCard.classList.add("card");
 
     driverCard.innerHTML = `
-      <p><strong>اسم السائق</strong> <a href="#">${driver.name}</a></p>
-      <p class="status ${driver.status === "متاح" ? "active" : "inactive"}">
-        <strong>الحالة:</strong> ${driver.status}
+      <p><strong></strong> <a href="../../Pages/driver-Managment/driverDetails.html?id=${driver.driverID}">${driver.name}</a></p>
+      <p class="status ${driver.status === 0 ? "active" : "inactive"}">
+        <strong></strong> ${driverStatusMap[driver.status] || "غير معروف"}
       </p>
-      <p><strong>رقم الهاتف</strong> ${driver.phone}</p>
-      <p><strong>رقم السيارة</strong> ${driver.carId}</p>
+      <p><strong></strong> ${driver.phone}</p>
+      <p><strong></strong> ${driver.vehicleID}</p>
     `;
 
     container.appendChild(driverCard);
@@ -98,15 +118,95 @@ function displayDriver(list) {
   document.getElementById("total-count").innerText = list.length;
 }
 
-async function addDriver(newDriver) {
+function validate() {
+  const name = document.getElementById("driver-name").value.trim();
+  const nationalNo = document.getElementById("nationalNum").value.trim();
+  const status = document.getElementById("driver-status").value.trim();
+  const phone = document.getElementById("driver-phone").value.trim();
+  const vehicleID = document.getElementById("vehicleID").value.trim();
+  const errorMessage = document.getElementById("error-message");
+
+  errorMessage.innerText = "";
+  errorMessage.classList.add("hidden");
+
+  let isValid = true;
+  let errorMessages = [];
+
+  if (!name || name.length < 2) {
+    isValid = false;
+    errorMessages.push("اسم السائق يجب ألا يكون فارغًا وطوله يجب أن يكون 2 حرف على الأقل.");
+  }
+  if (!nationalNo || nationalNo.length != 14) {
+    isValid = false;
+    errorMessages.push("رقم الهوية يجب ألا يكون فارغًا وطوله يجب أن يكون 14 رقم على الأقل.");
+  }
+  if (!status) {
+    isValid = false;
+    errorMessages.push("حالة السائق يجب ألا تكون فارغة.");
+  }
+  if (!phone || phone.length != 11) {
+    isValid = false;
+    errorMessages.push("رقم الهاتف يجب أن يكون 11 رقم.");
+  }
+  if (!vehicleID) {
+    isValid = false;
+    errorMessages.push("رقم السيارة يجب ألا يكون فارغًا.");
+  }
+
+  if (!isValid) {
+    errorMessage.innerText = errorMessages.join("\n");
+    errorMessage.classList.remove("hidden");
+  }
+
+  return isValid;
+}
+
+async function loadCars() {
   try {
-    const response = await fetch("/api/drivers", {
+    const response = await fetch("https://movesmartapi.runasp.net/api/Vehicles/All");
+    const data = await response.json();
+
+    console.log("البيانات المستلمة:", data);
+
+    const cars = Array.isArray(data.$values) ? data.$values : [];
+
+    displayCars(cars);
+  } catch (error) {
+    console.error("خطأ في جلب البيانات:", error);
+  }
+}
+
+function displayCars(cars) {
+  const select = document.getElementById("vehicleID");
+  select.innerHTML = '<option value="">-- اختر السيارة --</option>';
+
+  cars.forEach((car) => {
+    const option = document.createElement("option");
+    option.value = car.vehicleID;
+    option.textContent = car.plateNumbers; // غيّرها حسب اسم الخاصية الفعلي من الـ API
+    select.appendChild(option);
+  });
+}
+
+
+async function addDriver(newDriver) {
+  const errorMessage = document.getElementById("error-message");
+
+  errorMessage.innerText = "";
+  errorMessage.classList.add("hidden");
+
+  if (!validate()) return;
+
+  try {
+    const response = await fetch("https://movesmartapi.runasp.net/api/drivers", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(newDriver),
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Response Error Text:", errorText);
       throw new Error("خطأ في إضافة السائق");
     }
 
@@ -120,4 +220,6 @@ function refreshData() {
   loadDriver();
 }
 
-document.addEventListener("DOMContentLoaded", loadDriver);
+loadCars(); 
+loadDriver();
+

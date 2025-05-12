@@ -1,30 +1,25 @@
 <!DOCTYPE html>
 <html lang="ar">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة السيارات</title>
-    <link rel="stylesheet" href="../../Assets/Styles/car-Managment/carDetails.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>تفاصيل السيارة</title>
+    <link rel="stylesheet" href="../../Assets/Styles/car-Managment/carDetails.css" />
 </head>
-
 <body>
     <div class="container">
-
-        <!-- الجزء العلوي -->
         <div class="top-section">
             <div class="car-container">
                 <h2 class="car-title">إدارة السيارات</h2>
                 <div class="car-info">
-                    <img src="../../Assets/Images/car-Avt.png" alt="صورة السيارة" class="profile-pic">
+                    <img src="../../Assets/Images/car-Avt.png" alt="صورة السيارة" class="profile-pic" />
                     <div class="driver-details-container">
                         <h2 id="car-number">رقم السيارة</h2>
-                        <p id="car-make">الماركة: غير متوفر</p>
-                        <p id="car-model">الموديل: غير متوفر</p>
-                        <p id="car-type">نوع السيارة: غير متوفر</p>
+                        <p id="car-make">الماركة: -</p>
+                        <p id="car-model">الموديل: -</p>
+                        <p id="car-type">نوع السيارة: -</p>
                     </div>
                 </div>
-
                 <div class="km-box">
                     <p>إجمالي الكيلومترات: <span id="total-km">0 KM</span></p>
                 </div>
@@ -48,76 +43,44 @@
             <button class="save-btn">✅ حفظ</button>
         </div>
 
-        <!-- معلومات السيارة -->
         <div class="tab-content" id="car-info" style="display: block;">
             <div class="form-container">
                 <div class="column">
-                    <div class="input-group">
-                        <label>رقم السيارة:</label>
-                        <input type="text" name="carNumber">
-                    </div>
-                    <div class="input-group"><label>الماركة:</label><input type="text" name="carBrand"></div>
-                    <div class="input-group"><label>الموديل:</label><input type="text" name="carModel"></div>
-                    <div class="input-group"><label>نوع السيارة:</label><input type="text" name="carType"></div>
-                    <div class="input-group"><label>حالة السيارة:</label><input type="text" name="carCondition"></div>
+                    <div class="input-group"><label>رقم السيارة:</label><input type="text" name="carNumber" /></div>
+                    <div class="input-group"><label>الماركة:</label><input type="text" name="carBrand" /></div>
+                    <div class="input-group"><label>الموديل:</label><input type="text" name="carModel" /></div>
+                    <div class="input-group"><label>نوع السيارة:</label><input type="text" name="carType" /></div>
+                    <div class="input-group"><label>حالة السيارة:</label><input type="text" name="carCondition" /></div>
                 </div>
 
                 <div class="column">
-                    <div class="input-group"><label>الوظيفة:</label><input type="text" name="carFunction"></div>
-                    <div class="input-group"><label>المستشفى التابعة لها:</label><input type="text" name="hospital">
-                    </div>
-                    <div class="input-group"><label>معدل استهلاك الوقود:</label><input type="text"
-                            name="fuelConsumption"></div>
-                    <div class="input-group"><label>معدل استهلاك الزيت:</label><input type="text" name="oilConsumption">
-                    </div>
-                    <div class="input-group"><label>نوع الوقود:</label><input type="text" name="fuelType"></div>
-                </div>
-
-                <div class="column">
-                    <div class="input-group"><label>اسم السائق:</label><input type="text" name="driverName"></div>
-                    <div class="input-group"><label>رقم الهاتف:</label><input type="text" name="driverPhone"></div>
-                    <div class="input-group"><label>الرقم القومي:</label><input type="text" name="driverId"></div>
+                    <div class="input-group"><label>الوظيفة:</label><input type="text" name="carFunction" /></div>
+                    <div class="input-group"><label>المستشفى التابعة لها:</label><input type="text" name="hospital" /></div>
+                    <div class="input-group"><label>معدل استهلاك الوقود:</label><input type="text" name="fuelConsumption" /></div>
+                    <div class="input-group"><label>معدل استهلاك الزيت:</label><input type="text" name="oilConsumption" /></div>
+                    <div class="input-group"><label>نوع الوقود:</label><input type="text" name="fuelType" /></div>
                 </div>
             </div>
         </div>
 
-        <!-- سجل أوامر الشغل -->
         <div class="tab-content" id="work-orders" style="display: none;">
             <table class="orders-table">
                 <thead>
                     <tr>
-                        <th>السيارة</th>
-                        <th>التاريخ</th>
-                        <th>الوقت</th>
-                        <th>الرحلة</th>
-                        <th>KM</th>
-                        <th>رقم أمر الشغل</th>
+                        <th>السيارة</th><th>التاريخ</th><th>الوقت</th><th>الرحلة</th><th>KM</th><th>رقم أمر الشغل</th>
                     </tr>
                 </thead>
-                <tbody class="orders-content">
-                    <!-- JavaScript -->
-                </tbody>
+                <tbody class="orders-content"></tbody>
             </table>
         </div>
 
-        <!-- سجل الصيانة -->
         <div class="tab-content" id="maintenance-record" style="display: none;">
             <table class="maintenance-table">
-                <thead>
-                    <tr>
-                        <th>رقم التسلسل</th>
-                        <th>التاريخ</th>
-                        <th>تفاصيل</th>
-                    </tr>
-                </thead>
-                <tbody class="maintenance-content">
-                    <!-- JavaScript -->
-                </tbody>
+                <thead><tr><th>رقم التسلسل</th><th>التاريخ</th><th>تفاصيل</th></tr></thead>
+                <tbody class="maintenance-content"></tbody>
             </table>
         </div>
-
     </div>
     <script src="../../Java script/car-Managment/carDetails.js"></script>
 </body>
-
 </html>

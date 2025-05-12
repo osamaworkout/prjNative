@@ -1,98 +1,146 @@
 // تحميل السيارات من قاعدة البيانات
+let cars = [];
 async function loadCars() {
-    try {
-        const response = await fetch('/api/cars'); // تعديل هذا الـ API لاحقًا وفقًا لقاعدة البيانات
-        const data = await response.json();
+  try {
+    const response = await fetch("https://movesmartapi.runasp.net/api/Vehicles/All");
+    const data = await response.json();
 
-        if (!Array.isArray(data)) {
-            console.error("البيانات المستلمة ليست في شكل مصفوفة", data);
-            return;
-        }
+    console.log("البيانات المستلمة:", data);
 
-        displayCars(data);
-    } catch (error) {
-        console.error("خطأ في جلب البيانات:", error);
-    }
+    const cars = Array.isArray(data.$values) ? data.$values : [];
+
+    displayCars(cars);
+  } catch (error) {
+    console.error("خطأ في جلب البيانات:", error);
+  }
 }
+
+
 
 // البحث في جميع الحقول كما هو
 function searchCars() {
-    const searchTerm = document.getElementById("search").value.toLowerCase();
-    
-    const filteredCars = cars.filter(car => 
-        car.id.includes(searchTerm) ||
-        car.brand.toLowerCase().includes(searchTerm) ||
-        car.model.toLowerCase().includes(searchTerm) ||
-        car.type.toLowerCase().includes(searchTerm) ||
-        car.hospital.toLowerCase().includes(searchTerm) ||
-        car.status.toLowerCase().includes(searchTerm)
-    );
+  const searchTerm = document.getElementById("search").value.toLowerCase();
 
-    displayCars(filteredCars);
+  const filteredCars = cars.filter(
+    (car) =>
+      car.vehicleID.includes(searchTerm) ||
+      car.brandName.toLowerCase().includes(searchTerm) ||
+      car.modelName.toLowerCase().includes(searchTerm) ||
+      car.vehicleType.toLowerCase().includes(searchTerm) ||
+      car.associatedHospital.toLowerCase().includes(searchTerm) ||
+      car.status.toLowerCase().includes(searchTerm)
+  );
+
+  displayCars(filteredCars);
 }
 
-// الفلترة حسب "الحالة" فقط
+// الفلترة حسب "الحالة" فقط 
 function filterCars() {
-    const selectedStatus = document.getElementById("filter-select").value;
+  const selectedStatus = document.getElementById("filter-select").value;
 
-    if (selectedStatus === "all") {
-        loadCars();
-        return;
-    }
+  if (selectedStatus === "all") {
+    loadCars();
+    return;
+  }
 
-    const filteredCars = cars.filter(car => car.status === selectedStatus);
-    displayCars(filteredCars);
+  const filteredCars = cars.filter((car) => car.status === selectedStatus);
+  displayCars(filteredCars);
 }
 
 // عرض السيارات في الصفحة
 function displayCars(filteredList) {
-    const container = document.getElementById("cars-container");
-    container.innerHTML = ""; 
+  const carstatus = {
+    0: "متاحة",
+    1: "مشغولة",
+    2: "قيد الصيانة",
+  }
+  const carType = {
+        0: "سيدان",
+        1: "واحد كبينة",
+        2: "ثنائي كبينة",
+        3: "شاحنة نقل",
+        4: "ميكروباص",
+        5: "ميني باص",
+        6: "أتوبيس",
+        7: "اسعاف"
+    }
+  const container = document.getElementById("cars-container");
+  container.innerHTML = "";
 
-    filteredList.forEach(car => {
-        const carCard = document.createElement("div");
-        carCard.classList.add("card");
+  filteredList.forEach((car) => {
+    const carCard = document.createElement("div");
+    carCard.classList.add("card");
 
-        carCard.innerHTML = `
-            <p><strong>رقم السيارة:</strong> <a href="#">${car.id}</a></p>
-            <p><strong>الماركة:</strong> ${car.brand}</p>
-            <p><strong>الموديل:</strong> ${car.model}</p>
-            <p><strong>النوع:</strong> ${car.type}</p>
-            <p><strong>المستشفى:</strong> ${car.hospital}</p>
-            <p class="status ${car.status === "متاحة" ? "active" : "inactive"}">
-                <strong>الحالة:</strong> ${car.status}
-            </p>
-        `;
+    carCard.innerHTML = `
+    <p><strong></strong> <a href="../../Pages/car-Managment/carDetails.html?id=${car.vehicleID}">${car.plateNumbers}</a></p>
+    <p><strong></strong> ${car.brandName}</p>
+    <p><strong></strong> ${car.modelName}</p>
+    <p><strong></strong> ${carType[car.vehicleType] || "غير معروف"}</p>
+    <p><strong></strong> ${car.associatedHospital}</p>
+    <p class="status ${car.status === "متاحة" ? "active" : "inactive"}">
+        <strong></strong> ${carstatus[car.status] || "غير معروف"}
+    </p>
+`;
 
-        container.appendChild(carCard);
-    });
+    container.appendChild(carCard);
+  });
 
-    document.getElementById("total-count").innerText = filteredList.length;
+  document.getElementById("total-count").innerText = filteredList.length;
 }
 
+ function validate() {
+    const carBrand = document.getElementById('car-brand').value;
+    const carModel = document.getElementById('car-model').value;
+    const carNumber = document.getElementById('car-plate').value;
+    const hospital = document.getElementById('car-hospital').value;
+    const task = document.getElementById('car-task').value;
 
-// async function addCar(newCar) {
-//     try {
-//         const response = await fetch('/api/cars', {
-//             method: 'POST',
-//             headers: { 'Content-Type': 'application/json' },
-//             body: JSON.stringify(newCar)
-//         });
+    let isValid = true;
+    let errorMessages = [];
 
-//         if (!response.ok) {
-//             throw new Error("خطأ في إضافة السيارة");
-//         }
+    if (carBrand.length < 2) {
+      isValid = false;
+      errorMessages.push(
+        "البراند نيم يجب ألا يكون فارغًا وطوله يجب أن يكون 2 حرف على الأقل."
+      );
+    }
 
-//         loadCars(); 
-//     } catch (error) {
-//         console.error("خطأ أثناء الإضافة:", error);
-//     }
-// }
+    if (!carModel) {
+      isValid = false;
+      errorMessages.push("الموديل نيم يجب ألا يكون فارغًا.");
+    }
 
-function submitBus() {
- 
-  const carData = {
-    vehicle: {
+    if (!carNumber || !(carNumber.length === 6 || carNumber.length === 7)) {
+      isValid = false;
+      errorMessages.push("رقم السيارة يجب أن يكون 6 أو 7 حروف.");
+    }
+
+    if (!hospital) {
+      isValid = false;
+      errorMessages.push("المستشفى يجب ألا يكون فارغًا.");
+    }
+
+    if (!task) {
+      isValid = false;
+      errorMessages.push("التاسك يجب ألا يكون فارغًا.");
+    }
+
+    if (!isValid) {
+      alert(errorMessages.join("\n"));
+    }
+
+    return isValid;
+  }
+
+// إضافة سيارة جديدة
+function submitVehicle() {
+  // التحقق من صحة البيانات المدخلة
+  if (!validate()) {
+    return; // إذا كانت البيانات غير صحيحة، لا نتابع
+  }
+
+  const carData = {     
+      vehicleID: 0,
       brandName: document.getElementById('car-brand').value,
       modelName: document.getElementById('car-model').value,
       plateNumbers: document.getElementById('car-plate').value,
@@ -104,11 +152,9 @@ function submitBus() {
       fuelType: parseInt(document.getElementById('fuel-type').value),
       fuelConsumptionRate: parseFloat(document.getElementById('fuel-consumption').value),
       oilConsumptionRate: parseFloat(document.getElementById('oil-consumption').value)
-    }
   };
 
-
-  fetch('/buses', {
+  fetch('https://movesmartapi.runasp.net/api/Vehicles', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -119,25 +165,26 @@ function submitBus() {
   .then(data => {
     console.log('Success:', data);
     closePop(); 
-   
+    refreshData(); // تحديث البيانات بعد الإضافة
   })
   .catch(error => {
     console.error('Error:', error);
   });
 }
 
+// إظهار نافذة الإضافة
 function openPop() {
   document.getElementById("add-pop").classList.remove("hidden");
 }
-
+// إغلاق نافذة الإضافة
 function closePop() {
-  document.getElementById('add-pop').classList.add('hidden');
+  document.getElementById("add-pop").classList.add("hidden");
 }
-
-
-
+// إغلاق نافذة الإضافة عند الضغط على زر الإغلاق
 function refreshData() {
-    loadCars();
+  loadCars(); // إعادة تحميل السيارات من الـ API
 }
 
+loadCars();
 document.addEventListener("DOMContentLoaded", loadCars);
+

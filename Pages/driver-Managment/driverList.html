@@ -25,9 +25,10 @@
           onkeyup="searchDriver()"
         />
         <select id="filter-select" onchange="filterDriver()">
-          <option value="all" selected>الجميع</option>
+          <option value="0" selected>الجميع</option>
           <option value="متاح">متاح</option>
-          <option value="غير متاح">غير متاح</option>
+          <option value="غائب">غائب</option>
+          <option value="مشغول">مشغول</option>
         </select>
 
         <button onclick="openPop()">+ إضافة سائق</button>
@@ -48,14 +49,20 @@
       <div class="pop-content">
         <h3>إضافة سائق جديد</h3>
         <input type="text" id="driver-name" placeholder="اسم السائق" />
+        <input type="text" id="nationalNum" placeholder="الرقم القومي" />
         <select id="driver-status">
           <option value="">-- اختر الحالة --</option>
           <option value="متاح">متاح</option>
           <option value="غير متاح">غير متاح</option>
+          <option value="مشغول">مشغول</option>
         </select>
 
         <input type="text" id="driver-phone" placeholder="رقم الهاتف" />
-        <input type="text" id="driver-car-id" placeholder="رقم السيارة" />
+        <select  id="vehicleID">
+          <option value="">-- اختر السيارة --</option>
+        </select>
+        <p id="error-message" class="hidden text-red-500"></p>
+
         <div class="modal-actions">
           <button onclick="submitDriver()">حفظ</button>
           <button onclick="closePop()">إلغاء</button>

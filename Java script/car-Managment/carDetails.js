@@ -1,170 +1,240 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const saveButton = document.querySelector(".save-btn");
-    const printButton = document.querySelector(".print-btn");
-    const backButton = document.querySelector(".back-btn");
-    const tabs = document.querySelectorAll(".tab");
-    const tabContents = document.querySelectorAll(".tab-content");
-    const ordersContent = document.querySelector(".orders-content");
-    const maintenanceContent = document.querySelector(".maintenance-content");
+  const tabs = document.querySelectorAll(".tab");
+  const tabContents = document.querySelectorAll(".tab-content");
+  const saveButton = document.querySelector(".save-btn");
+  const printButton = document.querySelector(".print-btn");
+  const backButton = document.querySelector(".back-btn");
 
-    //  تحميل بيانات السيارة من JSON عبر API أو من `localStorage`
-    function loadCarData() {
-        fetch('carData.json') // استبدل هذا بعنوان API أو ملف JSON
-            .then(response => response.json())
-            .then(data => {
-                const carData = data;
-                if (carData) {
-                    //  تعبئة الحقول بالبيانات
-                    document.querySelector('input[name="carNumber"]').value = carData.carNumber || "";
-                    document.querySelector('input[name="carBrand"]').value = carData.carBrand || "";
-                    document.querySelector('input[name="carModel"]').value = carData.carModel || "";
-                    document.querySelector('input[name="fuelConsumption"]').value = carData.fuelConsumption || "";
-                    document.querySelector('input[name="mileage"]').value = carData.mileage || "";
+  function loadCarData() {
+    const carstatus = {
+      0: "متاحة",
+      1: "مشغولة",
+      2: "قيد الصيانة",
+    };
+    const fuelType = {
+      0: "بنزين",
+      1: "سولار",
+      2: "غاز طبيعي",
+    };
+    const carType = {
+      0: "سيدان",
+      1: "واحد كبينة",
+      2: "ثنائي كبينة",
+      3: "شاحنة نقل",
+      4: "ميكروباص",
+      5: "ميني باص",
+      6: "أتوبيس",
+      7: "اسعاف",
+    };
+    const urlParams = new URLSearchParams(window.location.search);
+    const vehicleID = urlParams.get("id");
 
-                    // تعبئة سجلات أوامر الشغل
-                    populateOrders(carData.orders || []);
-                    populateMaintenance(carData.maintenance || []);
-                }
-            })
-            .catch(error => console.error('Error loading car data:', error));
+    fetch(`https://movesmartapi.runasp.net/api/Vehicles/${vehicleID}`)
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("بيانات السيارة:", data);
+        document.getElementById(
+          "car-number"
+        ).innerText = `رقم السيارة: ${data.plateNumbers}`;
+        document.getElementById(
+          "car-make"
+        ).innerText = `الماركة: ${data.brandName}`;
+        document.getElementById(
+          "car-model"
+        ).innerText = `الموديل: ${data.modelName}`;
+        document.getElementById("car-type").innerText = `نوع السيارة: ${
+          carType[data.vehicleType]
+        }`;
+        document.getElementById(
+          "total-km"
+        ).innerText = `${data.totalKilometersMoved} KM`;
+
+        document.querySelector('input[name="carNumber"]').value =
+          data.plateNumbers || "";
+        document.querySelector('input[name="carBrand"]').value =
+          data.brandName || "";
+        document.querySelector('input[name="carModel"]').value =
+          data.modelName || "";
+        document.querySelector('input[name="carType"]').value =
+          carType[data.vehicleType] || "";
+        document.querySelector('input[name="carCondition"]').value =
+          carstatus[data.status] || "";
+        document.querySelector('input[name="carFunction"]').value =
+          data.associatedTask || "";
+        document.querySelector('input[name="hospital"]').value =
+          data.associatedHospital || "";
+        document.querySelector('input[name="fuelConsumption"]').value =
+          data.fuelConsumptionRate || "0";
+        document.querySelector('input[name="oilConsumption"]').value =
+          data.oilConsumptionRate || "0";
+        document.querySelector('input[name="fuelType"]').value =
+          fuelType[data.fuelType] || "";
+      })
+      .catch((err) => {
+        console.error("فشل تحميل بيانات السيارة:", err);
+      });
+  }
+
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", function () {
+      tabs.forEach((t) => t.classList.remove("active"));
+      this.classList.add("active");
+
+      tabContents.forEach((c) => (c.style.display = "none"));
+      document.getElementById(this.dataset.tab).style.display = "block";
+
+      saveButton.style.display =
+        this.dataset.tab === "car-info" ? "block" : "none";
+    });
+  });
+
+  function validate() {
+    const carBrand = document.querySelector('input[name="carBrand"]').value;
+    const carModel = document.querySelector('input[name="carModel"]').value;
+    const carNumber = document.querySelector('input[name="carNumber"]').value;
+    const hospital = document.querySelector('input[name="hospital"]').value;
+    const task = document.querySelector('input[name="carFunction"]').value;
+
+    let isValid = true;
+    let errorMessages = [];
+
+    if (!carBrand || carBrand.length < 2) {
+      isValid = false;
+      errorMessages.push(
+        "البراند نيم يجب ألا يكون فارغًا وطوله يجب أن يكون 2 حرف على الأقل."
+      );
     }
 
-   // دالة الطباعة
-if (printButton) {
-    printButton.addEventListener("click", function () {
-        // تحديد التبويب النشط
-        const activeTab = document.querySelector(".tab.active");
-        if (activeTab) {
-            const activeTabId = activeTab.getAttribute("data-tab");
-            const activeTabContent = document.getElementById(activeTabId);
+    if (!carModel) {
+      isValid = false;
+      errorMessages.push("الموديل نيم يجب ألا يكون فارغًا.");
+    }
 
-            if (activeTabContent) {
-                // نسخ المحتوى الخاص بالتبويب النشط فقط
-                const printContent = activeTabContent.cloneNode(true);
+    if (!carNumber || !(carNumber.length === 6 || carNumber.length === 7)) {
+      isValid = false;
+      errorMessages.push("رقم السيارة يجب أن يكون 6 أو 7 حروف.");
+    }
 
-                // إنشاء نافذة جديدة للطباعة
-                const printWindow = window.open('', '', 'height=600,width=800');
+    if (!hospital) {
+      isValid = false;
+      errorMessages.push("المستشفى يجب ألا يكون فارغًا.");
+    }
 
-                // إضافة التنسيقات لتناسب الطباعة
-                printWindow.document.write('<html><head><title>طباعة</title>');
-                printWindow.document.write('<style>body { font-family: Arial, sans-serif; direction: rtl; }</style>');
-                printWindow.document.write('</head><body>');
-                
-                // إضافة المحتوى القابل للطباعة
-                printWindow.document.write(printContent.outerHTML);
+    if (!task) {
+      isValid = false;
+      errorMessages.push("التاسك يجب ألا يكون فارغًا.");
+    }
 
-                // إنهاء الإعدادات وإغلاق النافذة
-                printWindow.document.write('</body></html>');
-                printWindow.document.close(); // إنهاء تحميل المحتوى في النافذة
-                printWindow.print(); // تنفيذ الطباعة
-            }
+    if (!isValid) {
+      alert(errorMessages.join("\n"));
+    }
+
+    return isValid;
+  }
+
+  function editVehicle() {
+    const carStatusMap = {
+      0: "متاحة",
+      1: "مشغولة",
+      2: "قيد الصيانة",
+    };
+    const carTypeMap = {
+      0: "سيدان",
+      1: "واحد كبينة",
+      2: "ثنائي كبينة",
+      3: "شاحنة نقل",
+      4: "ميكروباص",
+      5: "ميني باص",
+      6: "أتوبيس",
+      7: "اسعاف",
+    };
+
+    const fuelTypeMap = {
+      0: "بنزين",
+      1: "سولار",
+      2: "غاز طبيعي",
+    };
+
+    // التحقق من صحة البيانات المدخلة
+    if (!validate()) {
+      return; // إذا كانت البيانات غير صحيحة، لا نتابع
+    }
+    const urlParams = new URLSearchParams(window.location.search);
+    const vehicleID = parseInt(urlParams.get("id")); // استخراج ID من الرابط
+
+    const carData = {
+      vehicleID: vehicleID,
+      brandName: document.getElementsByName("carBrand")[0].value,
+      modelName: document.getElementsByName("carModel")[0].value,
+      plateNumbers: document.getElementsByName("carNumber")[0].value,
+      vehicleType:
+        carTypeMap[document.getElementsByName("carType")[0].value] ?? 0,
+      associatedHospital: document.getElementsByName("hospital")[0].value,
+      associatedTask: document.getElementsByName("carFunction")[0].value,
+      status:
+        carStatusMap[document.getElementsByName("carCondition")[0].value] ?? 0,
+      totalKilometersMoved:
+        parseInt(document.getElementById("total-km").value) || 0,
+      fuelType:
+        fuelTypeMap[document.getElementsByName("fuelType")[0].value] ?? 0,
+      fuelConsumptionRate: parseFloat(
+        document.getElementsByName("fuelConsumption")[0].value
+      ),
+      oilConsumptionRate: parseFloat(
+        document.getElementsByName("oilConsumption")[0].value
+      ),
+    };
+
+    fetch("https://movesmartapi.runasp.net/api/Vehicles", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(carData),
+    })
+      .then(async (response) => {
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          return response.json();
+        } else {
+          const text = await response.text();
+          alert(text); 
         }
-    });
-}
+      })
 
-    //  دالة الرجوع
-    if (backButton) {
-        backButton.addEventListener("click", function () {
-            window.history.back();
-        });
-    }
+      .then((data) => {
+        console.log("Success:", data);
+        // closePop();
+        refreshData(); // تحديث البيانات بعد الإضافة
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  }
 
-    //  التنقل بين التبويبات
-    tabs.forEach(tab => {
-        tab.addEventListener("click", function () {
-            tabs.forEach(t => t.classList.remove("active")); 
-            this.classList.add("active"); 
+  saveButton?.addEventListener("click", () => {
+    editVehicle();
+  });
 
-            tabContents.forEach(content => {
-                content.style.display = "none"; 
-            });
+  backButton?.addEventListener("click", () => {
+    window.history.back();
+  });
 
-            const activeTab = document.getElementById(this.dataset.tab); 
-            if (activeTab) {
-                activeTab.style.display = "block"; 
-            }
+  printButton?.addEventListener("click", () => {
+    const tabId = document.querySelector(".tab.active").dataset.tab;
+    const content = document.getElementById(tabId);
+    const newWin = window.open("", "", "width=800,height=600");
+    newWin.document.write(
+      `<html><head><title>طباعة</title></head><body>${content.outerHTML}</body></html>`
+    );
+    newWin.document.close();
+    newWin.print();
+  });
 
-            // إظهار أو إخفاء زر الحفظ بناءً على التبويب
-            if (this.dataset.tab === "car-info") {
-                saveButton.style.display = "block";  
-            } else {
-                saveButton.style.display = "none";  
-            }
-        });
-    });
+  function refreshData() {
+    loadCarData(); // إعادة تحميل السيارات من الـ API
+  }
 
-    //  عرض أوامر الشغل
-    function populateOrders(orders) {
-        if (!orders || orders.length === 0) {
-            ordersContent.innerHTML = "<tr><td colspan='6'>لا توجد أوامر شغل</td></tr>";
-            return;
-        }
-        ordersContent.innerHTML = ""; 
-        orders.forEach(order => {
-            const orderRow = document.createElement("tr");
-            orderRow.innerHTML = `
-                <td>${order.car}</td>
-                <td>${order.date}</td>
-                <td>${order.time}</td>
-                <td>${order.trip}</td>
-                <td>${order.km}</td>
-                <td>${order.orderNumber}</td>
-            `;
-            ordersContent.appendChild(orderRow);
-        });
-    }
-
-    //  عرض سجل الصيانة
-function populateMaintenance(maintenance) {
-    if (!maintenance || maintenance.length === 0) {
-        maintenanceContent.innerHTML = "<tr><td colspan='3'>لا توجد سجلات صيانة</td></tr>";
-        return;
-    }
-    maintenanceContent.innerHTML = ""; 
-    maintenance.forEach(record => {
-        const recordRow = document.createElement("tr");
-        recordRow.innerHTML = `
-            <td>${record.sequenceNumber}</td>
-            <td>${record.date}</td>
-            <td>
-                ${record.details} 
-                <button class="details-btn" data-details="${record.details}">عرض التفاصيل</button>
-            </td>
-        `;
-        maintenanceContent.appendChild(recordRow);
-    });
-
-    //  إضافة وظيفة زر عرض التفاصيل
-    const detailsButtons = document.querySelectorAll(".details-btn");
-    detailsButtons.forEach(button => {
-        button.addEventListener("click", function () {
-            const details = this.getAttribute("data-details");
-            showDetailsPopup(details);
-        });
-    });
-}
-
-// دالة لعرض التفاصيل في نافذة منبثقة
-function showDetailsPopup(details) {
-    const popup = document.createElement("div");
-    popup.classList.add("details-popup");
-    popup.innerHTML = `
-        <div class="popup-content">
-            <span class="close-btn">&times;</span>
-            <h3>تفاصيل الصيانة</h3>
-            <p>${details}</p>
-        </div>
-    `;
-    document.body.appendChild(popup);
-
-    const closeButton = popup.querySelector(".close-btn");
-    closeButton.addEventListener("click", function () {
-        document.body.removeChild(popup);
-    });
-}
-
-
-    //تعيين التبويب الافتراضي وتحميل البيانات
-    document.querySelector("[data-tab='car-info']")?.click();  
-    loadCarData();
+  document.querySelector("[data-tab='car-info']")?.click();
+  loadCarData();
 });
