@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" >
+    <title>Move Smart</title>
+    <link rel="stylesheet" href="../Assets/Styles/login.css">
+
+  
+</head>
+<body class="login">
+    <div class="login-container">
+        <p class="login-header">تسجيل الدخول</p>
+        <p class="login-subheader">مرحبا</p>
+        <p class="login-description">الرجاء ادخال بيانات الاعتماد الخاصة بك</p>
+        <form class="login-form" onsubmit="return validateForm(event)">
+            <input type="text" id="nationalNo" class="login-input" placeholder=" الرقم القومي">
+            <div id="nationalNoError" class="error-message">الرجاء ادخال بريد الكتروني صحيح</div>
+            
+            <input type="password" id="password" class="login-input" placeholder="كلمة المرور">
+            <div id="passwordError" class="error-message">الرجاء ادخال كلمة مرور لا تقل عن 6 احرف</div>
+            
+            <button type="submit" class="login-button">تسجيل الدخول</button>
+            <div id="serverError" class="error-message">الرقم القومي او كلمة المرور غير صالح</div>
+        </form>
+    </div>
+
+   
+    <script src="../Java script/login.js"></script>
+</body>
+</html>
