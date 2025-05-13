@@ -1,0 +1,148 @@
+/* body {
+    font-family: sans-serif;
+    padding: 16px;
+    background: #f9fafb;
+  } */
+  .button {
+    padding: 16px;
+    background: #f9fafb;
+    padding: 8px 16px;
+    border: 1px solid #ccc;
+    background: #F2F2F7;
+    box-shadow: 0px 3px 1px rgba(0, 0, 0, 0.01), 0px 2px 1px rgba(0, 0, 0, 0.05), 0px 1px 1px rgba(0, 0, 0, 0.09);
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+  }
+
+  .button:hover {
+    background-color: #e2e8f0; /* لون خلفية مائل للأزرق الفاتح عند المرور */
+    border-color: #d1d5db; /* تغيير لون الحدود */
+  }
+  .secondary {
+    background-color: #f3f4f6;
+  }
+
+  .secondary:hover{
+    background-color: #e2e8f0;
+  }
+  .card {
+    background: white;
+    padding: 16px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    cursor: pointer;
+  }
+  .badge {
+    padding: 4px 12px;
+    border-radius: 9999px;
+    color: black;
+    font-size: 0.9em;
+  }
+
+  .badge-accepted {
+    background: rgba(31, 255, 99, 0.19);
+    border: 2px solid #23FB55;
+    border-radius: 31px;
+
+  }
+  .badge-rejected {
+    background: rgba(255, 33, 33, 0.58);
+    border: 2px solid #ED3333;
+    border-radius: 31px;
+
+  }
+  .badge-pending {
+    background: rgba(255, 238, 50, 0.79);
+    border: 2px solid #FFC232;
+    border-radius: 31px;
+
+  }
+
+
+  .popup {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .popup-content {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    width: 600px;
+    text-align: center;
+  }
+  .popup-content h2, .popup-content h3, .popup-content h4, .popup-content p {
+    margin: 8px 0;
+  }
+  .flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .space-y-2 > * + * {
+    margin-top: 8px;
+  }
+  .hidden { display: none; }
+  .dropdown {
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-top: 8px;
+    padding: 8px;
+    z-index: 1000;
+  }
+  .dropdown select, .dropdown input[type="date"] {
+    margin-top: 8px;
+    width: 100%;
+    padding: 4px 8px;
+  }
+
+  .button-accepted{
+    background: rgba(35, 251, 85, 0.44);
+    border: 1px solid #23FB55;
+    border-radius: 10px;
+    box-sizing: border-box;
+    width: 150px;
+    height: 40px;
+    left: 612px;
+    top: 491px;
+    cursor: pointer;
+  }
+
+  .button-accepted:hover{
+    opacity: 0.8; 
+    transition: opacity 0.3s ease; 
+    background-color: #d1fae5; 
+    color: #15803d; 
+
+  }
+
+  .button-rejected{
+    background: rgba(255, 33, 33, 0.44);
+    border: 1px solid #FF2121;
+    border-radius: 10px;
+    box-sizing: border-box;
+    width: 150px;
+    height: 40px;
+    left: 117px;
+    top: 491px;
+    cursor: pointer;
+  }
+
+  .button-rejected:hover{
+    opacity: 0.8; 
+    transition: opacity 0.3s ease;
+    background-color: #fecaca; 
+    color: #b91c1c; 
+  }

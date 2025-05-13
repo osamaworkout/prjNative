@@ -17,12 +17,12 @@ function changeContent(page) {
       scriptPath = "../../Java script/driver-Managment/driverList.js";
       break;
     case "orders":
-      pagePath = "../../Pages/dash-Boards/orders.html";
-      scriptPath = "";
+      pagePath = "../../Pages/orderList.html";
+      scriptPath = "../../Java script/orderList.js";
       break;
     case "consumables":
-      pagePath = "../../Pages/car-Managment/consumables.html";
-      scriptPath = "";
+      pagePath = "../Pages/disposalList.html";
+      scriptPath = "../../Java script/disposalList.js";
       break;
     case "spareParts":
       pagePath = "../../Pages/car-Managment/spareParts.html";

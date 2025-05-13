@@ -1,5 +1,4 @@
 // تحميل السيارات من قاعدة البيانات
-let cars = [];
 async function loadCars() {
   try {
     const response = await fetch("https://movesmartapi.runasp.net/api/Vehicles/All");
@@ -15,7 +14,7 @@ async function loadCars() {
   }
 }
 
-
+let cars = [];
 
 // البحث في جميع الحقول كما هو
 function searchCars() {
