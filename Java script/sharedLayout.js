@@ -22,11 +22,11 @@ function changeContent(page) {
       break;
     case "consumables":
       pagePath = "../Pages/disposalList.html";
-      scriptPath = "../../Java script/disposalList.js";
+      // scriptPath = "../../Java script/disposalList.js";
       break;
     case "spareParts":
-      pagePath = "../../Pages/car-Managment/spareParts.html";
-      scriptPath = "";
+      pagePath = "../../Pages/sparePartsList.html";
+      scriptPath = "../Java script/sparePartsList.js";
       break;
     case "reports":
       pagePath = "../../Pages/dash-Boards/reports.html";

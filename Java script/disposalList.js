@@ -1,4 +1,4 @@
-let parts = [];
+// let parts = [];
 let editIndex = null;
 
 const partList = document.getElementById('parts');
