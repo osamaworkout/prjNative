@@ -1,152 +1,269 @@
-// let parts = [];
-let editIndex = null;
+var consumables = [];
+var editindex = null;
 
-const partList = document.getElementById('parts');
-const cardsContainer = document.getElementById('cardsContainer');
-const totalSpan = document.getElementById('total');
+var partconsumables = document.getElementById("consumables");
+var consumablesCards = document.getElementById("consumablesCards");
+var totalconsumables = document.getElementById("total");
+var searchinput = document.getElementById("search");
+var addBtnSubmit = document.getElementById("addBtnSubmit");
+var editBtnSubmit = document.getElementById("editBtnSubmit");
 
-// استدعاء البيانات من API (GET)
-async function fetchParts() {
+// فتح البوب أب
+function openPop() {
+  document.getElementById("addPartPopup").classList.remove("hidden");
+  addBtnSubmit.classList.remove("hidden");
+  editBtnSubmit.classList.add("hidden");
+  clearInputs();
+}
+
+// إغلاق البوب أب
+function closePop() {
+  document.getElementById("addPartPopup").classList.add("hidden");
+  editindex = null;
+  clearInputs();
+}
+
+// مسح الحقول
+function clearInputs() {
+  document.getElementById("newconsumableName").value = "";
+  // document.getElementById("newCarType").value = "";
+  // document.getElementById("newCode").value = "";
+  document.getElementById("newQuantity").value = "";
+  document.getElementById("newLifetime").value = "";
+  // document.getElementById("newCost").value = "";
+}
+
+// جلب البيانات
+async function fetchconsumables() {
   try {
-    const response = await fetch('YOUR_API_URL_HERE'); // <--- عدل هنا
-    parts = await response.json();
-    renderPartsList();
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("يرجى تسجيل الدخول أولاً");
+      window.location.href = "login.html";
+      return;
+    }
+    const response = await fetch(
+      "https://movesmartapi.runasp.net/api/VehicleConsumable",
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    const data = await response.json();
+    console.log(data);
+
+    if (Array.isArray(data.$values)) {
+      consumables = data.$values;
+    } else {
+      consumables = [];
+    }
+
+    renderconsumablesList();
   } catch (err) {
-    console.error('حدث خطأ أثناء جلب البيانات:', err);
+    console.error("حدث خطأ أثناء جلب البيانات:", err);
   }
 }
 
-function renderPartsList() {
-  partList.innerHTML = '';
-  cardsContainer.innerHTML = '';
-  parts.forEach((part, index) => {
-    const li = document.createElement('li');
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.addEventListener('change', () => toggleCard(index));
-    li.appendChild(checkbox);
-    li.appendChild(document.createTextNode(` ${part.name}`));
-    partList.appendChild(li);
-  });
-  totalSpan.innerText = parts.length;
-}
+// عرض البيانات
+function renderconsumablesList() {
+  partconsumables.innerHTML = "";
+  consumablesCards.innerHTML = "";
 
-function toggleCard(index) {
-  const card = document.getElementById(`card-${index}`);
-  if (card) {
-    card.remove();
+  if (consumables.length === 0) {
+    partconsumables.innerHTML = "<li>لا توجد قطع غيار حالياً.</li>";
   } else {
-    const part = parts[index];
-    const div = document.createElement('div');
-    div.className = 'card';
-    div.id = `card-${index}`;
-    div.innerHTML = `
-      <h3>${part.name}</h3>
-      <div class="card-details">
-        <p><strong>نوع السيارة:</strong> ${part.carType}</p>
-        <p><strong>الكود:</strong> ${part.code}</p>
-        <p><strong>الكمية:</strong> ${part.quantity}</p>
-        <p><strong>العمر الافتراضي:</strong> ${part.lifetime} يوم</p>
-        <p><strong>التكلفة:</strong> ${part.cost} جنيه</p>
-      </div>
-      <div class="card-buttons">
-        <button class="edit" onclick="editPart(${index})">تعديل</button>
-        <button class="remove" onclick="deletePart(${index})">حذف</button>
-      </div>
-    `;
-    cardsContainer.appendChild(div);
+    consumables.forEach((part, index) => {
+      const li = document.createElement("li");
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.onclick = () => toggleCard(index);
+      li.appendChild(checkbox);
+      li.appendChild(document.createTextNode(` ${part.consumableName}`));
+      partconsumables.appendChild(li);
+    });
+    totalconsumables.innerText = consumables.length;
   }
 }
 
-function editPart(index) {
-  editIndex = index;
-  const part = parts[index];
-  document.getElementById('newPartName').value = part.name;
-  document.getElementById('newCarType').value = part.carType;
-  document.getElementById('newCode').value = part.code;
-  document.getElementById('newQuantity').value = part.quantity;
-  document.getElementById('newLifetime').value = part.lifetime;
-  document.getElementById('newCost').value = part.cost;
-  document.getElementById('addPartPopup').style.display = 'flex';
+// عرض الكارد
+function toggleCard(index) {
+  const existing = document.getElementById(`card-${index}`);
+  if (existing) {
+    existing.remove();
+    return;
+  }
+
+  const part = consumables[index];
+  const card = document.createElement("div");
+  card.className = "card";
+  card.id = `card-${index}`;
+  card.innerHTML = `
+    <h3>${part.consumableName}</h3>
+    <div class="card-details">
+      <p><strong>الكمية:</strong> ${part.quantity}</p>
+      <p><strong>العمر الافتراضي:</strong> ${part.validityLength} يوم</p>
+    </div>
+    <div class="card-buttons">
+      <button onclick="editPart(${index})">✏️ تعديل</button>
+      <button onclick="deletePart(${index})">🗑️ حذف</button>
+    </div>
+  `;
+  consumablesCards.appendChild(card);
 }
 
+// بدء التعديل
+function editPart(index) {
+  editindex = index;
+  const part = consumables[index];
+  document.getElementById("newconsumableName").value = part.consumableName;
+  document.getElementById("newQuantity").value = part.quantity;
+  document.getElementById("newLifetime").value = part.validityLength;
+
+  document.getElementById("addPartPopup").classList.remove("hidden");
+  addBtnSubmit.classList.add("hidden");
+  editBtnSubmit.classList.remove("hidden");
+}
+
+// حذف
 async function deletePart(index) {
-  const confirmDelete = confirm('هل أنت متأكد أنك تريد حذف هذه القطعة؟');
+  const confirmDelete = confirm("هل تريد حذف القطعة؟");
   if (!confirmDelete) return;
 
   try {
-    const part = parts[index];
-    await fetch(`YOUR_API_URL_HERE/${part.id}`, {
-      method: 'DELETE'
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("يرجى تسجيل الدخول أولاً");
+      window.location.href = "login.html";
+      return;
+    }
+    const id = consumables[index].consumableId;
+    console.log("ببعت التعديل على ID:", id);
+    await fetch(`https://movesmartapi.runasp.net/api/VehicleConsumable/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
     });
-    parts.splice(index, 1);
-    renderPartsList();
+    await fetchconsumables();
   } catch (err) {
-    console.error('فشل الحذف:', err);
+    console.error("فشل الحذف:", err);
   }
 }
 
-// إضافة أو تعديل القطعة
-document.getElementById('submitAddPart').addEventListener('click', async () => {
+// إضافة
+async function addPart() {
   const newPart = {
-    name: document.getElementById('newPartName').value,
-    carType: document.getElementById('newCarType').value,
-    code: document.getElementById('newCode').value,
-    quantity: +document.getElementById('newQuantity').value,
-    lifetime: +document.getElementById('newLifetime').value,
-    cost: +document.getElementById('newCost').value
+    consumableName: document.getElementById("newconsumableName").value,
+    validityLength: +document.getElementById("newLifetime").value,
+    quantity: +document.getElementById("newQuantity").value,
   };
 
   try {
-    if (editIndex === null) {
-      // إضافة جديدة (POST)
-      await fetch('YOUR_API_URL_HERE', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newPart)
-      });
-    } else {
-      // تعديل (PUT)
-      const existing = parts[editIndex];
-      await fetch(`YOUR_API_URL_HERE/${existing.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newPart)
-      });
-      editIndex = null;
+    const token = localStorage.getItem("token");
+    console.log(token);
+    if (!token) {
+      alert("يرجى تسجيل الدخول أولاً");
+      window.location.href = "login.html";
+      return;
     }
 
-    document.getElementById('addPartPopup').style.display = 'none';
-    await fetchParts();
+    const response = await fetch(
+      "https://movesmartapi.runasp.net/api/VehicleConsumable",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newPart),
+      }
+    );
+
+    //  const data = await response.json();
+    // const successMsg = await response.text();
+    // alert(successMsg);
+    //  console.log(data);
+
+    // if (Array.isArray(data.$values)) {
+    //   consumables = data.$values;
+    // } else {
+    //   consumables = [];
+    // }
+
+    if (response.ok) {
+      closePop();
+      await fetchconsumables();
+    } else {
+      alert("فشل الإضافة، يرجى المحاولة لاحقاً.");
+    }
   } catch (err) {
-    console.error('فشل الحفظ:', err);
+    console.error("فشل الإضافة:", err);
   }
-});
+}
 
-document.getElementById('cancelAddPart').addEventListener('click', () => {
-  editIndex = null;
-  document.getElementById('addPartPopup').style.display = 'none';
-});
+// تعديل
+async function updatePart() {
+  const updatedPart = {
+    consumableId: consumables[editindex].consumableId,
+    consumableName: document.getElementById("newconsumableName").value,
+    validityLength: +document.getElementById("newLifetime").value,
+    quantity: +document.getElementById("newQuantity").value,
+  };
 
-// تحديث البيانات
-document.getElementById('refreshBtn').addEventListener('click', fetchParts);
+  try {
+    // const id = consumables[editindex].consumableId;
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("يرجى تسجيل الدخول أولاً");
+      window.location.href = "login.html";
+      return;
+    }
 
-// البحث
-document.getElementById('search').addEventListener('input', e => {
-  const keyword = e.target.value.toLowerCase();
-  const filtered = parts.filter(p => p.name.toLowerCase().includes(keyword));
-  partList.innerHTML = '';
-  cardsContainer.innerHTML = '';
-  filtered.forEach((part, index) => {
-    const li = document.createElement('li');
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.addEventListener('change', () => toggleCard(index));
-    li.appendChild(checkbox);
-    li.appendChild(document.createTextNode(` ${part.name}`));
-    partList.appendChild(li);
-  });
-});
+    const response = await fetch(
+      `https://movesmartapi.runasp.net/api/VehicleConsumable`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedPart),
+      }
+    );
 
-// عرض البيانات عند التحميل
-window.onload = fetchParts;
+    if (response.ok) {
+      closePop();
+      editindex = null;
+      await fetchconsumables();
+    } else {
+      alert("فشل التعديل، يرجى المحاولة لاحقاً.");
+    }
+  } catch (err) {
+    console.error("فشل التعديل:", err);
+  }
+}
+
+// بحث
+// i.oninput = function () {
+//   const keyword = this.value.toLowerCase();
+//   const filtered = consumables.filter((p) =>
+//     p.consumableName.toLowerCase().includes(keyword)
+//   );
+//   partconsumables.innerHTML = "";
+//   consumablesCards.innerHTML = "";
+//   filtered.forEach((part, index) => {
+//     const li = document.createElement("li");
+//     const checkbox = document.createElement("input");
+//     checkbox.type = "checkbox";
+//     checkbox.onclick = () => toggleCard(index);
+//     li.appendChild(checkbox);
+//     li.appendChild(document.createTextNode(` ${part.consumableName}`));
+//     partconsumables.appendChild(li);
+//   });
+// };
+
+// أول تحميل
+fetchconsumables();
+
+// تحديث
+document.getElementById("refreshBtn").onclick = fetchconsumables;

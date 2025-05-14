@@ -1,12 +1,12 @@
-let parts = [];
-let editIndex = null;
+var parts = [];
+var editIndex = null;
 
-const partList = document.getElementById("parts");
-const cardsContainer = document.getElementById("cardsContainer");
-const totalSpan = document.getElementById("total");
-const searchInput = document.getElementById("search");
-const addBtnSubmit = document.getElementById("addBtnSubmit");
-const editBtnSubmit = document.getElementById("editBtnSubmit");
+var partList = document.getElementById("parts");
+var cardsContainer = document.getElementById("cardsContainer");
+var totalSpan = document.getElementById("total");
+var searchInput = document.getElementById("search");
+var addBtnSubmit = document.getElementById("addBtnSubmit");
+var editBtnSubmit = document.getElementById("editBtnSubmit");
 
 // فتح البوب أب
 function openPop() {
@@ -57,7 +57,7 @@ async function fetchParts() {
     if (Array.isArray(data.$values)) {
       parts = data.$values;
     } else {
-      parts = [];
+      // parts = [];
     }
 
     renderPartsList();

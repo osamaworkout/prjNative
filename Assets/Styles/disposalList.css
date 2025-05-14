@@ -130,10 +130,9 @@
 }
 
 .hidden {
-  display: none;
+  display: none !important; /* نأكد إنها فعلاً بتخفي العنصر */
 }
 
-/* Popup */
 .popup {
   position: fixed;
   top: 0;
@@ -141,10 +140,14 @@
   left: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
-  display: none;
+  display: flex; 
   justify-content: center;
   align-items: center;
+  visibility: visible;
+  opacity: 1;
+  transition: opacity 0.3s ease;
 }
+
 
 .popup-content {
   background: white;
