@@ -1,7 +1,16 @@
 // تحميل السيارات من قاعدة البيانات
 async function loadCars() {
+  const token = localStorage.getItem("token");
   try {
-    const response = await fetch("https://movesmartapi.runasp.net/api/Vehicles/All");
+    const response = await fetch("https://movesmartapi.runasp.net/api/Vehicles/All",
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
     const data = await response.json();
 
     console.log("البيانات المستلمة:", data);
@@ -152,11 +161,12 @@ function submitVehicle() {
       fuelConsumptionRate: parseFloat(document.getElementById('fuel-consumption').value),
       oilConsumptionRate: parseFloat(document.getElementById('oil-consumption').value)
   };
-
+  const token = localStorage.getItem("token");
   fetch('https://movesmartapi.runasp.net/api/Vehicles', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      headers: { Authorization: `Bearer ${token}` },
     },
     body: JSON.stringify(carData),
   })

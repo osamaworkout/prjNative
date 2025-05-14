@@ -184,11 +184,14 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementsByName("oilConsumption")[0].value
       ),
     };
-
+    const token = localStorage.getItem("token");
     fetch("https://movesmartapi.runasp.net/api/Vehicles", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       },
       body: JSON.stringify(carData),
     })

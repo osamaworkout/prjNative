@@ -23,8 +23,13 @@ document.addEventListener("DOMContentLoaded", function () {
     } 
     const urlParams = new URLSearchParams(window.location.search);
     const driverID = urlParams.get("id");
-
-    fetch(`https://movesmartapi.runasp.net/api/Drivers/ByID/${driverID}`)
+    const token = localStorage.getItem("token");
+    fetch(`https://movesmartapi.runasp.net/api/Drivers/ByID/${driverID}`,
+      {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    )
       .then((res) => res.json())
       .then((data) => {
         console.log("بيانات السائق:", data);

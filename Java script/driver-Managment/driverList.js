@@ -15,14 +15,14 @@ function submitDriver() {
   const vehicleID = parseInt(document.getElementById("vehicleID").value);
 
   const statusText = document.getElementById("driver-status").value;
-const statusMap = {
-  "متاح": 0,
-  "غائب": 1,
-  "مشغول": 2
-};
-const status = statusMap[statusText];
+  const statusMap = {
+    متاح: 0,
+    غائب: 1,
+    مشغول: 2,
+  };
+  const status = statusMap[statusText];
 
-if (!validate()) {
+  if (!validate()) {
     alert("يرجى ملء جميع الحقول بشكل صحيح");
     return;
   }
@@ -33,7 +33,7 @@ if (!validate()) {
     nationalNo,
     status,
     phone,
-    vehicleID
+    vehicleID,
   };
 
   addDriver(newDriver);
@@ -49,7 +49,14 @@ if (!validate()) {
 
 async function loadDriver() {
   try {
-    const response = await fetch("https://movesmartapi.runasp.net/api/Drivers/All");
+    const token = localStorage.getItem("token");
+    const response = await fetch(
+      "https://movesmartapi.runasp.net/api/Drivers/All",
+      {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
     const data = await response.json();
     const driversList = Array.isArray(data.$values) ? data.$values : [];
 
@@ -104,7 +111,9 @@ function displayDriver(list) {
     driverCard.classList.add("card");
 
     driverCard.innerHTML = `
-      <p><strong></strong> <a href="../../Pages/driver-Managment/driverDetails.html?id=${driver.driverID}">${driver.name}</a></p>
+      <p><strong></strong> <a href="../../Pages/driver-Managment/driverDetails.html?id=${
+        driver.driverID
+      }">${driver.name}</a></p>
       <p class="status ${driver.status === 0 ? "active" : "inactive"}">
         <strong></strong> ${driverStatusMap[driver.status] || "غير معروف"}
       </p>
@@ -134,11 +143,15 @@ function validate() {
 
   if (!name || name.length < 2) {
     isValid = false;
-    errorMessages.push("اسم السائق يجب ألا يكون فارغًا وطوله يجب أن يكون 2 حرف على الأقل.");
+    errorMessages.push(
+      "اسم السائق يجب ألا يكون فارغًا وطوله يجب أن يكون 2 حرف على الأقل."
+    );
   }
   if (!nationalNo || nationalNo.length != 14) {
     isValid = false;
-    errorMessages.push("رقم الهوية يجب ألا يكون فارغًا وطوله يجب أن يكون 14 رقم على الأقل.");
+    errorMessages.push(
+      "رقم الهوية يجب ألا يكون فارغًا وطوله يجب أن يكون 14 رقم على الأقل."
+    );
   }
   if (!status) {
     isValid = false;
@@ -162,8 +175,16 @@ function validate() {
 }
 
 async function loadCars() {
+  
   try {
-    const response = await fetch("https://movesmartapi.runasp.net/api/Vehicles/All");
+    const token = localStorage.getItem("token");
+    const response = await fetch(
+      "https://movesmartapi.runasp.net/api/Vehicles/All",
+      {
+        method: "GET",
+        headers: {  Authorization: `Bearer ${token}` },
+      }
+    );
     const data = await response.json();
 
     console.log("البيانات المستلمة:", data);
@@ -188,7 +209,6 @@ function displayCars(cars) {
   });
 }
 
-
 async function addDriver(newDriver) {
   const errorMessage = document.getElementById("error-message");
 
@@ -198,11 +218,17 @@ async function addDriver(newDriver) {
   if (!validate()) return;
 
   try {
-    const response = await fetch("https://movesmartapi.runasp.net/api/drivers", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newDriver),
-    });
+    const token = localStorage.getItem("token");
+    const response = await fetch(
+      "https://movesmartapi.runasp.net/api/drivers",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json",
+          Authorization: ` Authorization: Bearer ${token}`,
+         },
+        body: JSON.stringify(newDriver),
+      }
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -220,6 +246,5 @@ function refreshData() {
   loadDriver();
 }
 
-loadCars(); 
+loadCars();
 loadDriver();
-
