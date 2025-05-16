@@ -28,8 +28,12 @@ document.addEventListener("DOMContentLoaded", function () {
     };
     const urlParams = new URLSearchParams(window.location.search);
     const vehicleID = urlParams.get("id");
-
-    fetch(`https://movesmartapi.runasp.net/api/Vehicles/${vehicleID}`)
+    fetch(`https://movesmartapi.runasp.net/api/Vehicles/${vehicleID}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    })
       .then((res) => res.json())
       .then((data) => {
         console.log("بيانات السيارة:", data);
@@ -189,9 +193,7 @@ document.addEventListener("DOMContentLoaded", function () {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(carData),
     })
@@ -201,7 +203,7 @@ document.addEventListener("DOMContentLoaded", function () {
           return response.json();
         } else {
           const text = await response.text();
-          alert(text); 
+          alert(text);
         }
       })
 

@@ -15,7 +15,7 @@ async function loadCars() {
 
     console.log("البيانات المستلمة:", data);
 
-    const cars = Array.isArray(data.$values) ? data.$values : [];
+    let cars = Array.isArray(data.$values) ? data.$values : [];
 
     displayCars(cars);
   } catch (error) {
@@ -23,7 +23,7 @@ async function loadCars() {
   }
 }
 
-let cars = [];
+// let cars = [];
 
 // البحث في جميع الحقول كما هو
 function searchCars() {
@@ -166,7 +166,7 @@ function submitVehicle() {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      headers: { Authorization: `Bearer ${token}` },
+      Authorization: `Bearer ${token}` ,
     },
     body: JSON.stringify(carData),
   })

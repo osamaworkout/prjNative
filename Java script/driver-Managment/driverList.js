@@ -1,4 +1,4 @@
-let drivers = [];
+// let drivers = [];
 
 function openPop() {
   document.getElementById("add-pop").classList.remove("hidden");
@@ -224,7 +224,7 @@ async function addDriver(newDriver) {
       {
         method: "POST",
         headers: { "Content-Type": "application/json",
-          Authorization: ` Authorization: Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
          },
         body: JSON.stringify(newDriver),
       }

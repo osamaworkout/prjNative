@@ -20,16 +20,14 @@ document.addEventListener("DOMContentLoaded", function () {
       0: "متاح",
       1: "غائب",
       2: "مشغول",
-    } 
+    };
     const urlParams = new URLSearchParams(window.location.search);
     const driverID = urlParams.get("id");
     const token = localStorage.getItem("token");
-    fetch(`https://movesmartapi.runasp.net/api/Drivers/ByID/${driverID}`,
-      {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    )
+    fetch(`https://movesmartapi.runasp.net/api/Drivers/ByID/${driverID}`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+    })
       .then((res) => res.json())
       .then((data) => {
         console.log("بيانات السائق:", data);
@@ -42,10 +40,9 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById(
           "driver-phone"
         ).innerText = `رقم الهاتف: ${data.phone}`;
-        document.getElementById(
-          "driver-status"
-        ).innerText = `حالة السائق: ${
-          driverStatusMap[data.status] || "غير محدد"}`;
+        document.getElementById("driver-status").innerText = `حالة السائق: ${
+          driverStatusMap[data.status] || "غير محدد"
+        }`;
         document.querySelector('input[name="name"]').value = data.name || "";
         document.querySelector('input[name="vehicleID"]').value =
           data.vehicleID || "";
@@ -62,20 +59,50 @@ document.addEventListener("DOMContentLoaded", function () {
   //  دالة الحفظ
   if (saveButton) {
     saveButton.addEventListener("click", function () {
+      const urlParams = new URLSearchParams(window.location.search);
+      const driverID = Number(urlParams.get("id")); // تأكد إنه رقم
+      const token = localStorage.getItem("token");
+
+      // تحويل الحالة من نص إلى رقم
+      const statusText = document.querySelector('input[name="status"]').value;
+      const statusMap = {
+        متاح: 0,
+        غائب: 1,
+        مشغول: 2,
+      };
+      const statusCode = statusMap[statusText] ?? 0;
+
       const updatedDriver = {
+        driverID: driverID,
         name: document.querySelector('input[name="name"]').value,
-        carNumber: document.querySelector('input[name="carNumber"]').value,
+        vehicleID: Number(
+          document.querySelector('input[name="vehicleID"]').value
+        ),
         phone: document.querySelector('input[name="phone"]').value,
-        nationalId: document.querySelector('input[name="nationalId"]').value,
-        status: document.querySelector('input[name="status"]').value,
-        vacations: getVacationsData(),
-        image: document.getElementById("driver-image")?.src,
+        nationalNo: document.querySelector('input[name="nationalNum"]').value,
+        status: statusCode,
       };
 
-      localStorage.setItem("selectedDriver", JSON.stringify(updatedDriver));
-      alert("✅ تم حفظ التعديلات بنجاح!");
-
-      loadSavedData();
+      fetch(`https://movesmartapi.runasp.net/api/Drivers`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updatedDriver),
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error("فشل في تحديث البيانات");
+          return res.text();
+        })
+        .then(() => {
+          alert("✅ تم حفظ التعديلات بنجاح!");
+          loadSavedData(); // تحديث البيانات من الـ API بعد التعديل
+        })
+        .catch((err) => {
+          console.error(err);
+          alert("❌ حدث خطأ أثناء الحفظ!");
+        });
     });
   }
 
@@ -83,9 +110,25 @@ document.addEventListener("DOMContentLoaded", function () {
   if (deleteButton) {
     deleteButton.addEventListener("click", function () {
       if (confirm("⚠ هل أنت متأكد من حذف بيانات السائق؟")) {
-        localStorage.removeItem("selectedDriver");
-        alert("✅ تم حذف بيانات السائق!");
-        window.location.reload();
+        const urlParams = new URLSearchParams(window.location.search);
+        const driverID = urlParams.get("id");
+        const token = localStorage.getItem("token");
+
+        fetch(`https://movesmartapi.runasp.net/api/Drivers/ByID/${driverID}`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+          .then((res) => {
+            if (!res.ok) throw new Error("فشل في حذف البيانات");
+            alert("✅ تم حذف بيانات السائق!");
+            window.history.back();
+          })
+          .catch((err) => {
+            console.error(err);
+            alert("❌ حدث خطأ أثناء الحذف!");
+          });
       }
     });
   }
