@@ -185,74 +185,186 @@ document.addEventListener("DOMContentLoaded", function () {
     saveLeaveButton.addEventListener("click", function () {
       const fromDate = leaveFromInput.value;
       const toDate = leaveToInput.value;
+      const substituteDriverID =
+        document.getElementById("substitute-driver").value;
+      const urlParams = new URLSearchParams(window.location.search);
+      const vacationOwnerID = Number(urlParams.get("id"));
+      const token = localStorage.getItem("token");
 
-      if (fromDate && toDate) {
-        const fromDateObj = new Date(fromDate);
-        const toDateObj = new Date(toDate);
-        const days = Math.ceil(
-          Math.abs(toDateObj - fromDateObj) / (1000 * 60 * 60 * 24)
-        );
+      if (fromDate && toDate && vacationOwnerID) {
+        const vacationData = {
+          vacationOwnerID: vacationOwnerID,
+          startDate: fromDate,
+          endDate: toDate,
+          substituteDriverID: substituteDriverID || null,
+        };
 
-        const newRow = document.createElement("div");
-        newRow.classList.add("vacation-entry");
-        newRow.innerHTML = `
-                    <span>${fromDate}</span>
-                    <span>${toDate}</span>
-                    <span>${days} أيام</span>
-                    <button class="delete-vacation-btn">🗑 حذف</button>
-                `;
+        fetch("https://movesmartapi.runasp.net/api/Vacations", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(vacationData),
+        })
+          .then((res) => {
+            if (!res.ok) throw new Error("فشل في إضافة الإجازة");
+            return res.json();
+          })
+          .then((vac) => {
+            alert("✅ تم حفظ الإجازة بنجاح!");
 
-        vacationContent.appendChild(newRow);
+            const newRow = document.createElement("div");
+            newRow.classList.add("vacation-entry");
+            const days = Math.ceil(
+              Math.abs(new Date(toDate) - new Date(fromDate)) /
+                (1000 * 60 * 60 * 24)
+            );
+            newRow.innerHTML = `
+            <span>${fromDate}</span>
+            <span>${toDate}</span>
+            <span>${days} أيام</span>
+            <button class="delete-vacation-btn">🗑 حذف</button>
+          `;
+            newRow
+              .querySelector(".delete-vacation-btn")
+              .addEventListener("click", () => {
+                newRow.remove();
+              });
 
-        newRow
-          .querySelector(".delete-vacation-btn")
-          .addEventListener("click", function () {
-            newRow.remove();
+            loadDriverVacations();
+            leaveModal.style.display = "none";
+            leaveFromInput.value = "";
+            leaveToInput.value = "";
+            document.getElementById("substitute-driver").value = "";
+          })
+          .catch((err) => {
+            console.error(err);
+            alert("❌ حدث خطأ أثناء حفظ الإجازة!");
           });
-
-        leaveModal.style.display = "none";
-        leaveFromInput.value = "";
-        leaveToInput.value = "";
       } else {
-        alert("⚠ يرجى اختيار التواريخ!");
+        alert("⚠ يرجى إدخال التواريخ واختيار السائق!");
       }
     });
   }
+  function loadSubstituteDrivers() {
+    const token = localStorage.getItem("token");
+    const select = document.getElementById("substitute-driver");
 
-  // جلب بيانات الإجازات
-  function getVacationsData() {
-    const vacations = [];
-    document.querySelectorAll(".vacation-entry").forEach((entry) => {
-      const spans = entry.querySelectorAll("span");
-      vacations.push({
-        from: spans[0].innerText,
-        to: spans[1].innerText,
-        days: spans[2].innerText,
-      });
-    });
-    return vacations;
-  }
-
-  // عرض الإجازات عند تحميل الصفحة
-  function populateVacations(vacations) {
-    vacationContent.innerHTML = "";
-    vacations.forEach((vac) => {
-      const newRow = document.createElement("div");
-      newRow.classList.add("vacation-entry");
-      newRow.innerHTML = `
-                <span>${vac.from}</span>
-                <span>${vac.to}</span>
-                <span>${vac.days} أيام</span>
-                <button class="delete-vacation-btn">🗑 حذف</button>
-            `;
-      vacationContent.appendChild(newRow);
-      newRow
-        .querySelector(".delete-vacation-btn")
-        .addEventListener("click", function () {
-          newRow.remove();
+    fetch("https://movesmartapi.runasp.net/api/Drivers/All", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        const drivers = data.$values;
+        drivers.forEach((driver) => {
+          const option = document.createElement("option");
+          option.value = driver.driverID;
+          option.textContent = driver.name;
+          select.appendChild(option);
         });
-    });
+      })
+      .catch((err) => {
+        console.error("فشل في تحميل قائمة السائقين:", err);
+      });
   }
+
+  function loadDriverVacations() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const driverID = Number(urlParams.get("id"));
+    const token = localStorage.getItem("token");
+
+    fetch(
+      `https://movesmartapi.runasp.net/api/Vacations/ForDriver/${driverID}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
+      .then(async (res) => {
+        vacationContent.innerHTML = "";
+
+        if (res.status === 404) {
+          // لو مفيش إجازات
+          vacationContent.innerHTML =
+            "<p class='no-vacations'>لا توجد إجازات مسجلة لهذا السائق.</p>";
+          return;
+        }
+
+        if (!res.ok) throw new Error("فشل في تحميل الإجازات");
+
+        const data = await res.json();
+
+        if (!data.$values || data.$values.length === 0) {
+          vacationContent.innerHTML =
+            "<p class='no-vacations'>لا توجد إجازات مسجلة لهذا السائق.</p>";
+          return;
+        }
+        console.log("بيانات الإجازات:", data);
+        data.$values.forEach((vac) => {
+          const fromDate = vac.startDate?.split("T")[0];
+          const toDate = vac.endDate?.split("T")[0];
+          const days = Math.ceil(
+            Math.abs(new Date(toDate) - new Date(fromDate)) /
+              (1000 * 60 * 60 * 24)
+          );
+
+          const newRow = document.createElement("div");
+          newRow.classList.add("vacation-entry");
+
+          newRow.innerHTML = `
+          <span>${fromDate}</span>
+          <span>${toDate}</span>
+          <span>${days} أيام</span>
+          <button class="delete-vacation-btn">🗑 حذف</button>
+        `;
+
+          const deleteBtn = newRow.querySelector(".delete-vacation-btn");
+          deleteBtn.addEventListener("click", () => {
+            if (confirm("⚠ هل أنت متأكد من حذف هذه الإجازة؟")) {
+              fetch(
+                `https://movesmartapi.runasp.net/api/Vacations/${vac.vacationID}`,
+                {
+                  method: "DELETE",
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
+                }
+              )
+                .then((res) => {
+                  if (!res.ok) throw new Error("فشل في حذف الإجازة");
+                  alert("✅ تم حذف الإجازة بنجاح!");
+                  newRow.remove();
+                  // إعادة تحميل الإجازات للتأكد إذا أصبحت القائمة فارغة
+                  loadDriverVacations();
+                })
+                .catch((err) => {
+                  console.error("خطأ أثناء حذف الإجازة:", err);
+                  alert("❌ حدث خطأ أثناء حذف الإجازة!");
+                });
+            }
+          });
+
+          vacationContent.appendChild(newRow);
+        });
+      })
+      .catch((err) => {
+        console.error("فشل في تحميل الإجازات:", err);
+        vacationContent.innerHTML =
+          "<p class='no-vacations'>حدث خطأ أثناء تحميل الإجازات.</p>";
+      });
+  }
+
+  // استدعِ دالة تحميل السائقين
+  loadSubstituteDrivers();
+
+  // استدعِ دالة تحميل الإجازات
+  loadDriverVacations();
 
   // تعيين التبويب الافتراضي وتحميل البيانات
   document.querySelector("[data-tab='driver-info']")?.click();
