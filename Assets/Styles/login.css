@@ -56,6 +56,10 @@
   font-size: 14px;
   border: 1px solid #cccccc;
   border-radius: 5px;
+  
+  /* Arabic text direction */
+  direction: rtl;
+  text-align: right;
 }
 
 /* Error message styling */
