@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>صفحة الطلبات</title>
-  <link rel="stylesheet" href="../Assets/Styles/orderList.css">
+  <link rel="stylesheet" href="../../Assets/Styles/orderList.css">
 </head>
 <body>
   <!-- Header Buttons -->
@@ -66,7 +66,30 @@
     </div>
   </div>
 
-<script src="../Java script/orderList.js"></script>
+<script src="../../Java script/orderList.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const token = localStorage.getItem('token');
+    const userRole = localStorage.getItem('userRole');
+    
+    if (!token) {
+      window.location.href = '../Login.html';
+      return;
+    }
+
+    // Add click event listener to the page title for navigation
+    const pageTitle = document.querySelector('title');
+    document.title = 'صفحة الطلبات';
+    const header = document.createElement('h1');
+    header.className = 'page-title';
+    header.textContent = 'صفحة الطلبات';
+    header.style.cursor = 'pointer';
+    header.addEventListener('click', function() {
+      window.location.href = `../dash-Boards/${userRole.toLowerCase()}Dashboard.html`;
+    });
+    document.body.insertBefore(header, document.body.firstChild);
+  });
+</script>
 
 </body>
 </html>

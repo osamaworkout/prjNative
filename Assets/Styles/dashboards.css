@@ -1,0 +1,565 @@
+/* Base styles */
+.dashboard-stats {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    padding: 24px;
+    background-color: #f8f9fa;
+    border-radius: 12px;
+    margin: 20px;
+    box-sizing: border-box;
+}
+
+.chart-container {
+    background-color: #fff;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    width: calc(50% - 12px);
+    min-width: 320px;
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
+}
+
+.chart-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+}
+
+.chart-container h2 {
+    font-size: 1.4em;
+    margin-bottom: 20px;
+    color: #2c3e50;
+    font-weight: 600;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+.chart-container h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50px;
+    height: 3px;
+    background: linear-gradient(90deg, #007bff, #00bcd4);
+    border-radius: 2px;
+}
+
+canvas {
+    max-width: 100%;
+    margin: 20px 0;
+}
+
+.legend {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+}
+
+.legend li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    padding: 8px 12px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.legend li:hover {
+    background-color: #e9ecef;
+}
+
+.legend span {
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+    margin-right: 10px;
+    border-radius: 4px;
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 20px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+th, td {
+    padding: 12px;
+    text-align: right;
+    border-bottom: 1px solid #eee;
+}
+
+th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+tr:hover td {
+    background-color: #f8f9fa;
+}
+
+.content h2 {
+    font-size: 2em;
+    color: #2c3e50;
+    margin: 30px 20px;
+    font-weight: 600;
+}
+
+/* Responsive styles */
+@media screen and (max-width: 1200px) {
+    .chart-container {
+        width: calc(50% - 12px);
+    }
+    
+    .dashboard-stats {
+        padding: 20px;
+        gap: 20px;
+    }
+
+    .topbar {
+        padding: 0 15px;
+    }
+
+    .search-container {
+        width: 250px;
+    }
+}
+
+@media screen and (max-width: 992px) {
+    .chart-container {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+
+    .dashboard-stats {
+        padding: 16px;
+        margin: 15px;
+    }
+
+    .content h2 {
+        font-size: 1.8em;
+        margin: 20px 15px;
+    }
+
+    .sidebar {
+        width: 60px;
+    }
+
+    .sidebar .logo {
+        display: none;
+    }
+
+    .sidebar .menu li {
+        padding: 10px;
+        justify-content: center;
+    }
+
+    .sidebar .menu li span {
+        display: none;
+    }
+
+    .content {
+        margin-right: 60px;
+    }
+
+    .topbar {
+        right: 60px;
+        padding: 0 12px;
+    }
+
+    .search-container {
+        width: 200px;
+    }
+
+    .profile span {
+        display: none;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .dashboard-stats {
+        padding: 12px;
+        margin: 10px;
+        gap: 16px;
+    }
+
+    .chart-container {
+        padding: 16px;
+    }
+
+    .chart-container h2 {
+        font-size: 1.2em;
+        margin-bottom: 15px;
+    }
+
+    .legend {
+        gap: 10px;
+    }
+
+    .legend li {
+        padding: 6px 10px;
+        font-size: 0.9em;
+    }
+
+    table {
+        font-size: 0.9em;
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    th, td {
+        padding: 8px;
+        min-width: 100px;
+    }
+
+    .topbar {
+        padding: 0 10px;
+        height: 50px;
+    }
+
+    .search-container {
+        width: 180px;
+    }
+
+    .profile {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .profile img {
+        width: 24px;
+        height: 24px;
+    }
+
+    .notification {
+        width: 24px;
+        height: 24px;
+    }
+
+    .menu-toggle {
+        right: 20px;
+        width: 36px;
+        height: 36px;
+    }
+
+    .menu-toggle img {
+        width: 18px;
+        height: 18px;
+    }
+
+    .sidebar {
+        width: 250px;
+        transform: translateX(100%);
+    }
+
+    .sidebar.hidden {
+        transform: translateX(100%);
+    }
+
+    .content {
+        margin-right: 0;
+    }
+
+    .content.expanded {
+        margin-right: 0;
+    }
+
+    .topbar {
+        right: 0;
+    }
+
+    .logout-button img {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .dashboard-stats {
+        padding: 8px;
+        margin: 8px;
+        gap: 12px;
+    }
+
+    .chart-container {
+        padding: 12px;
+        min-width: unset;
+    }
+
+    .chart-container h2 {
+        font-size: 1.1em;
+        margin-bottom: 12px;
+    }
+
+    .legend {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .legend li {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    table {
+        font-size: 0.85em;
+    }
+
+    th, td {
+        padding: 6px;
+    }
+
+    .content h2 {
+        font-size: 1.5em;
+        margin: 15px 10px;
+    }
+
+    .topbar {
+        padding: 0 8px;
+        height: 45px;
+    }
+
+    .search-container {
+        width: 140px;
+    }
+
+    .search-container input {
+        font-size: 0.9em;
+        padding: 6px 8px;
+    }
+
+    .profile img {
+        width: 20px;
+        height: 20px;
+    }
+
+    .notification {
+        width: 20px;
+        height: 20px;
+    }
+
+    .menu-toggle {
+        right: 15px;
+        top: 15px;
+        width: 32px;
+        height: 32px;
+    }
+
+    .menu-toggle img {
+        width: 16px;
+        height: 16px;
+    }
+
+    .sidebar {
+        width: 100%;
+    }
+
+    .sidebar .menu li {
+        padding: 15px;
+    }
+
+    .sidebar .create-order {
+        margin: 15px;
+        padding: 10px;
+        font-size: 0.9em;
+    }
+
+    .logout-button img {
+        width: 16px;
+        height: 16px;
+    }
+}
+
+/* Add smooth transitions for responsive changes */
+.sidebar, .content, .chart-container, .dashboard-stats, .topbar, .menu-toggle {
+    transition: all 0.3s ease;
+}
+
+/* Improve search container responsiveness */
+.search-container {
+    position: relative;
+    transition: width 0.3s ease;
+}
+
+.search-container input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.95em;
+    transition: all 0.3s ease;
+}
+
+.search-container img {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    opacity: 0.6;
+    transition: opacity 0.3s ease;
+}
+
+.search-container input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0,123,255,0.1);
+}
+
+.search-container:hover img {
+    opacity: 1;
+}
+
+/* Improve profile section responsiveness */
+.profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
+
+.profile img {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+/* Improve notification button responsiveness */
+.notification {
+    width: 28px;
+    height: 28px;
+    padding: 4px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.notification:hover {
+    transform: scale(1.1);
+}
+
+/* Improve create order button responsiveness */
+.create-order {
+    width: 100%;
+    padding: 12px;
+    font-size: 1em;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.create-order:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Improve menu items responsiveness */
+.menu li {
+    transition: all 0.3s ease;
+}
+
+.menu li img {
+    width: 20px;
+    height: 20px;
+    transition: all 0.3s ease;
+}
+
+.menu li:hover img {
+    transform: scale(1.1);
+}
+
+/* Improve table responsiveness */
+table {
+    transition: all 0.3s ease;
+}
+
+th, td {
+    transition: background-color 0.3s ease;
+}
+
+/* Improve chart container responsiveness */
+.chart-container {
+    transition: all 0.3s ease;
+}
+
+.chart-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+}
+
+/* Improve legend responsiveness */
+.legend li {
+    transition: all 0.3s ease;
+}
+
+.legend li:hover {
+    transform: translateX(5px);
+}
+
+/* Improve topbar responsiveness */
+.topbar {
+    transition: all 0.3s ease;
+}
+
+/* Improve menu toggle button responsiveness */
+.menu-toggle {
+    transition: all 0.3s ease;
+}
+
+.menu-toggle:hover {
+    transform: scale(1.05);
+}
+
+.menu-toggle img {
+    transition: transform 0.3s ease;
+}
+
+.menu-toggle.active img {
+    transform: rotate(180deg);
+}
+
+/* Logout button styles */
+.logout-button {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    margin-right: 10px;
+}
+
+.logout-button img {
+    width: 20px;
+    height: 20px;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+.logout-button:hover {
+    transform: scale(1.1);
+}
+
+.logout-button:hover img {
+    opacity: 1;
+} 

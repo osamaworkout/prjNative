@@ -1,3 +1,21 @@
+// Navigation functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const token = localStorage.getItem('token');
+  const userRole = localStorage.getItem('userRole');
+  
+  if (!token) {
+    window.location.href = '../Login.html';
+    return;
+  }
+
+  // Add click event listener to the page title for navigation
+  const pageTitle = document.querySelector('.page-title');
+  pageTitle.style.cursor = 'pointer';
+  pageTitle.addEventListener('click', function() {
+    window.location.href = `../dash-Boards/${userRole.toLowerCase()}Dashboard.html`;
+  });
+});
+
 var parts = [];
 var editIndex = null;
 

@@ -41,9 +41,40 @@ async function validateForm(event) {
     if (response.ok) {
       const data = await response.json();
 
+      // Store token, user role, and user name in localStorage
+      localStorage.setItem("userName", data.name || "User");
       localStorage.setItem("token", data.token);
+      localStorage.setItem("userRole", data.role);
 
-      window.location.href = "sharedLayout.html";
+      console.log(data);
+
+      // Redirect based on role
+      switch (data.role) {
+        case "SuperUser":
+          window.location.href = "dash-Boards/superUserDashboard.html";
+          break;
+        case "HospitalManager":
+          window.location.href = "dash-Boards/hospitalManagerDashboard.html";
+          break;
+        case "GeneralManager":
+          window.location.href = "dash-Boards/generalManagerDashboard.html";
+          break;
+        case "GeneralSupervisor":
+          window.location.href = "dash-Boards/generalSupervisorDashboard.html";
+          break;
+        case "AdministrativeSupervisor":
+          window.location.href = "dash-Boards/administrativeSupervisorDashboard.html";
+          break;
+        case "WorkshopSupervisor":
+          window.location.href = "dash-Boards/workshopSupervisorDashboard.html";
+          break;
+        case "PatrolsSupervisor":
+          window.location.href = "dash-Boards/patrolsSupervisorDashboard.html";
+          break;
+        default:
+          // Fallback to shared layout if role is not recognized
+          window.location.href = "sharedLayout.html";
+      }
     } else {
       serverError.style.display = "block";
       const data = await response.json();

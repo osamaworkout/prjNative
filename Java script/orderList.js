@@ -1,3 +1,26 @@
+// Navigation functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const token = localStorage.getItem('token');
+  const userRole = localStorage.getItem('userRole');
+  
+  if (!token) {
+    window.location.href = '../Login.html';
+    return;
+  }
+
+  // Add click event listener to the page title for navigation
+  const pageTitle = document.querySelector('title');
+  document.title = 'صفحة الطلبات';
+  const header = document.createElement('h1');
+  header.className = 'page-title';
+  header.textContent = 'صفحة الطلبات';
+  header.style.cursor = 'pointer';
+  header.addEventListener('click', function() {
+    window.location.href = `../dash-Boards/${userRole.toLowerCase()}Dashboard.html`;
+  });
+  document.body.insertBefore(header, document.body.firstChild);
+});
+
 const allRequests = [
     { id: 1, sender: "Ahmed", date: "2024-02-15", status: "مقبول", badgeClass: "badge-accepted" },
     { id: 2, sender: "Sara", date: "2024-02-14", status: "مرفوض", badgeClass: "badge-rejected" },
