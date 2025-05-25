@@ -25,10 +25,10 @@
           onkeyup="searchDriver()"
         />
         <select id="filter-select" onchange="filterDriver()">
-          <option value="0" selected>الجميع</option>
-          <option value="متاح">متاح</option>
-          <option value="غائب">غائب</option>
-          <option value="مشغول">مشغول</option>
+          <option value="all" selected>الجميع</option>
+          <option value="0">متاح</option>
+          <option value="1">غائب</option>
+          <option value="2">قيد العمل</option>
         </select>
 
         <button onclick="openPop()">+ إضافة سائق</button>
@@ -53,8 +53,8 @@
         <select id="driver-status">
           <option value="">-- اختر الحالة --</option>
           <option value="متاح">متاح</option>
-          <option value="غير متاح">غير متاح</option>
-          <option value="مشغول">مشغول</option>
+          <option value="غائب">غائب</option>
+          <option value="قيد العمل">قيد العمل</option>
         </select>
 
         <input type="text" id="driver-phone" placeholder="رقم الهاتف" />

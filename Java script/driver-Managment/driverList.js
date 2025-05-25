@@ -34,9 +34,9 @@ function submitDriver() {
 
   const statusText = document.getElementById("driver-status").value;
   const statusMap = {
-    متاح: 0,
-    غائب: 1,
-    مشغول: 2,
+    "متاح": 0,    // Available
+    "غائب": 1,    // Absent
+    "قيد العمل": 2  // Working
   };
   const status = statusMap[statusText];
 
@@ -119,9 +119,9 @@ function displayDriver(list) {
   container.innerHTML = "";
 
   const driverStatusMap = {
-    0: "متاح",
-    1: "غائب",
-    2: "مشغول",
+    0: "متاح",     // Available
+    1: "غائب",     // Absent
+    2: "قيد العمل"  // Working
   };
 
   list.forEach((driver) => {

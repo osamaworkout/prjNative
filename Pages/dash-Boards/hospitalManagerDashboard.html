@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../../Assets/Styles/sharedLayout.css">
     <link rel="stylesheet" href="../../Assets/Styles/dashboards.css">
+    <link rel="stylesheet" href="../../Assets/Styles/dashboardCharts.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <title>Hospital Manager Dashboard - Move Smart</title>
 </head>
 <body>
@@ -49,26 +51,40 @@
     <div class="content" id="content">
         <h2>مرحبًا بك في لوحة تحكم مدير المستشفى</h2>
         <div class="dashboard-stats">
-            <!-- Add your dashboard statistics and widgets here -->
+            <div class="chart-container" lang="ar">
+                <h2>بيانات السيارات</h2>
+                <canvas id="chart1"></canvas>
+                <ul class="legend" id="legend1"></ul>
+                <table id="table1">
+                    <thead>
+                        <tr>
+                            <th>القيمة</th>
+                            <th>التصنيف</th>
+                            <th>اللون</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="chart-container" lang="ar">
+                <h2>بيانات السائقين</h2>
+                <canvas id="chart2"></canvas>
+                <ul class="legend" id="legend2"></ul>
+                <table id="table2">
+                    <thead>
+                        <tr>
+                            <th>القيمة</th>
+                            <th>التصنيف</th>
+                            <th>اللون</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const token = localStorage.getItem('token');
-            const userRole = localStorage.getItem('userRole');
-            
-            if (!token) {
-                window.location.href = '../Login.html';
-                return;
-            }
-
-            if (userRole !== 'HospitalManager') {
-                window.location.href = `${userRole.toLowerCase()}Dashboard.html`;
-                return;
-            }
-        });
-    </script>
     <script src="../../Java script/dashboards.js"></script>
+    <script src="../../Java script/dashboardCharts.js"></script>
 </body>
 </html> 
