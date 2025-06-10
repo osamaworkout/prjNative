@@ -36,6 +36,22 @@ function navigateToSection(section) {
             // Navigate to drivers management page
             window.location.href = '../driver-Managment/driverList.html';
             break;
+        case 'applications':
+            // Navigate to applications management page
+            window.location.href = '../orderList.html';
+            break;
+        case 'consumables':
+            // Navigate to consumables management page
+            window.location.href = '../disposalList.html';
+            break;
+        case 'spareParts':
+            // Navigate to spare parts management page
+            window.location.href = '../sparePartsList.html';
+            break;
+        case 'reports':
+            // Navigate to reports management page
+            window.location.href = '../dash-Boards/reports.html';
+            break;
         default:
             // Default to home dashboard
             window.location.href = '../dash-Boards/index.html';

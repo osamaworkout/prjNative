@@ -30,12 +30,9 @@ async function validateForm(event) {
     const response = await fetch(basetUrl, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        nationalNo: nationalNo,
-        password: password,
-      }),
+      body: JSON.stringify({ nationalNo, password })
     });
 
     if (response.ok) {

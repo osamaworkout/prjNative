@@ -8,8 +8,103 @@
     <link rel="stylesheet" href="../../Assets/Styles/dashboardCharts.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <title>Hospital Manager Dashboard - Move Smart</title>
+    <style>
+        /* Additional responsive styles */
+        /* Default state - hide menu toggle on larger screens */
+        .menu-toggle {
+            display: none;
+        }
+        
+        @media screen and (max-width: 768px) {
+            .topbar {
+                width: 100%;
+                justify-content: space-between;
+                padding: 8px;
+            }
+            
+            .profile {
+                margin-right: 0;
+            }
+            
+            .search-container {
+                width: 40%;
+            }
+            
+            .sidebar {
+                transform: translateX(100%);
+                z-index: 1000;
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .content {
+                margin-right: 0;
+                transition: margin-right 0.3s ease;
+            }
+            
+            .menu-toggle {
+                display: block;
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                z-index: 1001;
+                background: #f9f9f9;
+                border: none;
+                border-radius: 5px;
+                padding: 5px;
+                cursor: pointer;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                width: 30px;
+                height: 30px;
+            }
+            
+            .menu-toggle img {
+                width: 20px;
+                height: 20px;
+                display: block;
+                margin: 0 auto;
+            }
+            
+            .dashboard-stats {
+                flex-direction: column;
+            }
+            
+            .chart-container {
+                width: 100%;
+            }
+        }
+        
+        @media screen and (max-width: 480px) {
+            .topbar {
+                flex-wrap: wrap;
+                height: auto;
+                padding: 8px 5px;
+            }
+            
+            .search-container {
+                width: 100%;
+                order: 3;
+                margin-top: 8px;
+            }
+            
+            .profile {
+                order: 1;
+            }
+            
+            .notification {
+                order: 2;
+            }
+        }
+    </style>
 </head>
 <body>
+    <button class="menu-toggle" id="menuToggle">
+        <img src="../../Assets/Images/menu.svg" alt="Menu" />
+    </button>
+
     <div class="topbar">
         <div class="profile">
             <span id="userName">Loading...</span>
@@ -25,7 +120,7 @@
         </div>
     </div>
 
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
         <h2 class="logo">Move Smart</h2>
         <h2 class="logo">نظام التحكم في السيارات</h2>
         <button class="create-order">إنشاء طلب</button>
@@ -86,5 +181,32 @@
 
     <script src="../../Java script/dashboards.js"></script>
     <script src="../../Java script/dashboardCharts.js"></script>
+    <script>
+        // Add mobile menu toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.getElementById('sidebar');
+            const content = document.getElementById('content');
+            
+            if (menuToggle && sidebar) {
+                menuToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('active');
+                });
+                
+                // Close sidebar when clicking outside of it
+                document.addEventListener('click', function(event) {
+                    if (!sidebar.contains(event.target) && event.target !== menuToggle && !menuToggle.contains(event.target)) {
+                        sidebar.classList.remove('active');
+                    }
+                });
+            }
+            
+            // Check for saved sidebar state
+            const sidebarHidden = localStorage.getItem('sidebarHidden') === 'true';
+            if (sidebarHidden) {
+                sidebar.classList.remove('active');
+            }
+        });
+    </script>
 </body>
-</html> 
+</html>
