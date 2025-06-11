@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../../Assets/Styles/sharedLayout.css">
-    <link rel="stylesheet" href="../../Assets/Styles/dashboards.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="../../Assets/Styles/sharedLayout.css" />
+    <link rel="stylesheet" href="../../Assets/Styles//dash-Boards/administrativeSupervisorDashboard.css" />
     <title>Administrative Supervisor Dashboard - Move Smart</title>
 </head>
+
 <body>
     <div class="topbar">
         <div class="profile">
@@ -16,7 +19,9 @@
                 <img src="../../Assets/Images/logout.svg" alt="Logout" />
             </button>
         </div>
-        <button><img class="notification" src="../../Assets/Images/bell.svg" alt="" /></button>
+        <button>
+            <img class="notification" src="../../Assets/Images/bell.svg" alt="" />
+        </button>
         <div class="search-container">
             <input type="text" placeholder="بحـث..." />
             <img src="../../Assets/Images/search.svg" alt="Search" />
@@ -47,28 +52,154 @@
     </div>
 
     <div class="content" id="content">
-        <h2>مرحبًا بك في لوحة تحكم المشرف الإداري</h2>
-        <div class="dashboard-stats">
-            <!-- Add your dashboard statistics and widgets here -->
+        <div class="dashboard-grid">
+            <!-- كارت السائقين -->
+            <div class="card">
+                <span class="edit-icon">✏️</span>
+                <h2>نظرة عامة على السائقين</h2>
+                <div class="card-content">
+                    <canvas id="driverChart"></canvas>
+                    <div class="card-details">
+                        <table class="card-table">
+                            <tr>
+                                <td>إجمالي السائقين</td>
+                                <td id="total-drivers"></td>
+                            </tr>
+                            <tr>
+                                <td>أمر شغل <span class="dot orange"></span></td>
+                                <td id="working-drivers"></td>
+                            </tr>
+                            <tr>
+                                <td>متاح <span class="dot green"></span></td>
+                                <td id="available-drivers"></td>
+                            </tr>
+                            <tr>
+                                <td>إجازة <span class="dot red"></span></td>
+                                <td id="onleave-drivers"></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- كارت السيارات -->
+            <div class="card">
+                <span class="edit-icon">✏️</span>
+                <h2>نظرة عامة على السيارات</h2>
+                <div class="card-content">
+                    <canvas id="carChart"></canvas>
+                    <div class="card-details">
+                        <table class="card-table">
+                            <tr>
+                                <td>إجمالي السيارات</td>
+                                <td id="total-cars"></td>
+                            </tr>
+                            <tr>
+                                <td>طور الصيانة <span class="dot orange"></span></td>
+                                <td id="cars-maintenance"></td>
+                            </tr>
+                            <tr>
+                                <td>متاح <span class="dot green"></span></td>
+                                <td id="cars-available"></td>
+                            </tr>
+                            <tr>
+                                <td>أمر شغل <span class="dot red"></span></td>
+                                <td id="cars-working"></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- كارت الطلبات -->
+            <div class="card">
+                <span class="edit-icon">✏️</span>
+                <h2>الطلبات</h2>
+                <div class="card-content">
+                    <canvas id="orderChart"></canvas>
+                    <div class="card-details">
+                        <table class="card-table">
+                            <tr>
+                                <td>إجمالي الطلبات</td>
+                                <td id="total-orders"></td>
+                            </tr>
+                            <tr>
+                                <td>انتظار <span class="dot orange"></span></td>
+                                <td id="orders-pending"></td>
+                            </tr>
+                            <tr>
+                                <td>موافقة <span class="dot green"></span></td>
+                                <td id="orders-approved"></td>
+                            </tr>
+                            <tr>
+                                <td>مرفوض <span class="dot red"></span></td>
+                                <td id="orders-rejected"></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- كارت التقارير -->
+            <div class="card">
+                <span class="edit-icon">✏️</span>
+                <h2>التقارير</h2>
+                <div class="card-content">
+                    <canvas id="reportChart"></canvas>
+                    <div class="card-details">
+                        <table class="card-table">
+                            <tr>
+                                <td>إجمالي التقارير</td>
+                                <td id="total-reports"></td>
+                            </tr>
+                            <tr>
+                                <td>نوع تقرير <span class="dot orange"></span></td>
+                                <td id="report-type1"></td>
+                            </tr>
+                            <tr>
+                                <td>نوع تقرير <span class="dot green"></span></td>
+                                <td id="report-type2"></td>
+                            </tr>
+                            <tr>
+                                <td>نوع تقرير <span class="dot red"></span></td>
+                                <td id="report-type3"></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- كارت الدوريات -->
+            <!-- <div class="card">
+                <span class="edit-icon">✏️</span>
+                <h2>الدوريات</h2>
+                <div class="card-content">
+                    <canvas id="patrolChart"></canvas>
+                    <div class="card-details">
+                        <table class="card-table">
+                            <tr>
+                                <td>إجمالي الدوريات</td>
+                                <td id="total-patrols"></td>
+                            </tr>
+                            <tr>
+                                <td>جارية <span class="dot orange"></span></td>
+                                <td id="patrols-current"></td>
+                            </tr>
+                            <tr>
+                                <td>قادمة <span class="dot green"></span></td>
+                                <td id="patrols-upcoming"></td>
+                            </tr>
+                            <tr>
+                                <td>منتهية <span class="dot red"></span></td>
+                                <td id="patrols-finished"></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div> -->
         </div>
-    </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const token = localStorage.getItem('token');
-            const userRole = localStorage.getItem('userRole');
-            
-            if (!token) {
-                window.location.href = '../Login.html';
-                return;
-            }
-
-            if (userRole !== 'AdministrativeSupervisor') {
-                window.location.href = `${userRole.toLowerCase()}Dashboard.html`;
-                return;
-            }
-        });
-    </script>
-    <script src="../../Java script/dashboards.js"></script>
+        <script src="../../Java script/dash-Boards/administrativeSupervisorDashboard.js"></script>
+        <script src="../../Java script/dashboards.js"></script>
 </body>
-</html> 
+
+</html>
