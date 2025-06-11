@@ -1,74 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../../Assets/Styles/sharedLayout.css">
-    <link rel="stylesheet" href="../../Assets/Styles/dashboards.css">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../../Assets/Styles/sharedLayout.css" />
+    <link rel="stylesheet" href="../../Assets/Styles/dashboards.css" />
     <title>Patrols Supervisor Dashboard - Move Smart</title>
-</head>
-<body>
+  </head>
+  <body>
     <div class="topbar">
-        <div class="profile">
-            <span id="userName">Loading...</span>
-            <img src="../../Assets/Images/users.svg" alt="User" />
-            <button id="logoutButton" class="logout-button">
-                <img src="../../Assets/Images/logout.svg" alt="Logout" />
-            </button>
-        </div>
-        <button><img class="notification" src="../../Assets/Images/bell.svg" alt="" /></button>
-        <div class="search-container">
-            <input type="text" placeholder="بحـث..." />
-            <img src="../../Assets/Images/search.svg" alt="Search" />
-        </div>
+      <div class="profile">
+        <span id="userName">Loading...</span>
+        <img src="../../Assets/Images/users.svg" alt="User" />
+        <button id="logoutButton" class="logout-button">
+          <img src="../../Assets/Images/logout.svg" alt="Logout" />
+        </button>
+      </div>
+      <button>
+        <img class="notification" src="../../Assets/Images/bell.svg" alt="" />
+      </button>
+      <div class="search-container">
+        <input type="text" placeholder="بحـث..." />
+        <img src="../../Assets/Images/search.svg" alt="Search" />
+      </div>
     </div>
 
     <div class="sidebar">
-        <h2 class="logo">Move Smart</h2>
-        <h2 class="logo">نظام التحكم في السيارات</h2>
-        <button class="create-order">إنشاء طلب</button>
-        <ul class="menu">
-            <li class="active">
-                <img src="../../Assets/Images/home.svg" alt="" /> الصفحة الرئيسية
-            </li>
-            <li>
-                <img src="../../Assets/Images/cars.svg" alt="" /> السيارات
-            </li>
-            <li>
-                <img src="../../Assets/Images/users.svg" alt="" /> السائقين
-            </li>
-            <li>
-                <img src="../../Assets/Images/document.svg" alt="" /> الطلبات
-            </li>
-            <li>
-                <img src="../../Assets/Images/chart-pie.svg" alt="" />التقارير
-            </li>
-        </ul>
+      <h2 class="logo">Move Smart</h2>
+      <h2 class="logo">نظام التحكم في السيارات</h2>
+      <button class="create-order">إنشاء طلب</button>
+      <ul class="menu">
+        <li class="active">
+          <img src="../../Assets/Images/home.svg" alt="" /> الصفحة الرئيسية
+        </li>
+        <li onclick="changeContent('cars')">
+          <img src="../../Assets/Images/cars.svg" alt="" /> السيارات
+        </li>
+        <li onclick="changeContent('drivers')">
+          <img src="../../Assets/Images/users.svg" alt="" /> السائقين
+        </li>
+        <li onclick="changeContent('orders')">
+          <img src="../../Assets/Images/document.svg" alt="" /> الطلبات
+        </li>
+        <li onclick="changeContent('patrols')">
+            <img src="../../Assets/Images/cars.svg" alt="" /> الدوريات
+        </li>
+        <li onclick="changeContent('reports')">
+          <img src="../../Assets/Images/chart-pie.svg" alt="" />التقارير
+        </li>
+      </ul>
     </div>
 
     <div class="content" id="content">
-        <h2>مرحبًا بك في لوحة تحكم مشرف الدوريات</h2>
-        <div class="dashboard-stats">
-            <!-- Add your dashboard statistics and widgets here -->
-        </div>
+      <h2>مرحبًا بك في لوحة تحكم مشرف الدوريات</h2>
+      <div class="dashboard-stats">
+        <!-- Add your dashboard statistics and widgets here -->
+      </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const token = localStorage.getItem('token');
-            const userRole = localStorage.getItem('userRole');
-            
-            if (!token) {
-                window.location.href = '../Login.html';
-                return;
-            }
+      document.addEventListener("DOMContentLoaded", function () {
+        const token = localStorage.getItem("token");
+        const userRole = localStorage.getItem("userRole");
 
-            if (userRole !== 'PatrolsSupervisor') {
-                window.location.href = `${userRole.toLowerCase()}Dashboard.html`;
-                return;
-            }
-        });
+        if (!token) {
+          window.location.href = "../Login.html";
+          return;
+        }
+
+        if (userRole !== "PatrolsSupervisor") {
+          window.location.href = `${userRole.toLowerCase()}Dashboard.html`;
+          return;
+        }
+      });
     </script>
     <script src="../../Java script/dashboards.js"></script>
-</body>
-</html> 
+  </body>
+</html>

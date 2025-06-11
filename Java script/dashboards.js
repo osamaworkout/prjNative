@@ -58,6 +58,12 @@ function changeContent(page) {
             pagePath = "../sparePartsList.html";
             scriptPath = "../../Java script/sparePartsList.js";
             break;
+
+        case "patrols" :
+            pagePath = "../patrol-Managment/patrolList.html";
+            scriptPath = "../../Java script/patrol-Managment/patrolList.js";
+            break;
+
         case "reports":
             pagePath = "../dash-Boards/reports.html";
             scriptPath = "";
