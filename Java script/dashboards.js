@@ -63,6 +63,11 @@ function changeContent(page) {
             pagePath = "../patrol-Managment/patrolList.html";
             scriptPath = "../../Java script/patrol-Managment/patrolList.js";
             break;
+        
+        case "subscriptions":
+            pagePath = "../patrol-Managment/subscriptionList.html";
+            scriptPath = "../../Java script/patrol-Managment/subscriptionList.js";
+            break;
 
         case "reports":
             pagePath = "../dash-Boards/reports.html";

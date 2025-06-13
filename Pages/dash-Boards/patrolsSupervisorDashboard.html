@@ -3,6 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link
+      rel="stylesheet"
+      href="../../Assets/Styles//dash-Boards/administrativeSupervisorDashboard.css"
+    />
     <link rel="stylesheet" href="../../Assets/Styles/sharedLayout.css" />
     <link rel="stylesheet" href="../../Assets/Styles/dashboards.css" />
     <title>Patrols Supervisor Dashboard - Move Smart</title>
@@ -43,7 +48,10 @@
           <img src="../../Assets/Images/document.svg" alt="" /> الطلبات
         </li>
         <li onclick="changeContent('patrols')">
-            <img src="../../Assets/Images/cars.svg" alt="" /> الدوريات
+          <img src="../../Assets/Images/cars.svg" alt="" /> الدوريات
+        </li>
+         <li onclick="changeContent('subscriptions')">
+          <img src="../../Assets/Images/users.svg" alt="" /> الاشتراكات
         </li>
         <li onclick="changeContent('reports')">
           <img src="../../Assets/Images/chart-pie.svg" alt="" />التقارير
@@ -54,26 +62,92 @@
     <div class="content" id="content">
       <h2>مرحبًا بك في لوحة تحكم مشرف الدوريات</h2>
       <div class="dashboard-stats">
-        <!-- Add your dashboard statistics and widgets here -->
+        <!-- كارد الدوريات -->
+        <div class="card">
+          <span class="edit-icon">✏️</span>
+          <h2>نظرة عامة على الدوريات</h2>
+          <div class="card-content">
+            <canvas id="patrolChart"></canvas>
+            <div class="card-details">
+              <table class="card-table">
+                <tr>
+                  <td>إجمالي الدوريات</td>
+                  <td id="total-patrol"></td>
+                </tr>
+                <tr>
+                  <td>قيد التنفيذ<span class="dot orange"></span></td>
+                  <td id="working-patrol"></td>
+                </tr>
+                <tr>
+                  <td>قادمة <span class="dot green"></span></td>
+                  <td id="available-patrol"></td>
+                </tr>
+                <tr>
+                  <td>منتهية <span class="dot red"></span></td>
+                  <td id="onleave-patrol"></td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- كارد الاشتراكات -->
+        <div class="card">
+          <span class="edit-icon">✏️</span>
+          <h2>الاشتراكات</h2>
+          <div class="card-content">
+            <canvas id="subscriptionChart"></canvas>
+            <div class="card-details">
+              <table class="card-table">
+                <tr>
+                  <td>إجمالي الاشتراكات</td>
+                  <td id="total-subscriptions"></td>
+                </tr>
+                <tr>
+                  <td>نشطة<span class="dot green"></span></td>
+                  <td id="active-subscriptions"></td>
+                </tr>
+                <tr>
+                  <td>منتهية<span class="dot red"></span></td>
+                  <td id="expired-subscriptions"></td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- كارد الطلبات -->
+        <div class="card">
+          <span class="edit-icon">✏️</span>
+          <h2>الطلبات</h2>
+          <div class="card-content">
+            <canvas id="orderChart"></canvas>
+            <div class="card-details">
+              <table class="card-table">
+                <tr>
+                  <td>إجمالي الطلبات</td>
+                  <td id="total-orders"></td>
+                </tr>
+                <tr>
+                  <td>انتظار <span class="dot orange"></span></td>
+                  <td id="orders-pending"></td>
+                </tr>
+                <tr>
+                  <td>موافقة <span class="dot green"></span></td>
+                  <td id="orders-approved"></td>
+                </tr>
+                <tr>
+                  <td>مرفوض <span class="dot red"></span></td>
+                  <td id="orders-rejected"></td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const token = localStorage.getItem("token");
-        const userRole = localStorage.getItem("userRole");
-
-        if (!token) {
-          window.location.href = "../Login.html";
-          return;
-        }
-
-        if (userRole !== "PatrolsSupervisor") {
-          window.location.href = `${userRole.toLowerCase()}Dashboard.html`;
-          return;
-        }
-      });
-    </script>
+    <script src="../../Java script/dash-Boards/patrolsSupervisorDashboard.js"></script>
     <script src="../../Java script/dashboards.js"></script>
   </body>
 </html>

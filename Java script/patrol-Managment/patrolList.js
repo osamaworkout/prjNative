@@ -1,9 +1,17 @@
-const token = localStorage.getItem("token");
+document.addEventListener("DOMContentLoaded", function () {
+  const token = localStorage.getItem("token");
+  const userRole = localStorage.getItem("userRole");
 
-const headers = {
-  Authorization: `Bearer ${token}`,
-  "Content-Type": "application/json",
-};
+  if (!token) {
+    window.location.href = "../Login.html";
+    return;
+  }
+
+  if (userRole !== "PatrolsSupervisor") {
+    window.location.href = `${userRole.toLowerCase()}Dashboard.html`;
+    return;
+  }
+});
 
 let allPatrols = [];
 let busesMap = {};
