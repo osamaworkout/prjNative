@@ -81,3 +81,11 @@
   border-radius: 5px;
   cursor: pointer;
 }
+
+/* University logo styling */
+.university-logo {
+  width: 180px;
+  height: 180px;
+  margin: 0 auto 20px auto;
+  display: block;
+}
