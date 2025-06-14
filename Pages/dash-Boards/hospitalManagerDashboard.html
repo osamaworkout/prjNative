@@ -1,212 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../../Assets/Styles/sharedLayout.css">
-    <link rel="stylesheet" href="../../Assets/Styles/dashboards.css">
-    <link rel="stylesheet" href="../../Assets/Styles/dashboardCharts.css">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../../Assets/Styles/sharedLayout.css" />
+    <link rel="stylesheet" href="../../Assets/Styles/dashboards.css" />
+    <link rel="stylesheet" href="../../Assets/Styles/dashboardCharts.css" />
+    <link
+      rel="stylesheet"
+      href="../../Assets/Styles/dash-Boards/hospitalManagerDashboard.css"
+    />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <title>Hospital Manager Dashboard - Move Smart</title>
-    <style>
-        /* Additional responsive styles */
-        /* Default state - hide menu toggle on larger screens */
-        .menu-toggle {
-            display: none;
-        }
-        
-        @media screen and (max-width: 768px) {
-            .topbar {
-                width: 100%;
-                justify-content: space-between;
-                padding: 8px;
-            }
-            
-            .profile {
-                margin-right: 0;
-            }
-            
-            .search-container {
-                width: 40%;
-            }
-            
-            .sidebar {
-                transform: translateX(100%);
-                z-index: 1000;
-                transition: transform 0.3s ease;
-            }
-            
-            .sidebar.active {
-                transform: translateX(0);
-            }
-            
-            .content {
-                margin-right: 0;
-                transition: margin-right 0.3s ease;
-            }
-            
-            .menu-toggle {
-                display: block;
-                position: fixed;
-                top: 10px;
-                right: 10px;
-                z-index: 1001;
-                background: #f9f9f9;
-                border: none;
-                border-radius: 5px;
-                padding: 5px;
-                cursor: pointer;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-                width: 30px;
-                height: 30px;
-            }
-            
-            .menu-toggle img {
-                width: 20px;
-                height: 20px;
-                display: block;
-                margin: 0 auto;
-            }
-            
-            .dashboard-stats {
-                flex-direction: column;
-            }
-            
-            .chart-container {
-                width: 100%;
-            }
-        }
-        
-        @media screen and (max-width: 480px) {
-            .topbar {
-                flex-wrap: wrap;
-                height: auto;
-                padding: 8px 5px;
-            }
-            
-            .search-container {
-                width: 100%;
-                order: 3;
-                margin-top: 8px;
-            }
-            
-            .profile {
-                order: 1;
-            }
-            
-            .notification {
-                order: 2;
-            }
-        }
-    </style>
-</head>
-<body>
+  </head>
+  <body>
     <button class="menu-toggle" id="menuToggle">
-        <img src="../../Assets/Images/menu.svg" alt="Menu" />
+      <img src="../../Assets/Images/menu.svg" alt="Menu" />
     </button>
 
     <div class="topbar">
-        <div class="profile">
-            <span id="userName">Loading...</span>
-            <img src="../../Assets/Images/users.svg" alt="User" />
-            <button id="logoutButton" class="logout-button">
-                <img src="../../Assets/Images/logout.svg" alt="Logout" />
-            </button>
-        </div>
-        <button><img class="notification" src="../../Assets/Images/bell.svg" alt="" /></button>
-        <div class="search-container">
-            <input type="text" placeholder="بحـث..." />
-            <img src="../../Assets/Images/search.svg" alt="Search" />
-        </div>
+      <div class="profile">
+        <span id="userName">Loading...</span>
+        <img src="../../Assets/Images/users.svg" alt="User" />
+        <button id="logoutButton" class="logout-button">
+          <img src="../../Assets/Images/logout.svg" alt="Logout" />
+        </button>
+      </div>
+      <button>
+        <img class="notification" src="../../Assets/Images/bell.svg" alt="" />
+      </button>
+      <div class="search-container">
+        <input type="text" placeholder="بحـث..." />
+        <img src="../../Assets/Images/search.svg" alt="Search" />
+      </div>
     </div>
 
     <div class="sidebar" id="sidebar">
-        <h2 class="logo">Move Smart</h2>
-        <h2 class="logo">نظام التحكم في السيارات</h2>
-        <button class="create-order">إنشاء طلب</button>
-        <ul class="menu">
-            <li class="active" onclick="changeContent('home')">
-                <img src="../../Assets/Images/home.svg" alt="" /> الصفحة الرئيسية
-            </li>
-            <li onclick="changeContent('cars')">
-                <img src="../../Assets/Images/cars.svg" alt="" /> السيارات
-            </li>
-            <li onclick="changeContent('orders')">
-                <img src="../../Assets/Images/document.svg" alt="" /> الطلبات
-            </li>
-            <li onclick="changeContent('consumables')">
-                <img src="../../Assets/Images/car-mechanic.svg" alt="" /> المستهلكات
-            </li>
-            <li onclick="changeContent('reports')">
-                <img src="../../Assets/Images/chart-pie.svg" alt="" />التقارير
-            </li>
-        </ul>
+      <h2 class="logo">Move Smart</h2>
+      <h2 class="logo">نظام التحكم في السيارات</h2>
+      <button class="create-order">إنشاء طلب</button>
+      <ul class="menu">
+        <li class="active" onclick="changeContent('home')">
+          <img src="../../Assets/Images/home.svg" alt="" /> الصفحة الرئيسية
+        </li>
+        <li onclick="changeContent('cars')">
+          <img src="../../Assets/Images/cars.svg" alt="" /> السيارات
+        </li>
+        <li onclick="changeContent('orders')">
+          <img src="../../Assets/Images/document.svg" alt="" /> الطلبات
+        </li>
+        <li onclick="changeContent('consumables')">
+          <img src="../../Assets/Images/car-mechanic.svg" alt="" /> المستهلكات
+        </li>
+        <li onclick="changeContent('reports')">
+          <img src="../../Assets/Images/chart-pie.svg" alt="" />التقارير
+        </li>
+      </ul>
     </div>
 
     <div class="content" id="content">
-        <h2>مرحبًا بك في لوحة تحكم مدير المستشفى</h2>
-        <div class="dashboard-stats">
-            <div class="chart-container" lang="ar">
-                <h2>بيانات السيارات</h2>
-                <canvas id="chart1"></canvas>
-                <ul class="legend" id="legend1"></ul>
-                <table id="table1">
-                    <thead>
-                        <tr>
-                            <th>القيمة</th>
-                            <th>التصنيف</th>
-                            <th>اللون</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-            <div class="chart-container" lang="ar">
-                <h2>بيانات السائقين</h2>
-                <canvas id="chart2"></canvas>
-                <ul class="legend" id="legend2"></ul>
-                <table id="table2">
-                    <thead>
-                        <tr>
-                            <th>القيمة</th>
-                            <th>التصنيف</th>
-                            <th>اللون</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
+      <h2>مرحبًا بك في لوحة تحكم مدير المستشفى</h2>
+      <div class="dashboard-stats">
+        <div class="chart-container" lang="ar">
+          <h2>بيانات السيارات</h2>
+          <canvas id="chart1"></canvas>
+          <ul class="legend" id="legend1"></ul>
+          <table id="table1">
+            <thead>
+              <tr>
+                <th>القيمة</th>
+                <th>التصنيف</th>
+                <th>اللون</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
         </div>
+        <div class="chart-container" lang="ar">
+          <h2>بيانات السائقين</h2>
+          <canvas id="chart2"></canvas>
+          <ul class="legend" id="legend2"></ul>
+          <table id="table2">
+            <thead>
+              <tr>
+                <th>القيمة</th>
+                <th>التصنيف</th>
+                <th>اللون</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
     <script src="../../Java script/dashboards.js"></script>
     <script src="../../Java script/dashboardCharts.js"></script>
     <script>
-        // Add mobile menu toggle functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const menuToggle = document.getElementById('menuToggle');
-            const sidebar = document.getElementById('sidebar');
-            const content = document.getElementById('content');
-            
-            if (menuToggle && sidebar) {
-                menuToggle.addEventListener('click', function() {
-                    sidebar.classList.toggle('active');
-                });
-                
-                // Close sidebar when clicking outside of it
-                document.addEventListener('click', function(event) {
-                    if (!sidebar.contains(event.target) && event.target !== menuToggle && !menuToggle.contains(event.target)) {
-                        sidebar.classList.remove('active');
-                    }
-                });
+      // Add mobile menu toggle functionality
+      document.addEventListener("DOMContentLoaded", function () {
+        const menuToggle = document.getElementById("menuToggle");
+        const sidebar = document.getElementById("sidebar");
+        const content = document.getElementById("content");
+
+        if (menuToggle && sidebar) {
+          menuToggle.addEventListener("click", function () {
+            sidebar.classList.toggle("active");
+          });
+
+          // Close sidebar when clicking outside of it
+          document.addEventListener("click", function (event) {
+            if (
+              !sidebar.contains(event.target) &&
+              event.target !== menuToggle &&
+              !menuToggle.contains(event.target)
+            ) {
+              sidebar.classList.remove("active");
             }
-            
-            // Check for saved sidebar state
-            const sidebarHidden = localStorage.getItem('sidebarHidden') === 'true';
-            if (sidebarHidden) {
-                sidebar.classList.remove('active');
-            }
-        });
+          });
+        }
+
+        // Check for saved sidebar state
+        const sidebarHidden = localStorage.getItem("sidebarHidden") === "true";
+        if (sidebarHidden) {
+          sidebar.classList.remove("active");
+        }
+      });
     </script>
-</body>
+  </body>
+  <footer>
+    <p>جميع الحقوق محفوظة &copy; 2023 Move Smart</p>
+  </footer>
 </html>
