@@ -30,20 +30,20 @@ async function validateForm(event) {
     const response = await fetch(basetUrl, {
       method: "POST",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ nationalNo, password })
+      body: JSON.stringify({ nationalNo, password }),
     });
 
     if (response.ok) {
       const data = await response.json();
+      const parsedPayload = parseJwt(data.token);
 
       // Store token, user role, and user name in localStorage
       localStorage.setItem("userName", data.name || "User");
       localStorage.setItem("token", data.token);
       localStorage.setItem("userRole", data.role);
-
-      console.log(data);
+      localStorage.setItem("payload", JSON.stringify(parsedPayload));
 
       // Redirect based on role
       switch (data.role) {
@@ -60,7 +60,8 @@ async function validateForm(event) {
           window.location.href = "dash-Boards/generalSupervisorDashboard.html";
           break;
         case "AdministrativeSupervisor":
-          window.location.href = "dash-Boards/administrativeSupervisorDashboard.html";
+          window.location.href =
+            "dash-Boards/administrativeSupervisorDashboard.html";
           break;
         case "WorkshopSupervisor":
           window.location.href = "dash-Boards/workshopSupervisorDashboard.html";
@@ -88,4 +89,26 @@ async function validateForm(event) {
   }
 
   return false;
+}
+function parseJwt(token) {
+  if (!token) return null;
+
+  try {
+    const base64Url = token.split(".")[1]; // Get the payload part
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((char) => {
+          return "%" + ("00" + char.charCodeAt(0).toString(16)).slice(-2);
+        })
+        .join("")
+    );
+
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    console.error("Invalid token format:", e);
+    return null;
+  }
 }

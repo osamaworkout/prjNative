@@ -1,6 +1,8 @@
 document.addEventListener("DOMContentLoaded", function () {
   const token = localStorage.getItem("token");
   const userRole = localStorage.getItem("userRole");
+  const storedPayload = JSON.parse(localStorage.getItem("payload"));
+  console.log("Id:", storedPayload.sub);
 
   if (!token) {
     window.location.href = "../Login.html";

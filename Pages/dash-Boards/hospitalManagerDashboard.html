@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="../../Assets/Styles/sharedLayout.css" />
     <link rel="stylesheet" href="../../Assets/Styles/dashboards.css" />
-    <link rel="stylesheet" href="../../Assets/Styles/dashboardCharts.css" />
+    <link rel="stylesheet" href="../../Assets/Styles/dash-Boards/administrativeSupervisorDashboard.css">
+    <!-- <link rel="stylesheet" href="../../Assets/Styles/dashboardCharts.css" /> -->
     <link
       rel="stylesheet"
       href="../../Assets/Styles/dash-Boards/hospitalManagerDashboard.css"
@@ -60,73 +61,96 @@
 
     <div class="content" id="content">
       <h2>مرحبًا بك في لوحة تحكم مدير المستشفى</h2>
-      <div class="dashboard-stats">
-        <div class="chart-container" lang="ar">
-          <h2>بيانات السيارات</h2>
-          <canvas id="chart1"></canvas>
-          <ul class="legend" id="legend1"></ul>
-          <table id="table1">
-            <thead>
-              <tr>
-                <th>القيمة</th>
-                <th>التصنيف</th>
-                <th>اللون</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-        <div class="chart-container" lang="ar">
-          <h2>بيانات السائقين</h2>
-          <canvas id="chart2"></canvas>
-          <ul class="legend" id="legend2"></ul>
-          <table id="table2">
-            <thead>
-              <tr>
-                <th>القيمة</th>
-                <th>التصنيف</th>
-                <th>اللون</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+     
+        <div class="dashboard-grid">
+            <!-- كارت السائقين -->
+            <div class="card">
+                <span class="edit-icon">✏️</span>
+                <h2>نظرة عامة على السائقين</h2>
+                <div class="card-content">
+                    <canvas id="driverChart"></canvas>
+                    <div class="card-details">
+                        <table class="card-table">
+                            <tr>
+                                <td>إجمالي السائقين</td>
+                                <td id="total-drivers"></td>
+                            </tr>
+                            <tr>
+                                <td>أمر شغل <span class="dot orange"></span></td>
+                                <td id="working-drivers"></td>
+                            </tr>
+                            <tr>
+                                <td>متاح <span class="dot green"></span></td>
+                                <td id="available-drivers"></td>
+                            </tr>
+                            <tr>
+                                <td>إجازة <span class="dot red"></span></td>
+                                <td id="onleave-drivers"></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
 
+            <!-- كارت السيارات -->
+            <div class="card">
+                <span class="edit-icon">✏️</span>
+                <h2>نظرة عامة على السيارات</h2>
+                <div class="card-content">
+                    <canvas id="carChart"></canvas>
+                    <div class="card-details">
+                        <table class="card-table">
+                            <tr>
+                                <td>إجمالي السيارات</td>
+                                <td id="total-cars"></td>
+                            </tr>
+                            <tr>
+                                <td>طور الصيانة <span class="dot orange"></span></td>
+                                <td id="cars-maintenance"></td>
+                            </tr>
+                            <tr>
+                                <td>متاح <span class="dot green"></span></td>
+                                <td id="cars-available"></td>
+                            </tr>
+                            <tr>
+                                <td>أمر شغل <span class="dot red"></span></td>
+                                <td id="cars-working"></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- كارت الطلبات -->
+            <div class="card">
+                <span class="edit-icon">✏️</span>
+                <h2>الطلبات</h2>
+                <div class="card-content">
+                    <canvas id="orderChart"></canvas>
+                    <div class="card-details">
+                        <table class="card-table">
+                            <tr>
+                                <td>إجمالي الطلبات</td>
+                                <td id="total-orders"></td>
+                            </tr>
+                            <tr>
+                                <td>انتظار <span class="dot orange"></span></td>
+                                <td id="orders-pending"></td>
+                            </tr>
+                            <tr>
+                                <td>موافقة <span class="dot green"></span></td>
+                                <td id="orders-approved"></td>
+                            </tr>
+                            <tr>
+                                <td>مرفوض <span class="dot red"></span></td>
+                                <td id="orders-rejected"></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
     <script src="../../Java script/dashboards.js"></script>
-    <script src="../../Java script/dashboardCharts.js"></script>
-    <script>
-      // Add mobile menu toggle functionality
-      document.addEventListener("DOMContentLoaded", function () {
-        const menuToggle = document.getElementById("menuToggle");
-        const sidebar = document.getElementById("sidebar");
-        const content = document.getElementById("content");
-
-        if (menuToggle && sidebar) {
-          menuToggle.addEventListener("click", function () {
-            sidebar.classList.toggle("active");
-          });
-
-          // Close sidebar when clicking outside of it
-          document.addEventListener("click", function (event) {
-            if (
-              !sidebar.contains(event.target) &&
-              event.target !== menuToggle &&
-              !menuToggle.contains(event.target)
-            ) {
-              sidebar.classList.remove("active");
-            }
-          });
-        }
-
-        // Check for saved sidebar state
-        const sidebarHidden = localStorage.getItem("sidebarHidden") === "true";
-        if (sidebarHidden) {
-          sidebar.classList.remove("active");
-        }
-      });
-    </script>
+    <script src="../../Java script/dash-Boards/hospitalManagerDashboard.js"></script>
   </body>
   <footer>
     <p>جميع الحقوق محفوظة &copy; 2023 Move Smart</p>

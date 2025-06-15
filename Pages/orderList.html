@@ -1,95 +1,98 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>صفحة الطلبات</title>
-  <link rel="stylesheet" href="../../Assets/Styles/orderList.css">
-</head>
-<body>
-  <!-- Header Buttons -->
-  <div class="flex-between" style="margin-bottom: 16px; position: relative;">
-    <div style="display: flex; gap: 8px; order: 1;">
-      <button class="button secondary" onclick="showAllRequests()">الطلبات المقدمة</button>
-      <button class="button secondary" onclick="showMyRequests()">طلباتي</button>
-    </div>
-    <div style="display: flex; gap: 8px; order: 2; position: relative;">
-      <button class="button" onclick="toggleFilterMenu()">
-        &#128269; <span>فلتر</span>
-      </button>
-      <button class="button" onclick="refreshRequests()">
-        &#x21bb; <span>تحديث</span>
-      </button>
-      <div id="filterMenu" class="dropdown hidden">
-        <button onclick="showDateInput()">حسب التاريخ</button><br>
-        <input type="date" id="filterDate" class="hidden" onchange="filterByExactDate(this.value)" />
-        <button onclick="showStatusOptions()">حسب الحالة</button>
-        <div id="statusOptions" class="hidden">
-          <select onchange="filterByStatus(this.value)">
-            <option value="">اختر الحالة</option>
-            <option value="مقبول">مقبول</option>
-            <option value="مرفوض">مرفوض</option>
-            <option value="قيد الانتظار">قيد الانتظار</option>
-          </select>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>صفحة الطلبات</title>
+    <link rel="stylesheet" href="../../Assets/Styles/orderList.css" />
+  </head>
+  <body>
+    <!-- Header Buttons -->
+    <div class="flex-between" style="margin-bottom: 16px; position: relative">
+      <div style="display: flex; gap: 8px; order: 1">
+        <button
+          id="purchaseOrder"
+          class="button secondary"
+          onclick="showAllRequests()"
+        >
+          اذن الشراء
+        </button>
+        <button
+          id="payOrder"
+          class="button secondary"
+          onclick="showMyRequests()"
+        >
+          اذن الصرف
+        </button>
+        <button id="maintananceOrder" class="button secondary" onclick="">
+          اذن الصيانة
+        </button>
+        <button id="missionOrder" class="button secondary" onclick="">
+          طلب مأمورية
+        </button>
+        <button id="jobOrder" class="button secondary" onclick="">
+          أوامر الشغل
+        </button>
+      </div>
+      <div style="display: flex; gap: 8px; order: 2; position: relative">
+        <button class="button" onclick="toggleFilterMenu()">
+          &#128269; <span>فلتر</span>
+        </button>
+        <button class="button" onclick="refreshRequests()">
+          &#x21bb; <span>تحديث</span>
+        </button>
+        <div id="filterMenu" class="dropdown hidden">
+          <button onclick="showDateInput()">حسب التاريخ</button><br />
+          <input
+            type="date"
+            id="filterDate"
+            class="hidden"
+            onchange="filterByExactDate(this.value)"
+          />
+          <button onclick="showStatusOptions()">حسب الحالة</button>
+          <div id="statusOptions" class="hidden">
+            <select onchange="filterByStatus(this.value)">
+              <option value="">اختر الحالة</option>
+              <option value="مقبول">مقبول</option>
+              <option value="مرفوض">مرفوض</option>
+              <option value="قيد الانتظار">قيد الانتظار</option>
+            </select>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Request List -->
-  <div id="request-list" class="space-y-2"></div>
+    <!-- Request List -->
+    <div id="request-list" class="space-y-2"></div>
 
-  <!-- Popup -->
-  <div id="popup" class="popup hidden">
-    <div class="popup-content">
-      <h2 class="text-gray-600 text-sm">اسم الطلب</h2>
-      <p id="popup-date"></p>
-      <h3>رقم المسلسل</h3>
-      <p id="popup-id"></p>
-      <h4>اسم الشخص</h4>
-      <div style="border-top: 1px solid #ccc; margin: 16px 0;"></div>
-      <div class="flex-between" style="text-align: right;">
-        <div>
-          <p>القطعة: اسم القطعة</p>
-          <p>الوصف: وصف القطعة</p>
-          <p>الكمية: الكمية</p>
+    <!-- Popup -->
+    <div id="popup" class="popup hidden">
+      <div class="popup-content">
+        <h2 class="text-gray-600 text-sm">اسم الطلب</h2>
+        <p id="popup-date"></p>
+        <h3>رقم المسلسل</h3>
+        <p id="popup-id"></p>
+        <h4>اسم الشخص</h4>
+        <div style="border-top: 1px solid #ccc; margin: 16px 0"></div>
+        <div class="flex-between" style="text-align: right">
+          <div>
+            <p>القطعة: اسم القطعة</p>
+            <p>الوصف: وصف القطعة</p>
+            <p>الكمية: الكمية</p>
+          </div>
+          <div>
+            <p>الحالة:</p>
+            <span id="popup-status" class="badge"></span>
+          </div>
         </div>
-        <div>
-          <p>الحالة:</p>
-          <span id="popup-status" class="badge"></span>
+        <div class="flex-between" style="margin-top: 16px">
+          <button class="button-accepted" onclick="closePopup()">موافقة</button>
+          <button class="button-rejected" onclick="closePopup()">رفض</button>
         </div>
-      </div>
-      <div class="flex-between" style="margin-top: 16px;">
-        <button class="button-accepted"  onclick="closePopup()">موافقة</button>
-        <button class="button-rejected"  onclick="closePopup()">رفض</button>
       </div>
     </div>
-  </div>
 
-<script src="../../Java script/orderList.js"></script>
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const token = localStorage.getItem('token');
-    const userRole = localStorage.getItem('userRole');
-    
-    if (!token) {
-      window.location.href = '../Login.html';
-      return;
-    }
-
-    // Add click event listener to the page title for navigation
-    const pageTitle = document.querySelector('title');
-    document.title = 'صفحة الطلبات';
-    const header = document.createElement('h1');
-    header.className = 'page-title';
-    header.textContent = 'صفحة الطلبات';
-    header.style.cursor = 'pointer';
-    header.addEventListener('click', function() {
-      window.location.href = `../dash-Boards/${userRole.toLowerCase()}Dashboard.html`;
-    });
-    document.body.insertBefore(header, document.body.firstChild);
-  });
-</script>
-
-</body>
+    <script src="../../Java script/orderList.js"></script>
+    <script src="../../Java script/orderApis.js"></script>
+  </body>
 </html>

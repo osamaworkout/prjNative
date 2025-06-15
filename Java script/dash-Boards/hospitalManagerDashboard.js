@@ -1,17 +1,31 @@
 document.addEventListener("DOMContentLoaded", function () {
-  const token = localStorage.getItem("token");
-  const userRole = localStorage.getItem("userRole");
+  const menuToggle = document.getElementById("menuToggle");
+  const sidebar = document.getElementById("sidebar");
+  const content = document.getElementById("content");
   const storedPayload = JSON.parse(localStorage.getItem("payload"));
   console.log("Id:", storedPayload.sub);
 
-  if (!token) {
-    window.location.href = "../Login.html";
-    return;
+  if (menuToggle && sidebar) {
+    menuToggle.addEventListener("click", function () {
+      sidebar.classList.toggle("active");
+    });
+
+    // Close sidebar when clicking outside of it
+    document.addEventListener("click", function (event) {
+      if (
+        !sidebar.contains(event.target) &&
+        event.target !== menuToggle &&
+        !menuToggle.contains(event.target)
+      ) {
+        sidebar.classList.remove("active");
+      }
+    });
   }
 
-  if (userRole !== "GeneralSupervisor") {
-    window.location.href = `${userRole.toLowerCase()}Dashboard.html`;
-    return;
+  // Check for saved sidebar state
+  const sidebarHidden = localStorage.getItem("sidebarHidden") === "true";
+  if (sidebarHidden) {
+    sidebar.classList.remove("active");
   }
 });
 
@@ -69,16 +83,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       //   document.getElementById("orders-approved").textContent = approvedOrders;
       //   document.getElementById("orders-rejected").textContent = rejectedOrders;
 
-      // 🔵 التقارير (بيانات ثابتة مؤقتًا)
-      const reportType1 = 5;
-      const reportType2 = 10;
-      const reportType3 = 3;
-      const totalReports = reportType1 + reportType2 + reportType3;
-      document.getElementById("total-reports").textContent = totalReports;
-      document.getElementById("report-type1").textContent = reportType1;
-      document.getElementById("report-type2").textContent = reportType2;
-      document.getElementById("report-type3").textContent = reportType3;
-
       // ✅ بعد ملء التاجات، نرسم الشارتات
       drawChart("driverChart", [
         getValue("working-drivers"),
@@ -90,16 +94,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         getValue("cars-available"),
         getValue("cars-working"),
       ]);
-      drawChart("orderChart", [
-        getValue("orders-pending"),
-        getValue("orders-approved"),
-        getValue("orders-rejected"),
-      ]);
-      drawChart("reportChart", [
-        getValue("report-type1"),
-        getValue("report-type2"),
-        getValue("report-type3"),
-      ]);
+      //   drawChart("orderChart", [
+      //     getValue("orders-pending"),
+      //     getValue("orders-approved"),
+      //     getValue("orders-rejected"),
+      //   ]);
     } catch (err) {
       console.error("Dashboard Error:", err);
     }
