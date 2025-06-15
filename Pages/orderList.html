@@ -10,18 +10,10 @@
     <!-- Header Buttons -->
     <div class="flex-between" style="margin-bottom: 16px; position: relative">
       <div style="display: flex; gap: 8px; order: 1">
-        <button
-          id="purchaseOrder"
-          class="button secondary"
-          onclick="showAllRequests()"
-        >
+        <button id="purchaseOrder" class="button secondary" onclick="">
           اذن الشراء
         </button>
-        <button
-          id="payOrder"
-          class="button secondary"
-          onclick="showMyRequests()"
-        >
+        <button id="payOrder" class="button secondary" onclick="">
           اذن الصرف
         </button>
         <button id="maintananceOrder" class="button secondary" onclick="">
@@ -30,9 +22,7 @@
         <button id="missionOrder" class="button secondary" onclick="">
           طلب مأمورية
         </button>
-        <button id="jobOrder" class="button secondary" onclick="">
-          أوامر الشغل
-        </button>
+        <button id="jobOrder" class="button secondary">أوامر الشغل</button>
       </div>
       <div style="display: flex; gap: 8px; order: 2; position: relative">
         <button class="button" onclick="toggleFilterMenu()">
@@ -91,8 +81,89 @@
         </div>
       </div>
     </div>
+    <!-- Job Order Popup -->
+    <div id="jobOrderPopup" class="popup hidden">
+      <div
+        class="popup-content"
+        style="width: 90%; max-height: 80vh; overflow-y: auto"
+      >
+        <div class="flex-between">
+          <h2>أوامر الشغل</h2>
+          <button onclick="closeJobOrderPopup()">❌</button>
+        </div>
+        <div style="margin-bottom: 12px; text-align: left">
+          <button class="button" onclick="openAddJobOrderForm()">
+            ➕ إضافة أمر شغل
+          </button>
+        </div>
+        <div id="jobOrdersContainer" class="space-y-2"></div>
+      </div>
+    </div>
 
+    <!-- Add/Edit Job Order Form -->
+    <div id="addJobOrderPopup" class="popup hidden">
+      <div class="popup-content">
+        <h2>أمر شغل جديد</h2>
+        <form id="jobOrderForm" onsubmit="submitJobOrder(event)">
+          <input
+            type="text"
+            placeholder="الوصف"
+            id="description"
+            required
+          /><br />
+          <input
+            type="number"
+            placeholder="رقم السيارة"
+            id="vehicleId"
+            required
+          /><br />
+          <input
+            type="number"
+            placeholder="رقم السائق"
+            id="driverId"
+            required
+          /><br />
+          <input
+            type="datetime-local"
+            placeholder="تاريخ البداية"
+            id="startDate"
+            required
+          /><br />
+          <input
+            type="datetime-local"
+            placeholder="تاريخ النهاية"
+            id="endDate"
+            required
+          /><br />
+          <input
+            type="text"
+            placeholder="الوجهة"
+            id="destination"
+            required
+          /><br />
+          <input
+            type="number"
+            placeholder="عداد قبل"
+            id="odometerBefore"
+            required
+          /><br />
+          <input
+            type="number"
+            placeholder="عداد بعد"
+            id="odometerAfter"
+            required
+          /><br />
+          <button class="button" type="submit">إرسال</button>
+          <button
+            class="button-rejected"
+            type="button"
+            onclick="closeAddJobOrderForm()"
+          >
+            إلغاء
+          </button>
+        </form>
+      </div>
+    </div>
     <script src="../../Java script/orderList.js"></script>
-    <script src="../../Java script/orderApis.js"></script>
   </body>
 </html>
