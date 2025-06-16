@@ -3,7 +3,7 @@ let allSubscribers = [];
 async function fetchSubscribers() {
   try {
     const response = await fetch(
-     "https://movesmartapi.runasp.net/api/Employees/All",
+      "https://movesmartapi.runasp.net/api/Employees/All",
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -14,8 +14,7 @@ async function fetchSubscribers() {
     if (!response.ok) throw new Error("فشل في جلب البيانات");
 
     const data = await response.json();
-    console.log("Fetched subscribers:", data); // للتأكد من البيانات
-    allSubscribers = data;
+    allSubscribers = data.$values || [];
     renderSubscribers(allSubscribers);
   } catch (error) {
     console.error(error);
@@ -42,6 +41,11 @@ function renderSubscribers(list) {
       <td><span class="${statusClass}">${statusText}</span></td>
       <td>${sub.name}</td>
     `;
+    // عند الضغط على الصف انتقل لصفحة التفاصيل مع تمرير employeeID
+    tr.style.cursor = "pointer";
+    tr.onclick = () => {
+      window.location.href = `subscriptionDetail.html?id=${sub.employeeID}`;
+    };
     tbody.appendChild(tr);
   });
 

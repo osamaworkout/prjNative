@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
     // العناصر الأساسية
     const saveButton = document.querySelector(".save-btn");
     const deleteButton = document.querySelector(".delete-btn");
@@ -21,12 +21,49 @@ document.addEventListener("DOMContentLoaded", function () {
         subscriptions: []
     };
 
-    // تحميل البيانات المحفوظة
-    function loadSavedData() {
-        const savedData = JSON.parse(localStorage.getItem("employeeData")) || employeeData;
-        employeeData = savedData;
-        
-        // تحديث واجهة المستخدم
+    // جلب ID من الرابط
+    function getEmployeeIdFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get("id");
+    }
+
+    // جلب بيانات الموظف من الـ API
+    async function fetchEmployeeById(id) {
+        try {
+            const token = localStorage.getItem("token");
+            const res = await fetch(`https://movesmartapi.runasp.net/api/Employees/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            if (!res.ok) throw new Error("فشل في جلب بيانات الموظف");
+            const data = await res.json();
+            return data;
+        } catch (err) {
+            alert("حدث خطأ أثناء تحميل بيانات الموظف");
+            return null;
+        }
+    }
+
+    // تحميل البيانات المحفوظة أو من الـ API
+    async function loadSavedData() {
+        const employeeId = getEmployeeIdFromUrl();
+        if (employeeId) {
+            const apiData = await fetchEmployeeById(employeeId);
+            if (apiData) {
+                employeeData = {
+                    name: apiData.name,
+                    phone: apiData.phone,
+                    nationalId: apiData.nationalNo,
+                    jobTitle: apiData.jobTitle,
+                    department: apiData.department || "",
+                    subscriptions: apiData.subscriptions || [],
+                };
+            }
+        } else {
+            const savedData = JSON.parse(localStorage.getItem("employeeData")) || employeeData;
+            employeeData = savedData;
+        }
         updateEmployeeInfo();
         renderSubscriptions();
     }
@@ -179,5 +216,5 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // التهيئة الأولية
     document.querySelector("[data-tab='employee-info']").click();
-    loadSavedData();
+    await loadSavedData();
 });

@@ -24,7 +24,7 @@
         <div class="info-box">اجمالي الوقود المستخدم: <span>2051.03</span></div>
       </div>
       <div class="icon-box">
-        <img src="car-icon-placeholder.png" alt="car" />
+        <img src="../../Assets/Images/car-Avt.png" alt="car" />
       </div>
     </div>
   </div>
@@ -36,36 +36,67 @@
 
   <div id="patrol" class="tab-content show">
     <div class="form-columns">
-  
+
       <!-- العمود 1 -->
       <div class="form-column">
-        <div class="form-item"><label>رقم الدورية</label><input type="text" /></div>
-        <div class="form-item"><label>وقت بدء الدورية</label><input type="text" /></div>
-        <div class="form-item"><label>خط سير الدورية</label><input type="text" /></div>
-        <div class="form-item"><label>الوقت المستغرق للدورية</label><input type="text" /></div>
-        <div class="form-item"><label>رقم السيارة</label><input type="text" /></div>
-      </div>
-  
-      <!-- العمود 2 -->
-      <div class="form-column">
-        <div class="form-item"><label>نوع السيارة</label><input type="text" /></div>
-        <div class="form-item"><label>المستشفى التابعة له</label><input type="text" /></div>
-        <div class="form-item"><label>حالة السيارة</label><input type="text" /></div>
-        <div class="form-item"><label>الموديل</label><input type="text" /></div>
-        <div class="form-item"><label>الأماكن المتاحة</label><input type="text" /></div>
-      </div>
-  
-      <!-- نصف عمود -->
-      <div class="form-column half">
-        <div class="form-item"><label>إجمالي المقاعد</label><input type="text" /></div>
-        <div class="form-item"><label>اسم السائق</label><input type="text" /></div>
-        <div class="form-item"><label>رقم الهاتف</label><input type="text" /></div>
         <div class="form-item">
-          <label>حالة السائق</label>
-          <div class="status">الحالة</div>
+          <label>رقم الدورية</label>
+          <input type="text" id="patrol-id" readonly />
+        </div>
+        <div class="form-item">
+          <label>الوصف</label>
+          <input type="text" id="patrol-desc" readonly />
+        </div>
+        <div class="form-item">
+          <label>وقت التحرك</label>
+          <input type="text" id="patrol-moving" readonly />
+        </div>
+        <div class="form-item">
+          <label>المدة المتوقعة (دقائق)</label>
+          <input type="text" id="patrol-duration" readonly />
         </div>
       </div>
-  
+
+      <!-- العمود 2 -->
+      <div class="form-column">
+        <div class="form-item">
+          <label>رقم السيارة</label>
+          <input type="text" id="vehicle-plate" readonly />
+        </div>
+        <div class="form-item">
+          <label>الماركة</label>
+          <input type="text" id="vehicle-brand" readonly />
+        </div>
+        <div class="form-item">
+          <label>الموديل</label>
+          <input type="text" id="vehicle-model" readonly />
+        </div>
+        <div class="form-item">
+          <label>حالة السيارة</label>
+          <input type="text" id="vehicle-status" readonly />
+        </div>
+      </div>
+
+      <!-- نصف عمود -->
+      <div class="form-column half">
+        <div class="form-item">
+          <label>اسم السائق</label>
+          <input type="text" id="driver-name" readonly />
+        </div>
+        <div class="form-item">
+          <label>جوال السائق</label>
+          <input type="text" id="driver-phone" readonly />
+        </div>
+        <div class="form-item">
+          <label>الأماكن المتاحة</label>
+          <input type="text" id="bus-available" readonly />
+        </div>
+        <div class="form-item">
+          <label>إجمالي المقاعد</label>
+          <input type="text" id="bus-seats" readonly />
+        </div>
+      </div>
+
     </div>
   </div>
   

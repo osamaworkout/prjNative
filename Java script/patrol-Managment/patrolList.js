@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 let allPatrols = [];
 let busesMap = {};
+let driversMap = {}; // خريطة السائقين حسب vehicleID
 
 async function fetchPatrols() {
   try {
@@ -28,10 +29,30 @@ async function fetchPatrols() {
     allPatrols = patrols;
 
     await fetchBusesMap();
+    await fetchDriversMap(); // جلب السائقين
 
     renderPatrols(allPatrols);
   } catch (err) {
     console.error("فشل في تحميل الدوريات:", err);
+  }
+}
+
+async function fetchDriversMap() {
+  try {
+    const res = await fetch("https://movesmartapi.runasp.net/api/Drivers/All", {
+      headers,
+    });
+    if (!res.ok) throw new Error("فشل تحميل السائقين");
+    const driversData = await res.json();
+    const drivers = driversData.$values || [];
+    driversMap = {};
+    drivers.forEach((driver) => {
+      if (driver.vehicleID) {
+        driversMap[driver.vehicleID] = driver;
+      }
+    });
+  } catch (err) {
+    console.error("فشل تحميل قائمة السائقين:", err);
   }
 }
 
@@ -65,7 +86,14 @@ function renderPatrols(patrols) {
 
     const vehicleStatus = vehicle?.status;
     const statusText = getVehicleStatusText(vehicleStatus);
-    const driverStatus = vehicle?.driverStatus || "غير متوفر";
+
+    // جلب السائق المرتبط بالسيارة
+    let driverName = "غير متوفر";
+    let driverStatus = "غير متوفر";
+    if (vehicle && driversMap[vehicle.vehicleID]) {
+      driverName = driversMap[vehicle.vehicleID].name || "غير متوفر";
+      driverStatus = getDriverStatusText(driversMap[vehicle.vehicleID].status);
+    }
 
     const card = document.createElement("div");
     card.className = "card";
@@ -79,7 +107,7 @@ function renderPatrols(patrols) {
       <span> ${vehicle?.plateNumbers || "غير متوفر"}</span>
       <span> ${bus?.availableSpace ?? "؟"}</span>
       <span> ${statusText}</span>
-      <span> ${driverStatus}</span>
+      <span> ${driverName} (${driverStatus})</span>
     `;
     container.appendChild(card);
   });
@@ -93,6 +121,21 @@ function getVehicleStatusText(status) {
       return "مشغولة";
     case 2:
       return "صيانة";
+    default:
+      return "غير معروف";
+  }
+}
+
+function getDriverStatusText(status) {
+  switch (status) {
+    case 0:
+      return "متاح";
+    case 1:
+      return "مشغول";
+    case 2:
+      return "موقوف";
+    default:
+      return "غير معروف";
   }
 }
 
