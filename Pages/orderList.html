@@ -4,6 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>صفحة الطلبات</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="../Assets/Images/favicon_io/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="../Assets/Images/favicon_io/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../Assets/Images/favicon_io/favicon-16x16.png">
+    <link rel="apple-touch-icon" href="../Assets/Images/favicon_io/apple-touch-icon.png">
+    
+
     <link rel="stylesheet" href="../../Assets/Styles/orderList.css" />
   </head>
   <body>
@@ -102,65 +110,130 @@
 
     <!-- Add/Edit Job Order Form -->
     <div id="addJobOrderPopup" class="popup hidden">
-      <div class="popup-content">
-        <h2>أمر شغل جديد</h2>
-        <form id="jobOrderForm" onsubmit="submitJobOrder(event)">
-          <input
-            type="text"
-            placeholder="الوصف"
-            id="description"
-            required
-          /><br />
-          <input
-            type="number"
-            placeholder="رقم السيارة"
-            id="vehicleId"
-            required
-          /><br />
-          <input
-            type="number"
-            placeholder="رقم السائق"
-            id="driverId"
-            required
-          /><br />
-          <input
-            type="datetime-local"
-            placeholder="تاريخ البداية"
-            id="startDate"
-            required
-          /><br />
-          <input
-            type="datetime-local"
-            placeholder="تاريخ النهاية"
-            id="endDate"
-            required
-          /><br />
-          <input
-            type="text"
-            placeholder="الوجهة"
-            id="destination"
-            required
-          /><br />
-          <input
-            type="number"
-            placeholder="عداد قبل"
-            id="odometerBefore"
-            required
-          /><br />
-          <input
-            type="number"
-            placeholder="عداد بعد"
-            id="odometerAfter"
-            required
-          /><br />
-          <button class="button" type="submit">إرسال</button>
-          <button
-            class="button-rejected"
-            type="button"
-            onclick="closeAddJobOrderForm()"
-          >
-            إلغاء
+      <div class="popup-content job-order-form">
+        <div class="form-header">
+          <h2>أمر شغل جديد</h2>
+          <button type="button" class="close-btn" onclick="closeAddJobOrderForm()">
+            ✕
           </button>
+        </div>
+        
+        <form id="jobOrderForm" onsubmit="submitJobOrder(event)">
+          <!-- Basic Information Section -->
+          <div class="form-section">
+            <h3 class="section-title">معلومات أساسية</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="orderId">رقم الأمر</label>
+                <input type="number" id="orderId" />
+              </div>
+              <div class="form-group">
+                <label for="applicationId">رقم الطلب</label>
+                <input type="number" id="applicationId" />
+              </div>
+              <div class="form-group">
+                <label for="status">الحالة</label>
+                <select id="status" required>
+                  <option value="">اختر الحالة</option>
+                  <option value="0">قيد الانتظار</option>
+                  <option value="1">مقبول</option>
+                  <option value="2">مرفوض</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="applicationType">نوع الطلب</label>
+                <select id="applicationType" required>
+                  <option value="">اختر نوع الطلب</option>
+                  <option value="0">شراء</option>
+                  <option value="1">صرف</option>
+                  <option value="2">صيانة</option>
+                  <option value="3">مأمورية</option>
+                  <option value="4">أمر شغل</option>
+                </select>
+              </div>
+              <div class="form-group full-width">
+                <label for="applicationDescription">وصف الطلب</label>
+                <textarea id="applicationDescription" required rows="3"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="createdByUserID">رقم المستخدم</label>
+                <input type="number" id="createdByUserID" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Vehicle & Driver Section -->
+          <div class="form-section">
+            <h3 class="section-title">معلومات السيارة والسائق</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="vehicleId">السيارة</label>
+                <select id="vehicleId" required>
+                  <option value="">اختر السيارة</option>
+                  <!-- Options will be populated dynamically -->
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="driverId">السائق</label>
+                <select id="driverId" required>
+                  <option value="">اختر السائق</option>
+                  <!-- Options will be populated dynamically -->
+                </select>
+              </div>
+              <div class="form-group full-width">
+                <label for="destination">الوجهة</label>
+                <input type="text" id="destination" required />
+              </div>
+            </div>
+          </div>
+
+          <!-- Date & Time Section -->
+          <div class="form-section">
+            <h3 class="section-title">التوقيت</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="startDate">تاريخ البداية</label>
+                <input type="date" id="startDate" required />
+              </div>
+              <div class="form-group">
+                <label for="startTime">وقت البداية</label>
+                <input type="time" id="startTime" required />
+              </div>
+              <div class="form-group">
+                <label for="endDate">تاريخ النهاية</label>
+                <input type="date" id="endDate" required />
+              </div>
+              <div class="form-group">
+                <label for="endTime">وقت النهاية</label>
+                <input type="time" id="endTime" required />
+              </div>
+            </div>
+          </div>
+
+          <!-- Odometer Section -->
+          <div class="form-section">
+            <h3 class="section-title">قراءة العداد</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="odometerBefore">عداد قبل</label>
+                <input type="number" id="odometerBefore" required />
+              </div>
+              <div class="form-group">
+                <label for="odometerAfter">عداد بعد</label>
+                <input type="number" id="odometerAfter" required />
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit">
+              <span>💾</span> حفظ
+            </button>
+            <button class="btn btn-secondary" type="button" onclick="closeAddJobOrderForm()">
+              <span>❌</span> إلغاء
+            </button>
+          </div>
         </form>
       </div>
     </div>
