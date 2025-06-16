@@ -402,11 +402,13 @@ async function submitJobOrder(e) {
 function mapStatus(code) {
   switch (code) {
     case 1:
-      return "قيد الانتظار";
-    case 2:
       return "مقبول";
-    case 3:
+    case 2:
       return "مرفوض";
+    case 3:
+      return "قيد الانتظار";
+    case 4:
+      return "ملغي";
     default:
       return "غير معروف";
   }
@@ -416,11 +418,13 @@ function mapStatus(code) {
 function getStatusClass(code) {
   switch (code) {
     case 1:
-      return "badge-pending";
-    case 2:
       return "badge-accepted";
-    case 3:
+    case 2:
       return "badge-rejected";
+    case 3:
+      return "badge-pending";
+    case 4:
+      return "badge-canceled";
     default:
       return "badge-unknown";
   }
