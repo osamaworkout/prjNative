@@ -273,7 +273,7 @@ function renderJobOrderCards(orders) {
     card.style = "padding: 10px; background: #f4f4f4; cursor: pointer;";
     card.innerHTML = `
       <p><strong>رقم الأمر:</strong> ${order.orderId}</p>
-      <p><strong>الحالة:</strong> ${mapStatus(order.application.status)}</p>
+      <p><strong>الحالة:</strong> ${mapjobOrderStatus(order.application.status)}</p>
       <p><strong>تاريخ البداية:</strong> ${new Date(
         order.startDate
       ).toLocaleString()}</p>
@@ -306,7 +306,7 @@ function showJobOrderDetails(order) {
             </div>
             <div class="detail-item">
               <span class="detail-label">الحالة:</span>
-              <span class="detail-value badge-status ${getStatusClass(order.application.status)}">${mapStatus(order.application.status)}</span>
+              <span class="detail-value badge-status ${getStatusClass(order.application.status)}">${mapjobOrderStatus(order.application.status)}</span>
             </div>
             <div class="detail-item full-width">
               <span class="detail-label">الوصف:</span>
@@ -519,6 +519,23 @@ async function submitJobOrder(e) {
     alert("حدث خطأ في حفظ أمر الشغل");
   }
 }
+
+// Helper function to map jobOrder status
+function mapjobOrderStatus(code) {
+  switch (code) {
+    case 1:
+      return "قادمة";
+    case 2:
+      return "منتهي";
+    case 3:
+      return "قيد العمل";
+    case 4:
+      return "ملغي";
+    default:
+      return "غير معروف";
+  }
+}
+
 
 function mapStatus(code) {
   switch (code) {
