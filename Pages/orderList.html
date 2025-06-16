@@ -15,29 +15,17 @@
     <link rel="stylesheet" href="../../Assets/Styles/orderList.css" />
   </head>
   <body>
-    <!-- Header Buttons -->
-    <div class="flex-between" style="margin-bottom: 16px; position: relative">
-      <div style="display: flex; gap: 8px; order: 1">
-        <button id="purchaseOrder" class="button secondary" onclick="">
-          اذن الشراء
+    <!-- Header with filter and refresh buttons -->
+    <div class="page-header">
+      <h1 class="page-title">إدارة الطلبات</h1>
+      <div class="header-actions">
+        <button class="header-btn" onclick="toggleFilterMenu()">
+          <span class="icon">🔍</span>
+          <span>فلتر</span>
         </button>
-        <button id="payOrder" class="button secondary" onclick="">
-          اذن الصرف
-        </button>
-        <button id="maintananceOrder" class="button secondary" onclick="">
-          اذن الصيانة
-        </button>
-        <button id="missionOrder" class="button secondary" onclick="">
-          طلب مأمورية
-        </button>
-        <button id="jobOrder" class="button secondary">أوامر الشغل</button>
-      </div>
-      <div style="display: flex; gap: 8px; order: 2; position: relative">
-        <button class="button" onclick="toggleFilterMenu()">
-          &#128269; <span>فلتر</span>
-        </button>
-        <button class="button" onclick="refreshRequests()">
-          &#x21bb; <span>تحديث</span>
+        <button class="header-btn" onclick="refreshRequests()">
+          <span class="icon">🔄</span>
+          <span>تحديث</span>
         </button>
         <div id="filterMenu" class="dropdown hidden">
           <button onclick="showDateInput()">حسب التاريخ</button><br />
@@ -56,6 +44,51 @@
               <option value="قيد الانتظار">قيد الانتظار</option>
             </select>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Application Cards Section -->
+    <div class="applications-section">
+      <div class="section-header">
+        <h2>أنواع الطلبات</h2>
+        <p>اختر نوع الطلب الذي تريد إدارته</p>
+      </div>
+      
+      <div class="applications-grid">
+        <div class="application-card" id="purchaseOrder" onclick="">
+          <div class="card-icon">🛒</div>
+          <h3 class="card-title">إذن الشراء</h3>
+          <p class="card-description">إدارة طلبات الشراء والمخازن</p>
+          <div class="card-badge">قريباً</div>
+        </div>
+
+        <div class="application-card" id="payOrder" onclick="">
+          <div class="card-icon">💰</div>
+          <h3 class="card-title">إذن الصرف</h3>
+          <p class="card-description">إدارة طلبات الصرف المالي</p>
+          <div class="card-badge">قريباً</div>
+        </div>
+
+        <div class="application-card" id="maintananceOrder" onclick="">
+          <div class="card-icon">🔧</div>
+          <h3 class="card-title">إذن الصيانة</h3>
+          <p class="card-description">إدارة طلبات صيانة المركبات</p>
+          <div class="card-badge">قريباً</div>
+        </div>
+
+        <div class="application-card" id="missionOrder" onclick="">
+          <div class="card-icon">🚀</div>
+          <h3 class="card-title">طلب مأمورية</h3>
+          <p class="card-description">إدارة طلبات المأموريات الرسمية</p>
+          <div class="card-badge">قريباً</div>
+        </div>
+
+        <div class="application-card active" id="jobOrder">
+          <div class="card-icon">⚙️</div>
+          <h3 class="card-title">أوامر الشغل</h3>
+          <p class="card-description">إدارة أوامر الشغل والمهام</p>
+          <div class="card-badge active">متاح</div>
         </div>
       </div>
     </div>
@@ -239,5 +272,61 @@
       </div>
     </div>
     <script src="../../Java script/orderList.js"></script>
+    <script>
+      // Handle role-based access for application cards
+      document.addEventListener("DOMContentLoaded", function() {
+        const userRole = localStorage.getItem("userRole");
+        
+        // Define which roles can access which applications
+        const rolePermissions = {
+          "أدمن": ["jobOrder", "purchaseOrder", "payOrder", "maintananceOrder", "missionOrder"],
+          "سكرتارية": ["jobOrder", "missionOrder"],
+          "مشرف إداري": ["jobOrder", "purchaseOrder", "payOrder"],
+          "مشرف نقل": ["jobOrder", "maintananceOrder"],
+          "سائق": [],
+          "مراقب": ["jobOrder"]
+        };
+        
+        // Get all application cards
+        const applicationCards = document.querySelectorAll('.application-card');
+        
+        applicationCards.forEach(card => {
+          const cardId = card.id;
+          const userPermissions = rolePermissions[userRole] || [];
+          
+          if (!userPermissions.includes(cardId)) {
+            // Disable card for unauthorized users
+            card.style.opacity = '0.6';
+            card.style.cursor = 'not-allowed';
+            card.style.filter = 'grayscale(0.3)';
+            
+            // Update badge to show restricted access
+            const badge = card.querySelector('.card-badge');
+            if (badge && !badge.classList.contains('active')) {
+              badge.textContent = 'غير مسموح';
+              badge.style.background = '#dc3545';
+            }
+            
+            // Remove hover effect
+            card.addEventListener('mouseenter', function() {
+              card.style.transform = 'none';
+              card.style.boxShadow = 'none';
+              card.style.borderColor = '#e9ecef';
+            });
+            
+            // Remove click functionality
+            card.onclick = function(e) {
+              e.preventDefault();
+              alert(`عذراً، غير مسموح لك بالوصول إلى ${card.querySelector('.card-title').textContent}. تحتاج صلاحيات أعلى للوصول لهذه الخدمة.`);
+            };
+          } else if (cardId !== 'jobOrder') {
+            // Other applications - show coming soon message
+            card.onclick = function() {
+              alert(`${card.querySelector('.card-title').textContent} قيد التطوير حالياً. سيتم إتاحة هذه الخدمة قريباً.`);
+            };
+          }
+        });
+      });
+    </script>
   </body>
 </html>

@@ -67,6 +67,7 @@ const driverApiUrl = "https://movesmartapi.runasp.net/api/Drivers/All";
 // Function to decode JWT token and extract user ID
 function getUserIdFromToken() {
   try {
+    const token = localStorage.getItem("token");
     if (!token) return null;
     
     // Decode JWT token (split by '.' and decode the payload part)
@@ -79,6 +80,124 @@ function getUserIdFromToken() {
 }
 
 document.getElementById("jobOrder").addEventListener("click", showJobOrders);
+
+// Handle role-based access for application cards
+document.addEventListener("DOMContentLoaded", function() {
+  const userRole = localStorage.getItem("userRole");
+  
+  // Define which roles can access which applications
+  const rolePermissions = {
+    "أدمن": ["jobOrder", "purchaseOrder", "payOrder", "maintananceOrder", "missionOrder"],
+    "سكرتارية": ["jobOrder", "missionOrder"],
+    "مشرف إداري": ["jobOrder", "purchaseOrder", "payOrder"],
+    "مشرف نقل": ["jobOrder", "maintananceOrder"],
+    "سائق": [],
+    "مراقب": ["jobOrder"]
+  };
+  
+  // Get all application cards
+  const applicationCards = document.querySelectorAll('.application-card');
+  
+  applicationCards.forEach(card => {
+    const cardId = card.id;
+    const userPermissions = rolePermissions[userRole] || [];
+    
+    if (!userPermissions.includes(cardId)) {
+      // Disable card for unauthorized users
+      card.classList.add('disabled');
+      card.style.opacity = '0.6';
+      card.style.cursor = 'not-allowed';
+      
+      // Update badge to show restricted access
+      const badge = card.querySelector('.card-badge');
+      if (badge && !badge.classList.contains('active')) {
+        badge.textContent = 'غير مسموح';
+        badge.style.background = '#dc3545';
+      }
+      
+      // Remove click functionality
+      card.onclick = function(e) {
+        e.preventDefault();
+        showAccessDeniedMessage(card.querySelector('.card-title').textContent);
+      };
+    } else if (cardId === 'jobOrder') {
+      // Job order is available - keep existing functionality
+      card.onclick = showJobOrders;
+    } else {
+      // Other applications - show coming soon message
+      card.onclick = function() {
+        showComingSoonMessage(card.querySelector('.card-title').textContent);
+      };
+    }
+  });
+});
+
+function showAccessDeniedMessage(applicationName) {
+  alert(`عذراً، غير مسموح لك بالوصول إلى ${applicationName}. تحتاج صلاحيات أعلى للوصول لهذه الخدمة.`);
+}
+
+function showComingSoonMessage(applicationName) {
+  alert(`${applicationName} قيد التطوير حالياً. سيتم إتاحة هذه الخدمة قريباً.`);
+}
+
+// Handle role-based access for application cards
+document.addEventListener("DOMContentLoaded", function() {
+  const userRole = localStorage.getItem("userRole");
+  
+  // Define which roles can access which applications
+  const rolePermissions = {
+    "أدمن": ["jobOrder", "purchaseOrder", "payOrder", "maintananceOrder", "missionOrder"],
+    "سكرتارية": ["jobOrder", "missionOrder"],
+    "مشرف إداري": ["jobOrder", "purchaseOrder", "payOrder"],
+    "مشرف نقل": ["jobOrder", "maintananceOrder"],
+    "سائق": [],
+    "مراقب": ["jobOrder"]
+  };
+  
+  // Get all application cards
+  const applicationCards = document.querySelectorAll('.application-card');
+  
+  applicationCards.forEach(card => {
+    const cardId = card.id;
+    const userPermissions = rolePermissions[userRole] || [];
+    
+    if (!userPermissions.includes(cardId)) {
+      // Disable card for unauthorized users
+      card.classList.add('disabled');
+      card.style.opacity = '0.6';
+      card.style.cursor = 'not-allowed';
+      
+      // Update badge to show restricted access
+      const badge = card.querySelector('.card-badge');
+      if (badge && !badge.classList.contains('active')) {
+        badge.textContent = 'غير مسموح';
+        badge.style.background = '#dc3545';
+      }
+      
+      // Remove click functionality
+      card.onclick = function(e) {
+        e.preventDefault();
+        showAccessDeniedMessage(card.querySelector('.card-title').textContent);
+      };
+    } else if (cardId === 'jobOrder') {
+      // Job order is available - keep existing functionality
+      card.onclick = showJobOrders;
+    } else {
+      // Other applications - show coming soon message
+      card.onclick = function() {
+        showComingSoonMessage(card.querySelector('.card-title').textContent);
+      };
+    }
+  });
+});
+
+function showAccessDeniedMessage(applicationName) {
+  alert(`عذراً، غير مسموح لك بالوصول إلى ${applicationName}. تحتاج صلاحيات أعلى للوصول لهذه الخدمة.`);
+}
+
+function showComingSoonMessage(applicationName) {
+  alert(`${applicationName} قيد التطوير حالياً. سيتم إتاحة هذه الخدمة قريباً.`);
+}
 
 function showJobOrders() {
   document.getElementById("jobOrderPopup").classList.remove("hidden");
