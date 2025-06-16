@@ -228,6 +228,7 @@ function closeAddJobOrderForm() {
 
 async function fetchJobOrders() {
   try {
+    const token = localStorage.getItem("token");
     const res = await fetch(apiUrl, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -438,6 +439,7 @@ function editJobOrder(order) {
 async function submitJobOrder(e) {
   e.preventDefault();
   const editId = e.target.dataset.editId;
+  const token = localStorage.getItem("token");
 
   // Combine date and time for start and end dates
   const startDate = document.getElementById("startDate").value;
@@ -552,6 +554,7 @@ function getStatusClass(code) {
 // Function to fetch vehicles from API
 async function fetchVehicles() {
   try {
+    const token = localStorage.getItem("token");
     const response = await fetch(vehicleApiUrl, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -573,6 +576,7 @@ async function fetchVehicles() {
 // Function to fetch drivers from API
 async function fetchDrivers() {
   try {
+    const token = localStorage.getItem("token");
     const response = await fetch(driverApiUrl, {
       headers: {
         Authorization: `Bearer ${token}`,

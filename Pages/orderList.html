@@ -279,13 +279,43 @@
         
         // Define which roles can access which applications
         const rolePermissions = {
+          // Arabic role names
           "أدمن": ["jobOrder", "purchaseOrder", "payOrder", "maintananceOrder", "missionOrder"],
           "سكرتارية": ["jobOrder", "missionOrder"],
           "مشرف إداري": ["jobOrder", "purchaseOrder", "payOrder"],
           "مشرف نقل": ["jobOrder", "maintananceOrder"],
+          "مشرف عام": ["jobOrder", "purchaseOrder", "payOrder", "maintananceOrder", "missionOrder"],
           "سائق": [],
-          "مراقب": ["jobOrder"]
+          "مراقب": ["jobOrder"],
+          
+          // English role names (for compatibility)
+          "Admin": ["jobOrder", "purchaseOrder", "payOrder", "maintananceOrder", "missionOrder"],
+          "SuperUser": ["jobOrder", "purchaseOrder", "payOrder", "maintananceOrder", "missionOrder"],
+          "Secretary": ["jobOrder", "missionOrder"],
+          "AdministrativeSupervisor": ["jobOrder", "purchaseOrder", "payOrder"],
+          "GeneralSupervisor": ["jobOrder", "purchaseOrder", "payOrder", "maintananceOrder", "missionOrder"],
+          "TransportSupervisor": ["jobOrder", "maintananceOrder"],
+          "PatrolsSupervisor": ["jobOrder", "maintananceOrder"],
+          "WorkshopSupervisor": ["jobOrder", "maintananceOrder"],
+          "HospitalManager": ["jobOrder", "purchaseOrder", "payOrder"],
+          "GeneralManager": ["jobOrder", "purchaseOrder", "payOrder", "maintananceOrder", "missionOrder"],
+          "Driver": [],
+          "Observer": ["jobOrder"]
         };
+        
+        // Add English role names for compatibility
+        rolePermissions["Admin"] = ["jobOrder", "purchaseOrder", "payOrder", "maintananceOrder", "missionOrder"];
+        rolePermissions["SuperUser"] = ["jobOrder", "purchaseOrder", "payOrder", "maintananceOrder", "missionOrder"];
+        rolePermissions["Secretary"] = ["jobOrder", "missionOrder"];
+        rolePermissions["AdministrativeSupervisor"] = ["jobOrder", "purchaseOrder", "payOrder"];
+        rolePermissions["GeneralSupervisor"] = ["jobOrder", "purchaseOrder", "payOrder", "maintananceOrder", "missionOrder"];
+        rolePermissions["TransportSupervisor"] = ["jobOrder", "maintananceOrder"];
+        rolePermissions["PatrolsSupervisor"] = ["jobOrder", "maintananceOrder"];
+        rolePermissions["WorkshopSupervisor"] = ["jobOrder", "maintananceOrder"];
+        rolePermissions["HospitalManager"] = ["jobOrder", "purchaseOrder", "payOrder"];
+        rolePermissions["GeneralManager"] = ["jobOrder", "purchaseOrder", "payOrder", "maintananceOrder", "missionOrder"];
+        rolePermissions["Driver"] = [];
+        rolePermissions["Observer"] = ["jobOrder"];
         
         // Get all application cards
         const applicationCards = document.querySelectorAll('.application-card');
