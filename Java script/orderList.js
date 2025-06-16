@@ -79,6 +79,42 @@ function getUserIdFromToken() {
   }
 }
 
+// Function to automatically calculate status based on current time vs start/end times
+function calculateStatusByTime() {
+  const now = new Date();
+  const currentTime = now.getHours() * 60 + now.getMinutes(); // Convert to minutes for easier comparison
+  
+  const startTimeElement = document.getElementById("startTime");
+  const endTimeElement = document.getElementById("endTime");
+  
+  if (!startTimeElement.value || !endTimeElement.value) {
+    return 1; // Default to "قادمة" if times are not set
+  }
+  
+  // Parse start and end times
+  const [startHour, startMin] = startTimeElement.value.split(':').map(Number);
+  const [endHour, endMin] = endTimeElement.value.split(':').map(Number);
+  
+  const startTime = startHour * 60 + startMin;
+  const endTime = endHour * 60 + endMin;
+  
+  // Calculate status based on current time
+  if (currentTime < startTime) {
+    return 1; // قادمة - upcoming
+  } else if (currentTime >= startTime && currentTime < endTime) {
+    return 3; // قيد العمل - in progress
+  } else {
+    return 2; // منتهي - finished
+  }
+}
+
+// Function to update status based on time comparison
+function updateStatusByTime() {
+  const statusElement = document.getElementById("status");
+  const calculatedStatus = calculateStatusByTime();
+  statusElement.value = calculatedStatus;
+}
+
 document.getElementById("jobOrder").addEventListener("click", showJobOrders);
 
 // Handle role-based access for application cards
@@ -216,6 +252,35 @@ function openAddJobOrderForm() {
   if (userId) {
     document.getElementById("createdByUserID").value = userId;
   }
+  
+  // Set current date for start and end date fields
+  const currentDate = new Date().toISOString().slice(0, 10);
+  document.getElementById("startDate").value = currentDate;
+  document.getElementById("endDate").value = currentDate;
+  
+  // Set default times and automatically calculate status
+  const now = new Date();
+  const currentTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+  
+  // Set default start time to current time if not already set
+  if (!document.getElementById("startTime").value) {
+    document.getElementById("startTime").value = currentTime;
+  }
+  
+  // Set default end time to 1 hour later if not already set
+  if (!document.getElementById("endTime").value) {
+    const endTime = new Date(now.getTime() + 60 * 60 * 1000); // Add 1 hour
+    document.getElementById("endTime").value = endTime.getHours().toString().padStart(2, '0') + ':' + endTime.getMinutes().toString().padStart(2, '0');
+  }
+  
+  // Calculate and set status automatically
+  setTimeout(() => {
+    updateStatusByTime();
+    
+    // Add event listeners for time changes to update status automatically
+    document.getElementById("startTime").addEventListener('change', updateStatusByTime);
+    document.getElementById("endTime").addEventListener('change', updateStatusByTime);
+  }, 100);
   
   // Populate vehicle and driver dropdowns
   populateVehicleDropdown();
@@ -418,15 +483,23 @@ function editJobOrder(order) {
     document.getElementById("driverId").value = order.driverId;
   }, 500);
   
-  // Handle dates - extract date part
-  const startDate = new Date(order.startDate);
-  const endDate = new Date(order.endDate);
-  document.getElementById("startDate").value = startDate.toISOString().slice(0, 10);
-  document.getElementById("endDate").value = endDate.toISOString().slice(0, 10);
+  // Set current date for both start and end dates (readonly fields)
+  const currentDate = new Date().toISOString().slice(0, 10);
+  document.getElementById("startDate").value = currentDate;
+  document.getElementById("endDate").value = currentDate;
   
   // Handle times
   document.getElementById("startTime").value = order.startTime || "00:00";
   document.getElementById("endTime").value = order.endTime || "00:00";
+  
+  // Calculate and set status automatically based on current time vs start/end times
+  setTimeout(() => {
+    updateStatusByTime();
+    
+    // Add event listeners for time changes to update status automatically
+    document.getElementById("startTime").addEventListener('change', updateStatusByTime);
+    document.getElementById("endTime").addEventListener('change', updateStatusByTime);
+  }, 100);
   
   document.getElementById("destination").value = order.destination;
   document.getElementById("odometerBefore").value = order.odometerBefore || 0;
@@ -453,12 +526,15 @@ async function submitJobOrder(e) {
   // Get user ID from token to ensure data integrity
   const currentUserId = getUserIdFromToken();
   
+  // Automatically calculate status based on current time vs start/end times
+  const calculatedStatus = calculateStatusByTime();
+  
   const payload = {
     orderId: editId ? parseInt(editId) : parseInt(document.getElementById("orderId").value) || 0,
     application: {
       applicationId: parseInt(document.getElementById("applicationId").value) || 0,
       creationDate: new Date().toISOString(),
-      status: parseInt(document.getElementById("status").value),
+      status: calculatedStatus, // Use calculated status instead of form value
       applicationType: parseInt(document.getElementById("applicationType").value),
       applicationDescription: document.getElementById("applicationDescription").value,
       createdByUserID: parseInt(currentUserId),
