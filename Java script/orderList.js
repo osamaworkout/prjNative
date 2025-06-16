@@ -294,12 +294,13 @@ function closeAddJobOrderForm() {
 async function fetchJobOrders() {
   try {
     const token = localStorage.getItem("token");
+    const [vehicles, drivers] = await Promise.all([fetchVehicles(), fetchDrivers()]);
     const res = await fetch(apiUrl, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
-    
+
     if (!res.ok) {
       if (res.status === 403) {
         console.error("المستخدم غير مصرح له بالوصول لأوامر الشغل");
@@ -316,10 +317,18 @@ async function fetchJobOrders() {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
     }
-    
+
     const data = await res.json();
     const orders = data.$values || [];
-    console.log("أوامر الشغل:", orders);
+
+    // ربط اسم السائق ورقم اللوحة بالطلب
+    orders.forEach(order => {
+      const vehicle = vehicles.find(v => v.vehicleID === order.vehicleID || v.id === order.vehicleID);
+      const driver = drivers.find(d => d.driverID === order.driverId || d.id === order.driverId);
+      order.plateNumbers = vehicle ? vehicle.plateNumbers : "غير محدد";
+      order.driverName = driver ? driver.name : "غير محدد";
+    });
+
     renderJobOrderCards(orders);
   } catch (err) {
     console.error("فشل في جلب أوامر الشغل", err);
@@ -386,7 +395,7 @@ function showJobOrderDetails(order) {
           <div class="details-grid">
             <div class="detail-item">
               <span class="detail-label">السيارة:</span>
-              <span class="detail-value">${order.plateNumbers || order.vehicleID}</span>
+              <span class="detail-value">${order.plateNumbers || order.vehicleId}</span>
             </div>
             <div class="detail-item">
               <span class="detail-label">السائق:</span>
