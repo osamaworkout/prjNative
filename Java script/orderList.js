@@ -397,7 +397,7 @@ function closePopupDetails(btn) {
 }
 
 function editJobOrder(order) {
-  closePopupDetails(document.querySelector(".popup-content button"));
+  closePopupDetails(event.target);
   openAddJobOrderForm();
   
   // Fill in all the form fields with existing data
