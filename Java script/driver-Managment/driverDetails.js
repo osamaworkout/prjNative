@@ -191,7 +191,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const vacationOwnerID = Number(urlParams.get("id"));
       const token = localStorage.getItem("token");
 
-      if (fromDate && toDate && vacationOwnerID) {
+      if (fromDate && toDate && vacationOwnerID && substituteDriverID) {
         const vacationData = {
           vacationOwnerID: vacationOwnerID,
           startDate: fromDate,

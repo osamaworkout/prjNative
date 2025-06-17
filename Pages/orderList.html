@@ -4,15 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>صفحة الطلبات</title>
-
-    <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="../Assets/Images/favicon_io/favicon.ico">
-    <link rel="shortcut icon" type="image/x-icon" href="../Assets/Images/favicon_io/favicon.ico">
-    <link rel="icon" type="image/png" sizes="32x32" href="../Assets/Images/favicon_io/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="../Assets/Images/favicon_io/favicon-16x16.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="../Assets/Images/favicon_io/apple-touch-icon.png">
-    <link rel="manifest" href="../Assets/Images/favicon_io/site.webmanifest">
-
     <link rel="stylesheet" href="../../Assets/Styles/orderList.css" />
   </head>
   <body>
@@ -78,17 +70,24 @@
           <div class="card-badge">قريباً</div>
         </div>
 
-        <div class="application-card" id="missionOrder" onclick="">
+        <div class="application-card" id="missionOrder">
           <div class="card-icon">🚀</div>
-          <h3 class="card-title">طلب مأمورية</h3>
+          <h3 class="card-title">أذن مأمورية</h3>
           <p class="card-description">إدارة طلبات المأموريات الرسمية</p>
-          <div class="card-badge">قريباً</div>
+          <div class="card-badge active">متاح</div>
         </div>
 
         <div class="application-card active" id="jobOrder">
           <div class="card-icon">⚙️</div>
           <h3 class="card-title">أوامر الشغل</h3>
           <p class="card-description">إدارة أوامر الشغل والمهام</p>
+          <div class="card-badge active">متاح</div>
+        </div>
+
+        <div class="application-card" id="missionNoteOrder">
+          <div class="card-icon">📝</div>
+          <h3 class="card-title">طلب مأمورية</h3>
+          <p class="card-description">طلبات المأمورية من مديري المستشفيات</p>
           <div class="card-badge active">متاح</div>
         </div>
       </div>
@@ -270,6 +269,128 @@
             </button>
           </div>
         </form>
+      </div>
+    </div>
+    <!-- Mission Order Popup -->
+    <div id="missionOrderPopup" class="popup hidden">
+      <div class="popup-content" style="width: 90%; max-height: 80vh; overflow-y: auto">
+        <div class="flex-between">
+          <h2>طلبات المأمورية</h2>
+          <button onclick="closeMissionOrderPopup()">❌</button>
+        </div>
+        <div id="addMissionSection" style="margin-bottom: 12px; text-align: left; display:none;">
+          <button class="button" onclick="openAddMissionOrderForm()">
+            ➕ إضافة مأمورية
+          </button>
+        </div>
+        <div id="missionOrdersContainer" class="space-y-2"></div>
+      </div>
+    </div>
+
+    <!-- Add/Edit Mission Order Form -->
+    <div id="addMissionOrderPopup" class="popup hidden">
+      <div class="popup-content job-order-form">
+        <div class="form-header">
+          <h2>مأمورية جديدة</h2>
+          <button type="button" class="close-btn" onclick="closeAddMissionOrderForm()">
+            ✕
+          </button>
+        </div>
+        <form id="missionOrderForm" onsubmit="submitMissionOrder(event)">
+          <div class="form-section">
+            <h3 class="section-title">معلومات أساسية</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="distination">الوجهة</label>
+                <input type="text" id="distination" required />
+              </div>
+              <div class="form-group">
+                <label for="createdByUser">أنشئت بواسطة</label>
+                <input type="text" id="createdByUser" />
+              </div>
+              <div class="form-group">
+                <label for="missionNoteId">ملاحظة مرتبطة</label>
+                <select id="missionNoteId" required></select>
+              </div>
+            </div>
+          </div>
+          <div class="form-section">
+            <h3 class="section-title">التوقيت</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="missionStartDate">تاريخ البداية</label>
+                <input type="datetime-local" id="missionStartDate" required />
+              </div>
+              <div class="form-group">
+                <label for="missionEndDate">تاريخ النهاية</label>
+                <input type="datetime-local" id="missionEndDate" required />
+              </div>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit">
+              <span>💾</span> حفظ
+            </button>
+            <button class="btn btn-secondary" type="button" onclick="closeAddMissionOrderForm()">
+              <span>❌</span> إلغاء
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Mission Notes Popup -->
+    <div id="missionNotePopup" class="popup hidden">
+      <div class="popup-content" style="width: 90%; max-height: 80vh; overflow-y: auto">
+        <div class="flex-between">
+          <h2>طلبات المأمورية</h2>
+          <button onclick="closeMissionNotePopup()">❌</button>
+        </div>
+        <div id="addMissionNoteSection" style="margin-bottom: 12px; text-align: left; display:none;">
+          <button class="button" onclick="openAddMissionNoteForm()">
+            ➕ إرسال طلب مأمورية
+          </button>
+        </div>
+        <div id="missionNotesContainer" class="space-y-2"></div>
+      </div>
+    </div>
+
+    <!-- Add Mission Note Form Popup -->
+    <div id="addMissionNotePopup" class="popup hidden">
+      <div class="popup-content job-order-form">
+        <div class="form-header">
+          <h2>إرسال طلب مأمورية</h2>
+          <button type="button" class="close-btn" onclick="closeAddMissionNoteForm()">
+            ✕
+          </button>
+        </div>
+        <form id="missionNoteForm" onsubmit="submitMissionNote(event)">
+          <div class="form-section">
+            <div class="form-group">
+              <label for="missionNoteDescription">وصف الطلب</label>
+              <textarea id="missionNoteDescription" required></textarea>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit">
+              <span>💾</span> إرسال
+            </button>
+            <button class="btn btn-secondary" type="button" onclick="closeAddMissionNoteForm()">
+              <span>❌</span> إلغاء
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Mission Details Popup -->
+    <div id="missionDetailsPopup" class="popup hidden">
+      <div class="popup-content" style="width: 90%; max-height: 80vh; overflow-y: auto">
+        <div class="flex-between">
+          <h2>تفاصيل المأمورية</h2>
+          <button onclick="closeMissionDetailsPopup()">❌</button>
+        </div>
+        <div id="missionDetailsContainer"></div>
       </div>
     </div>
     <script src="../../Java script/orderList.js"></script>

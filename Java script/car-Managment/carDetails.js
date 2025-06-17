@@ -178,7 +178,7 @@ document.addEventListener("DOMContentLoaded", function () {
       status:
         carStatusMap[document.getElementsByName("carCondition")[0].value] ?? 0,
       totalKilometersMoved:
-        parseInt(document.getElementById("total-km").value) || 0,
+        parseInt(document.getElementById("total-km").innerText) || 0,
       fuelType:
         fuelTypeMap[document.getElementsByName("fuelType")[0].value] ?? 0,
       fuelConsumptionRate: parseFloat(
@@ -242,4 +242,38 @@ document.addEventListener("DOMContentLoaded", function () {
 
   document.querySelector("[data-tab='car-info']")?.click();
   loadCarData();
+
+  // Add these functions
+
+  function openAddBusPopup() {
+    document.getElementById("addBusPopup").style.display = "block";
+  }
+
+  function closeAddBusPopup() {
+    document.getElementById("addBusPopup").style.display = "none";
+  }
+
+  function submitBusForm(event) {
+    event.preventDefault();
+    // Add your form submission logic here
+    const formData = {
+      plateNumbers: document.getElementById("plateNumbers").value,
+      model: document.getElementById("model").value,
+      manufacturer: document.getElementById("manufacturer").value,
+      year: document.getElementById("year").value,
+      capacity: document.getElementById("capacity").value,
+      status: document.getElementById("status").value,
+    };
+    console.log("Form Data:", formData);
+    // Add your API call here
+    closeAddBusPopup();
+  }
+
+  // Close popup when clicking outside
+  window.onclick = function (event) {
+    const popup = document.getElementById("addBusPopup");
+    if (event.target === popup) {
+      closeAddBusPopup();
+    }
+  };
 });

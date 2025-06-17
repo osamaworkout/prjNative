@@ -1,4 +1,5 @@
 // Navigation functionality
+console.log("Role from localStorage:", localStorage.getItem("userRole"));
 document.addEventListener("DOMContentLoaded", function () {
   const token = localStorage.getItem("token");
   const userRole = localStorage.getItem("userRole");
@@ -21,48 +22,76 @@ document.addEventListener("DOMContentLoaded", function () {
   document.body.insertBefore(header, document.body.firstChild);
 });
 
-//check user role and show or hide the order buttons
-const userRole = localStorage.getItem("userRole");
 
 // Helper function to safely hide elements
 function hideElementIfExists(elementId) {
-  const element = document.getElementById(elementId);
-  if (element) {
-    element.style.display = "none";
-  }
+  const el = document.getElementById(elementId);
+  if (el) el.style.display = "none";
 }
 
-switch (userRole) {
-  case "AdministrativeSupervisor":
-    hideElementIfExists("purchaseOrder");
-    hideElementIfExists("payOrder");
-    hideElementIfExists("missionOrder");
-    hideElementIfExists("maintananceOrder");
-    break;
-  case "HospitalManager":
-    hideElementIfExists("requestsButton");
-    break;
-  case "GeneralManager":
-    hideElementIfExists("requestsButton");
-    break;
-  case "GeneralSupervisor":
-    hideElementIfExists("requestsButton");
-    break;
-  case "PatrolsSupervisor":
-    hideElementIfExists("requestsButton");
-    break;
-  case "WorkshopSupervisor":
-    hideElementIfExists("requestsButton");
-    break;
-  case "SuperUser":
-    hideElementIfExists("requestsButton");
-    break;
-  default:
-    window.location.href = "../Login.html";
-}
 const apiUrl = "https://movesmartapi.runasp.net/api/v1/JobOrder";
 const vehicleApiUrl = "https://movesmartapi.runasp.net/api/Vehicles/All";
 const driverApiUrl = "https://movesmartapi.runasp.net/api/Drivers/All";
+
+// Mission Orders APIs
+const missionApi = "https://movesmartapi.runasp.net/api/Mission";
+const missionJobOrderApi = "https://movesmartapi.runasp.net/api/MissionJobOrder/mission";
+// Mission Notes APIs
+const missionNotesApi = "https://movesmartapi.runasp.net/api/MissionsNotes";
+const userRole = localStorage.getItem("userRole");
+
+// Mission Notes Section (طلبات المأمورية من المدير)
+document.getElementById("missionNoteOrder").addEventListener("click", showMissionNotes);
+
+function showMissionNotes() {
+  document.getElementById("missionNotePopup").classList.remove("hidden");
+  fetchMissionNotes();
+  document.getElementById("addMissionNoteSection").style.display = (userRole === "HospitalManager") ? "block" : "none";
+}
+
+function closeMissionNotePopup() {
+  document.getElementById("missionNotePopup").classList.add("hidden");
+}
+
+// جلب كل الطلبات (MissionNotes)
+async function fetchMissionNotes() {
+  const container = document.getElementById("missionNotesContainer");
+  container.innerHTML = "جاري التحميل...";
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${missionNotesApi}/All`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    console.log("Mission Notes Data:", data);
+    renderMissionNotes(data);
+  } catch (err) {
+    container.innerHTML = "حدث خطأ أثناء تحميل الطلبات";
+  }
+}
+
+// عرض كروت الطلبات بناءً على شكل الداتا اللي جاي من السيرفر
+function renderMissionNotes(data) {
+  const notes = data.$values || [];
+  const container = document.getElementById("missionNotesContainer");
+  container.innerHTML = "";
+  notes.forEach(note => {
+    const app = note.application || {};
+    let statusText = "";
+    if (app.status === 1) statusText = "جديد";
+    else if (app.status === 2) statusText = "جاري التنفيذ";
+    else if (app.status === 3) statusText = "تم التنفيذ";
+    else statusText = "غير معروف";
+    container.innerHTML += `
+      <div class="card" style="padding:10px; background:#f9f9f9; margin-bottom:10px;">
+        <p><strong>رقم الطلب:</strong> ${note.noteID}</p>
+        <p><strong>الوصف:</strong> ${app.applicationDescription || ""}</p>
+        <p><strong>الحالة:</strong> ${statusText}</p>
+        ${userRole === "GeneralSupervisor" ? `<button onclick="openAddMissionOrderFormFromNote(${note.noteID})">إصدار مأمورية</button>` : ""}
+      </div>
+    `;
+  });
+}
 
 // Function to decode JWT token and extract user ID
 function getUserIdFromToken() {
@@ -82,7 +111,7 @@ function getUserIdFromToken() {
 // Function to automatically calculate status based on current time vs start/end times
 function calculateStatusByTime() {
   const now = new Date();
-  const currentTime = now.getHours() * 60 + now.getMinutes(); // Convert to minutes for easier comparison
+  const currentTime = now.getHours() * 60 + now.getMinutes(); 
   
   const startTimeElement = document.getElementById("startTime");
   const endTimeElement = document.getElementById("endTime");
@@ -100,11 +129,11 @@ function calculateStatusByTime() {
   
   // Calculate status based on current time
   if (currentTime < startTime) {
-    return 1; // قادمة - upcoming
+    return 1; 
   } else if (currentTime >= startTime && currentTime < endTime) {
-    return 3; // قيد العمل - in progress
+    return 3;
   } else {
-    return 2; // منتهي - finished
+    return 2; 
   }
 }
 
@@ -123,71 +152,13 @@ document.addEventListener("DOMContentLoaded", function() {
   
   // Define which roles can access which applications
   const rolePermissions = {
-    "أدمن": ["jobOrder", "purchaseOrder", "payOrder", "maintananceOrder", "missionOrder"],
-    "سكرتارية": ["jobOrder", "missionOrder"],
-    "مشرف إداري": ["jobOrder", "purchaseOrder", "payOrder"],
-    "مشرف نقل": ["jobOrder", "maintananceOrder"],
-    "سائق": [],
-    "مراقب": ["jobOrder"]
-  };
-  
-  // Get all application cards
-  const applicationCards = document.querySelectorAll('.application-card');
-  
-  applicationCards.forEach(card => {
-    const cardId = card.id;
-    const userPermissions = rolePermissions[userRole] || [];
-    
-    if (!userPermissions.includes(cardId)) {
-      // Disable card for unauthorized users
-      card.classList.add('disabled');
-      card.style.opacity = '0.6';
-      card.style.cursor = 'not-allowed';
-      
-      // Update badge to show restricted access
-      const badge = card.querySelector('.card-badge');
-      if (badge && !badge.classList.contains('active')) {
-        badge.textContent = 'غير مسموح';
-        badge.style.background = '#dc3545';
-      }
-      
-      // Remove click functionality
-      card.onclick = function(e) {
-        e.preventDefault();
-        showAccessDeniedMessage(card.querySelector('.card-title').textContent);
-      };
-    } else if (cardId === 'jobOrder') {
-      // Job order is available - keep existing functionality
-      card.onclick = showJobOrders;
-    } else {
-      // Other applications - show coming soon message
-      card.onclick = function() {
-        showComingSoonMessage(card.querySelector('.card-title').textContent);
-      };
-    }
-  });
-});
-
-function showAccessDeniedMessage(applicationName) {
-  alert(`عذراً، غير مسموح لك بالوصول إلى ${applicationName}. تحتاج صلاحيات أعلى للوصول لهذه الخدمة.`);
-}
-
-function showComingSoonMessage(applicationName) {
-  alert(`${applicationName} قيد التطوير حالياً. سيتم إتاحة هذه الخدمة قريباً.`);
-}
-
-// Handle role-based access for application cards
-document.addEventListener("DOMContentLoaded", function() {
-  const userRole = localStorage.getItem("userRole");
-  
-  // Define which roles can access which applications
-  const rolePermissions = {
-    "أدمن": ["jobOrder", "purchaseOrder", "payOrder", "maintananceOrder", "missionOrder"],
-    "سكرتارية": ["jobOrder", "missionOrder"],
-    "مشرف إداري": ["jobOrder", "purchaseOrder", "payOrder"],
-    "مشرف نقل": ["jobOrder", "maintananceOrder"],
-    "سائق": [],
-    "مراقب": ["jobOrder"]
+    "SuperUser": ["jobOrder", "purchaseOrder", "payOrder", "maintananceOrder", "missionOrder"],
+    "AdministrativeSupervisor": ["jobOrder", "purchaseOrder", "payOrder", "maintananceOrder"],
+    "HospitalManager": ["jobOrder", "missionOrder"],
+    "GeneralManager": ["jobOrder", "purchaseOrder", "payOrder", "maintananceOrder", "missionOrder"],
+    "GeneralSupervisor": ["jobOrder", "purchaseOrder", "payOrder", "maintananceOrder", "missionOrder"],
+    "PatrolsSupervisor": ["jobOrder", "missionOrder"],
+    "WorkshopSupervisor": ["jobOrder", "maintananceOrder"],
   };
   
   // Get all application cards
@@ -258,31 +229,25 @@ function openAddJobOrderForm() {
   document.getElementById("startDate").value = currentDate;
   document.getElementById("endDate").value = currentDate;
   
-  // Set default times and automatically calculate status
   const now = new Date();
   const currentTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
   
-  // Set default start time to current time if not already set
   if (!document.getElementById("startTime").value) {
     document.getElementById("startTime").value = currentTime;
   }
   
-  // Set default end time to 1 hour later if not already set
   if (!document.getElementById("endTime").value) {
-    const endTime = new Date(now.getTime() + 60 * 60 * 1000); // Add 1 hour
+    const endTime = new Date(now.getTime() + 60 * 60 * 1000); 
     document.getElementById("endTime").value = endTime.getHours().toString().padStart(2, '0') + ':' + endTime.getMinutes().toString().padStart(2, '0');
   }
   
-  // Calculate and set status automatically
   setTimeout(() => {
     updateStatusByTime();
     
-    // Add event listeners for time changes to update status automatically
     document.getElementById("startTime").addEventListener('change', updateStatusByTime);
     document.getElementById("endTime").addEventListener('change', updateStatusByTime);
   }, 100);
   
-  // Populate vehicle and driver dropdowns
   populateVehicleDropdown();
   populateDriverDropdown();
 }
@@ -474,7 +439,6 @@ function editJobOrder(order) {
   closePopupDetails(event.target);
   openAddJobOrderForm();
   
-  // Fill in all the form fields with existing data
   document.getElementById("orderId").value = order.orderId;
   document.getElementById("applicationId").value = order.application.applicationId;
   document.getElementById("status").value = order.application.status;
@@ -576,7 +540,6 @@ async function submitJobOrder(e) {
       alert("تم حفظ أمر الشغل بنجاح");
       closeAddJobOrderForm();
       fetchJobOrders();
-      // Clear form
       document.getElementById("jobOrderForm").reset();
       delete document.getElementById("jobOrderForm").dataset.editId;
       
@@ -701,19 +664,15 @@ async function fetchDrivers() {
 async function populateVehicleDropdown() {
   const vehicleSelect = document.getElementById("vehicleId");
   
-  // Clear existing options except the first one
   vehicleSelect.innerHTML = '<option value="">اختر السيارة</option>';
   
-  // Show loading state
   vehicleSelect.innerHTML += '<option value="">جاري التحميل...</option>';
   
   try {
     const vehicles = await fetchVehicles();
     
-    // Clear loading state
     vehicleSelect.innerHTML = '<option value="">اختر السيارة</option>';
     
-    // Filter vehicles to show only those with status 0 (active/available)
     const availableVehicles = vehicles.filter(vehicle => vehicle.status === 0);
     
     if (availableVehicles.length === 0) {
@@ -721,12 +680,10 @@ async function populateVehicleDropdown() {
       return;
     }
     
-    // Populate with available vehicles only
     availableVehicles.forEach(vehicle => {
       const option = document.createElement("option");
       option.value = vehicle.vehicleID || vehicle.id;
       
-      // Create descriptive text for the option - prioritize plate numbers
       let optionText = '';
       if (vehicle.plateNumbers) {
         optionText = vehicle.plateNumbers;
@@ -737,7 +694,6 @@ async function populateVehicleDropdown() {
           optionText += ` - ${vehicle.brand}`;
         }
       } else {
-        // Fallback if no plate number is available
         optionText = `${vehicle.vehicleID || vehicle.id}`;
         if (vehicle.model) {
           optionText += ` (${vehicle.model})`;
@@ -760,19 +716,15 @@ async function populateVehicleDropdown() {
 async function populateDriverDropdown() {
   const driverSelect = document.getElementById("driverId");
   
-  // Clear existing options except the first one
   driverSelect.innerHTML = '<option value="">اختر السائق</option>';
   
-  // Show loading state
   driverSelect.innerHTML += '<option value="">جاري التحميل...</option>';
   
   try {
     const drivers = await fetchDrivers();
     
-    // Clear loading state
     driverSelect.innerHTML = '<option value="">اختر السائق</option>';
     
-    // Filter drivers to show only those with status 0 (active/available)
     const availableDrivers = drivers.filter(driver => driver.status === 0);
     
     if (availableDrivers.length === 0) {
@@ -780,12 +732,10 @@ async function populateDriverDropdown() {
       return;
     }
     
-    // Populate with available drivers only
     availableDrivers.forEach(driver => {
       const option = document.createElement("option");
       option.value = driver.driverID || driver.id;
       
-      // Display driver name
       let optionText = driver.name || `سائق ${driver.driverID || driver.id}`;
       
       option.textContent = optionText;
@@ -794,5 +744,283 @@ async function populateDriverDropdown() {
   } catch (error) {
     console.error("Error populating driver dropdown:", error);
     driverSelect.innerHTML = '<option value="">خطأ في تحميل السائقين</option>';
+  }
+}
+
+// فتح تاب طلبات المأمورية
+document.getElementById("missionOrder").addEventListener("click", showMissionOrders);
+
+function showMissionOrders() {
+  document.getElementById("missionOrderPopup").classList.remove("hidden");
+  fetchMissionOrders();
+}
+
+function closeMissionOrderPopup() {
+  document.getElementById("missionOrderPopup").classList.add("hidden");
+}
+
+// جلب كل المأموريات مع التوكن
+async function fetchMissionOrders() {
+  const container = document.getElementById("missionOrdersContainer");
+  container.innerHTML = "جاري التحميل...";
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch(missionApi, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    const missions = data.$values || data || [];
+    renderMissionOrderCards(missions);
+  } catch (err) {
+    container.innerHTML = "حدث خطأ أثناء تحميل المأموريات";
+  }
+}
+
+// عرض كروت المأمورية
+function renderMissionOrderCards(missions) {
+  const container = document.getElementById("missionOrdersContainer");
+  container.innerHTML = "";
+  missions.forEach(mission => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.style = "padding: 10px; background: #f4f4f4; cursor: pointer;";
+    card.innerHTML = `
+      <p><strong>رقم المأمورية:</strong> ${mission.missionID}</p>
+      <p><strong>الوجهة:</strong> ${mission.distination}</p>
+      <p><strong>تاريخ البداية:</strong> ${mission.missionStartDate ? new Date(mission.missionStartDate).toLocaleString() : ""}</p>
+      <p><strong>تاريخ النهاية:</strong> ${mission.missionEndDate ? new Date(mission.missionEndDate).toLocaleString() : ""}</p>
+    `;
+    card.onclick = () => showMissionDetails(mission.missionID);
+    container.appendChild(card);
+  });
+}
+
+// فتح فورم إضافة مأمورية
+function openAddMissionOrderForm() {
+  document.getElementById("addMissionOrderPopup").classList.remove("hidden");
+}
+
+function closeAddMissionOrderForm() {
+  document.getElementById("addMissionOrderPopup").classList.add("hidden");
+}
+
+// حفظ مأمورية جديدة مع التوكن
+async function submitMissionNote(e) {
+  e.preventDefault();
+  const token = localStorage.getItem("token");
+  const userId = localStorage.getItem("userId") ? parseInt(localStorage.getItem("userId")) : 0;
+  const now = new Date().toISOString();
+
+  const payload = {
+    noteID: 0,
+    applicationID: 0,
+    application: {
+      applicationId: 0,
+      creationDate: now,
+      status: 1,
+      applicationType: 1,
+      applicationDescription: document.getElementById("missionNoteDescription").value,
+      createdByUserID: userId
+    }
+  };
+
+  try {
+    const res = await fetch(missionNotesApi, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      alert("تم إرسال الطلب بنجاح");
+      closeAddMissionNoteForm();
+      fetchMissionNotes();
+    } else {
+      alert("حدث خطأ في إرسال الطلب");
+    }
+  } catch {
+    alert("حدث خطأ في إرسال الطلب");
+  }
+}
+
+// عرض تفاصيل المأمورية مع التوكن
+async function showMissionDetails(missionID) {
+  document.getElementById("missionDetailsPopup").classList.remove("hidden");
+  const container = document.getElementById("missionDetailsContainer");
+  container.innerHTML = "جاري تحميل التفاصيل...";
+
+  try {
+    const [mission, notes, vehicles, jobOrders] = await Promise.all([
+      fetchJsonWithToken(`${missionApi}/${missionID}`),
+      fetchJsonWithToken(`${missionNotesApi}/${missionID}`),
+      fetchJsonWithToken(`${missionVehicleApi}/${missionID}`),
+      fetchJsonWithToken(`${missionJobOrderApi}/${missionID}`)
+    ]);
+
+    container.innerHTML = `
+      <div>
+        <h3>بيانات المأمورية</h3>
+        <p><strong>رقم المأمورية:</strong> ${mission.missionID}</p>
+        <p><strong>الوجهة:</strong> ${mission.distination}</p>
+        <p><strong>تاريخ البداية:</strong> ${mission.missionStartDate ? new Date(mission.missionStartDate).toLocaleString() : ""}</p>
+        <p><strong>تاريخ النهاية:</strong> ${mission.missionEndDate ? new Date(mission.missionEndDate).toLocaleString() : ""}</p>
+        <p><strong>أنشئت بواسطة:</strong> ${mission.createdByUser || ""}</p>
+      </div>
+      <div>
+        <h4>الملاحظات</h4>
+        <ul>
+          ${(Array.isArray(notes.$values) ? notes.$values : []).map(note => `<li>${note.noteContent || note.noteID}</li>`).join("") || "<li>لا توجد ملاحظات</li>"}
+        </ul>
+      </div>
+      <div>
+        <h4>العربيات المرتبطة</h4>
+        <ul>
+          ${(Array.isArray(vehicles.$values) ? vehicles.$values : []).map(vehicle => `<li>${vehicle.plateNumbers || vehicle.vehicleID}</li>`).join("") || "<li>لا توجد عربيات</li>"}
+        </ul>
+      </div>
+      <div>
+        <h4>أوامر الشغل المرتبطة</h4>
+        <ul>
+          ${(Array.isArray(jobOrders.$values) ? jobOrders.$values : []).map(order => `<li>رقم الأمر: ${order.jobOrderID || order.orderID}</li>`).join("") || "<li>لا توجد أوامر شغل</li>"}
+        </ul>
+      </div>
+    `;
+  } catch (err) {
+    container.innerHTML = "حدث خطأ أثناء تحميل التفاصيل";
+  }
+}
+
+function closeMissionDetailsPopup() {
+  document.getElementById("missionDetailsPopup").classList.add("hidden");
+}
+
+// جلب بيانات مع التوكن
+async function fetchJsonWithToken(url) {
+  const token = localStorage.getItem("token");
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return await res.json();
+}
+
+// Mission Notes Section (طلبات المأمورية من المدير)
+document.getElementById("missionNoteOrder").addEventListener("click", showMissionNotes);
+
+function showMissionNotes() {
+  document.getElementById("missionNotePopup").classList.remove("hidden");
+  fetchMissionNotes();
+  document.getElementById("addMissionNoteSection").style.display = (userRole === "HospitalManager") ? "block" : "none";
+}
+
+function closeMissionNotePopup() {
+  document.getElementById("missionNotePopup").classList.add("hidden");
+}
+
+// جلب كل الطلبات (MissionNotes)
+async function fetchMissionNotes() {
+  const container = document.getElementById("missionNotesContainer");
+  container.innerHTML = "جاري التحميل...";
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${missionNotesApi}/All`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    console.log("Mission Notes Data:", data);
+    renderMissionNotes(data);
+  } catch (err) {
+    container.innerHTML = "حدث خطأ أثناء تحميل الطلبات";
+  }
+}
+
+// عرض كروت الطلبات بناءً على شكل الداتا اللي جاي من السيرفر
+function renderMissionNotes(data) {
+  const notes = data.$values || [];
+  const container = document.getElementById("missionNotesContainer");
+  container.innerHTML = "";
+  notes.forEach(note => {
+    const app = note.application || {};
+    let statusText = "";
+    if (app.status === 1) statusText = "جديد";
+    else if (app.status === 2) statusText = "جاري التنفيذ";
+    else if (app.status === 3) statusText = "تم التنفيذ";
+    else statusText = "غير معروف";
+    container.innerHTML += `
+      <div class="card" style="padding:10px; background:#f9f9f9; margin-bottom:10px;">
+        <p><strong>رقم الطلب:</strong> ${note.noteID}</p>
+        <p><strong>الوصف:</strong> ${app.applicationDescription || ""}</p>
+        <p><strong>الحالة:</strong> ${statusText}</p>
+        ${userRole === "GeneralSupervisor" ? `<button onclick="openAddMissionOrderFormFromNote(${note.noteID})">إصدار مأمورية</button>` : ""}
+      </div>
+    `;
+  });
+}
+
+// فتح فورم إرسال طلب مأمورية
+function openAddMissionNoteForm() {
+  document.getElementById("addMissionNotePopup").classList.remove("hidden");
+}
+
+// غلق فورم إرسال طلب مأمورية
+function closeAddMissionNoteForm() {
+  document.getElementById("addMissionNotePopup").classList.add("hidden");
+}
+
+// إرسال طلب مأمورية (MissionNote)
+async function submitMissionNote(e) {
+  e.preventDefault();
+  const token = localStorage.getItem("token");
+  const payload = {
+    application: {
+      creationDate: new Date().toISOString(),
+      status: 1, // جديد
+      applicationType: 1, // نوع الطلب مأمورية
+      applicationDescription: document.getElementById("missionNoteDescription").value,
+      createdByUserID: localStorage.getItem("userId") ? parseInt(localStorage.getItem("userId")) : 0
+    }
+  };
+  try {
+    const res = await fetch(missionNotesApi, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      alert("تم إرسال الطلب بنجاح");
+      closeAddMissionNoteForm();
+      fetchMissionNotes();
+    } else {
+      alert("حدث خطأ في إرسال الطلب");
+    }
+  } catch {
+    alert("حدث خطأ في إرسال الطلب");
+  }
+}
+
+// فتح فورم إضافة مأمورية من طلب
+function openAddMissionOrderFormFromNote(noteID) {
+  fillMissionNoteSelect(noteID);
+  document.getElementById("addMissionOrderPopup").classList.remove("hidden");
+}
+
+// تعبئة قائمة الطلبات في فورم المأمورية
+async function fillMissionNoteSelect(selectedId) {
+  const select = document.getElementById("missionNoteId");
+  select.innerHTML = "<option value=''>اختر طلب مأمورية</option>";
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${missionNotesApi}/All`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    const notes = data.$values || data || [];
+    notes.forEach(note => {
+      const option = document.createElement("option");
+      option.value = note.noteID;
+      option.textContent = `#${note.noteID} - ${note.application?.applicationDescription || ""}`;
+      if (selectedId && note.noteID == selectedId) option.selected = true;
+      select.appendChild(option);
+    });
+  } catch {
+    select.innerHTML = "<option value=''>لا توجد طلبات</option>";
   }
 }

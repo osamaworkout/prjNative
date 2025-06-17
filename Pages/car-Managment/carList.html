@@ -42,41 +42,58 @@
 
   <div id="add-pop" class="pop hidden">
     <div class="pop-content">
-      <h3>إضافة سيارة جديدة</h3>
-      <input type="text" id="car-brand" placeholder="اسم العلامة التجارية للسيارة" />
-      <input type="text" id="car-model" placeholder="موديل السيارة" />
-      <input type="text" id="car-plate" placeholder="رقم لوحة السيارة" />
-      <select id="car-type">
-        <option value="">-- اختر نوع السيارة --</option>
-        <option value="0">سيدان</option>
-        <option value="1">1 كبينة</option>
-        <option value="2">2 كبينة </option>
-        <option value="3"> شاحنة</option>
-        <option value="4"> ميكروباص</option>
-        <option value="5"> ميني باص</option>
-        <option value="6"> اتوبيس</option>
-        <option value="7"> اسعاف</option>
-      </select>
-      <input type="text" id="car-hospital" placeholder="المستشفى المعني" />
-      <input type="text" id="car-task" placeholder="المهمة المعنية" />
-      <select id="car-status">
-        <option value="">-- اختر الحالة --</option>
-        <option value="0">متاح</option>
-        <option value="1">مشغول</option>
-        <option value="2">حالة صيانة</option>
-      </select>
-      <input type="number" id="car-kilometers" placeholder="إجمالي الكيلومترات" />
-      <select id="fuel-type">
-        <option value="">-- اختر نوع الوقود --</option>
-        <option value="0">بنزين</option>
-        <option value="1">ديزل</option>
-      </select>
-      <input type="number" id="fuel-consumption" placeholder="معدل استهلاك الوقود" />
-      <input type="number" id="oil-consumption" placeholder="معدل استهلاك الزيت" />
-      <div class="modal-actions">
-        <button onclick="submitVehicle()">حفظ</button>
-        <button onclick="closePop()">إلغاء</button>
-      </div>
+        <h3>إضافة سيارة جديدة</h3>
+        
+        <div class="input-row">
+            <input type="text" id="car-brand" placeholder="العلامة التجارية" />
+            <input type="text" id="car-model" placeholder="موديل السيارة" />
+        </div>
+        
+        <div class="input-row">
+            <input type="text" id="car-plate" placeholder="رقم اللوحة" />
+            <select id="car-type">
+                <option value="">نوع السيارة</option>
+                <option value="0">سيدان</option>
+                <option value="1">1 كبينة</option>
+                <option value="2">2 كبينة</option>
+                <option value="3">شاحنة</option>
+                <option value="4">ميكروباص</option>
+                <option value="5">ميني باص</option>
+                <option value="6">اتوبيس</option>
+                <option value="7">اسعاف</option>
+            </select>
+        </div>
+        
+        <div class="input-row">
+            <input type="text" id="car-hospital" placeholder="المستشفى" />
+            <input type="text" id="car-task" placeholder="المهمة" />
+        </div>
+        
+        <div class="input-row">
+            <select id="car-status">
+                <option value="">الحالة</option>
+                <option value="0">متاح</option>
+                <option value="1">مشغول</option>
+                <option value="2">في الصيانة</option>
+            </select>
+            <input type="number" id="car-kilometers" placeholder="إجمالي الكيلومترات" />
+        </div>
+        
+        <div class="input-row">
+            <select id="fuel-type">
+                <option value="">نوع الوقود</option>
+                <option value="0">بنزين</option>
+                <option value="1">ديزل</option>
+            </select>
+            <input type="number" id="fuel-consumption" placeholder="معدل استهلاك الوقود" />
+        </div>
+        
+        <input type="number" id="oil-consumption" placeholder="معدل استهلاك الزيت" />
+        
+        <div class="modal-actions">
+            <button onclick="submitVehicle()">حفظ</button>
+            <button onclick="closePop()">إلغاء</button>
+        </div>
     </div>
   </div>
 

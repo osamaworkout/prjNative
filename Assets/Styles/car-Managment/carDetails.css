@@ -124,6 +124,10 @@
 .report-btn {
   background: rgb(218, 217, 217);
 }
+.delete-btn {
+  background: #dc3545;
+  color: white;
+}
 
 /* التبويبات وزر الحفظ */
 .tabs-container {
