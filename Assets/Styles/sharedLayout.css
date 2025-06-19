@@ -128,3 +128,32 @@
   height: 16px;
   cursor: pointer;
 }
+
+@media (min-width: 1024px) and (max-width: 1920px) {
+  .sidebar {
+    width: 200px;
+    padding: 10px;
+  }
+  .content {
+    margin-right: 220px;
+    padding: 16px;
+    margin-top: 50px;
+  }
+  .topbar {
+    width: calc(100% - 200px);
+    padding: 8px 16px;
+  }
+  .menu li {
+    font-size: 20px;
+    margin: 12px;
+    padding: 10px;
+  }
+  .profile {
+    margin-right: 20%;
+    padding: 4px 10px;
+  }
+  .search-container {
+    width: 50vh;
+    padding: 6px 10px;
+  }
+}

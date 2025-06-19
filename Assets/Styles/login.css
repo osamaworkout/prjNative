@@ -1,4 +1,4 @@
- /* Background styling */
+/* Background styling */
  .login {
   margin: 0;
   height: 100vh;
@@ -88,4 +88,35 @@
   height: 180px;
   margin: 0 auto 20px auto;
   display: block;
+}
+
+/* Responsive styles */
+@media (max-width: 600px) {
+  .login-container {
+    width: 95vw;
+    padding: 18px 6px;
+    border-radius: 12px;
+  }
+  .university-logo {
+    width: 110px;
+    height: 110px;
+    margin-bottom: 10px;
+  }
+  .login-header {
+    font-size: 18px;
+  }
+  .login-subheader {
+    font-size: 15px;
+  }
+  .login-description {
+    font-size: 12px;
+    margin-bottom: 18px;
+  }
+  .login-button {
+    padding: 10px;
+    font-size: 14px;
+  }
+  .login-form {
+    gap: 12px;
+  }
 }

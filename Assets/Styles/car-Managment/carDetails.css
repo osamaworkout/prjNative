@@ -287,3 +287,39 @@ td {
   cursor: pointer;
   color: #000;
 }
+
+@media (min-width: 1024px) and (max-width: 1920px) {
+  .container {
+    width: 80%;
+    padding: 40px;
+    margin: 40px auto;
+  }
+  .profile-pic {
+    width: 250px;
+    height: 250px;
+  }
+  .car-title {
+    font-size: 44px;
+  }
+  .car-info h2,
+  #car-name {
+    font-size: 32px;
+  }
+  .form-container {
+    gap: 40px;
+    padding: 40px;
+  }
+  .column {
+    width: 28%;
+    gap: 18px;
+  }
+  .orders-table th,
+  .orders-table td {
+    font-size: 18px;
+    padding: 16px;
+  }
+  .popup-content {
+    padding: 40px;
+    min-width: 400px;
+  }
+}

@@ -318,3 +318,35 @@
     margin-bottom: 5px;
   }
 }
+
+@media (min-width: 1024px) and (max-width: 1920px) {
+  .employee-subscription-container {
+    width: 80%;
+    padding: 40px;
+  }
+  .employee-header-info h2,
+  #employee-name {
+    font-size: 32px;
+  }
+  .employee-header-title {
+    font-size: 44px;
+  }
+  .employee-profile-pic {
+    width: 250px;
+    height: 250px;
+  }
+  .employee-form-container {
+    gap: 40px;
+    padding: 40px;
+  }
+  .employee-subscription-header,
+  .subscription-item {
+    grid-template-columns: repeat(5, 1fr);
+    padding: 20px;
+    font-size: 18px;
+  }
+  .employee-modal-content {
+    max-width: 700px;
+    padding: 40px;
+  }
+}

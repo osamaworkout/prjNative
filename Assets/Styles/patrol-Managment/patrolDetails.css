@@ -184,3 +184,51 @@
     cursor: pointer;
   }
   
+  @media (min-width: 1024px) and (max-width: 1920px) {
+  .header {
+    margin-bottom: 40px;
+    gap: 40px;
+  }
+  .left-section {
+    gap: 20px;
+  }
+  .center-section {
+    gap: 20px;
+  }
+  .action-buttons {
+    width: 800px;
+    height: 40px;
+    top: 140px;
+  }
+  .info-box {
+    min-width: 220px;
+    font-size: 18px;
+  }
+  .icon-box img {
+    width: 70px;
+    height: 70px;
+  }
+  .tabs {
+    margin-bottom: 30px;
+  }
+  .tab {
+    padding: 14px 30px;
+    font-size: 18px;
+  }
+  .form-columns {
+    gap: 50px;
+    padding: 40px;
+  }
+  .form-column {
+    min-width: 300px;
+    gap: 25px;
+  }
+  .form-item input {
+    padding: 16px;
+    font-size: 18px;
+  }
+  th, td {
+    padding: 18px;
+    font-size: 18px;
+  }
+}

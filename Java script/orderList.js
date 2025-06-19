@@ -198,6 +198,15 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 });
 
+switch (userRole) {
+  case "HospitalManager":
+    document.getElementById("jobOrder-Btn").style.display = "none";
+  case "AdministrativeSupervisor":
+    document.getElementById("missionOrder").style.display = "none";
+    document.getElementById("missionNoteOrder").style.display = "none";
+  default:
+}
+
 function showAccessDeniedMessage(applicationName) {
   alert(`عذراً، غير مسموح لك بالوصول إلى ${applicationName}. تحتاج صلاحيات أعلى للوصول لهذه الخدمة.`);
 }
@@ -265,7 +274,6 @@ async function fetchJobOrders() {
         Authorization: `Bearer ${token}`,
       },
     });
-
     if (!res.ok) {
       if (res.status === 403) {
         console.error("المستخدم غير مصرح له بالوصول لأوامر الشغل");
@@ -285,6 +293,7 @@ async function fetchJobOrders() {
 
     const data = await res.json();
     const orders = data.$values || [];
+    console.log("Fetched Job Orders:", orders);
 
     // ربط اسم السائق ورقم اللوحة بالطلب
     orders.forEach(order => {
