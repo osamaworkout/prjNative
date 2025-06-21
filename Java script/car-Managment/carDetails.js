@@ -46,9 +46,8 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById(
           "car-model"
         ).innerText = `الموديل: ${data.modelName}`;
-        document.getElementById("car-type").innerText = `نوع السيارة: ${
-          carType[data.vehicleType]
-        }`;
+        document.getElementById("car-type").innerText = `نوع السيارة: ${carType[data.vehicleType]
+          }`;
         document.getElementById(
           "total-km"
         ).innerText = `${data.totalKilometersMoved} KM`;
@@ -59,10 +58,8 @@ document.addEventListener("DOMContentLoaded", function () {
           data.brandName || "";
         document.querySelector('input[name="carModel"]').value =
           data.modelName || "";
-        document.querySelector('input[name="carType"]').value =
-          carType[data.vehicleType] || "";
-        document.querySelector('input[name="carCondition"]').value =
-          carstatus[data.status] || "";
+        document.querySelector('select[name="carType"]').value = data.vehicleType;
+        document.querySelector('select[name="carCondition"]').value = data.status;
         document.querySelector('input[name="carFunction"]').value =
           data.associatedTask || "";
         document.querySelector('input[name="hospital"]').value =
@@ -71,8 +68,7 @@ document.addEventListener("DOMContentLoaded", function () {
           data.fuelConsumptionRate || "0";
         document.querySelector('input[name="oilConsumption"]').value =
           data.oilConsumptionRate || "0";
-        document.querySelector('input[name="fuelType"]').value =
-          fuelType[data.fuelType] || "";
+        document.querySelector('select[name="fuelType"]').value = data.fuelType;
       })
       .catch((err) => {
         console.error("فشل تحميل بيانات السيارة:", err);
@@ -92,45 +88,49 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
+  function showError(id, message) {
+    const errorElement = document.getElementById(`error-${id}`);
+    if (errorElement) {
+      errorElement.innerText = message || "";
+    }
+  }
+
   function validate() {
-    const carBrand = document.querySelector('input[name="carBrand"]').value;
-    const carModel = document.querySelector('input[name="carModel"]').value;
-    const carNumber = document.querySelector('input[name="carNumber"]').value;
-    const hospital = document.querySelector('input[name="hospital"]').value;
-    const task = document.querySelector('input[name="carFunction"]').value;
+    const carBrand = document.querySelector('input[name="carBrand"]').value.trim();
+    const carModel = document.querySelector('input[name="carModel"]').value.trim();
+    const carNumber = document.querySelector('input[name="carNumber"]').value.trim();
+    const hospital = document.querySelector('input[name="hospital"]').value.trim();
+    const task = document.querySelector('input[name="carFunction"]').value.trim();
 
     let isValid = true;
-    let errorMessages = [];
 
-    if (!carBrand || carBrand.length < 2) {
+    // Clear previous errors
+    ["carBrand", "carModel", "carNumber", "hospital", "carFunction"].forEach(field => showError(field, ""));
+
+    if (carBrand.length < 2) {
       isValid = false;
-      errorMessages.push(
-        "البراند نيم يجب ألا يكون فارغًا وطوله يجب أن يكون 2 حرف على الأقل."
-      );
+      showError("carBrand", "البراند نيم يجب أن يكون 2 أحرف على الأقل.");
     }
 
     if (!carModel) {
       isValid = false;
-      errorMessages.push("الموديل نيم يجب ألا يكون فارغًا.");
+      showError("carModel", "الموديل نيم لا يمكن أن يكون فارغًا.");
     }
 
-    if (!carNumber || !(carNumber.length === 6 || carNumber.length === 7)) {
+    const plateRegex = /^[أ-يA-Za-z]{3}\d{4}$/;
+    if (!plateRegex.test(carNumber)) {
       isValid = false;
-      errorMessages.push("رقم السيارة يجب أن يكون 6 أو 7 حروف.");
+      showError("carNumber", "رقم السيارة يجب أن يتكون من 3 حروف و4 أرقام.");
     }
 
     if (!hospital) {
       isValid = false;
-      errorMessages.push("المستشفى يجب ألا يكون فارغًا.");
+      showError("hospital", "يرجى إدخال اسم المستشفى.");
     }
 
     if (!task) {
       isValid = false;
-      errorMessages.push("التاسك يجب ألا يكون فارغًا.");
-    }
-
-    if (!isValid) {
-      alert(errorMessages.join("\n"));
+      showError("carFunction", "يرجى إدخال المهمة المرتبطة.");
     }
 
     return isValid;
@@ -171,16 +171,13 @@ document.addEventListener("DOMContentLoaded", function () {
       brandName: document.getElementsByName("carBrand")[0].value,
       modelName: document.getElementsByName("carModel")[0].value,
       plateNumbers: document.getElementsByName("carNumber")[0].value,
-      vehicleType:
-        carTypeMap[document.getElementsByName("carType")[0].value] ?? 0,
+      vehicleType: parseInt(document.getElementsByName("carType")[0].value),
       associatedHospital: document.getElementsByName("hospital")[0].value,
       associatedTask: document.getElementsByName("carFunction")[0].value,
-      status:
-        carStatusMap[document.getElementsByName("carCondition")[0].value] ?? 0,
+      status: parseInt(document.getElementsByName("carCondition")[0].value),
       totalKilometersMoved:
         parseInt(document.getElementById("total-km").innerText) || 0,
-      fuelType:
-        fuelTypeMap[document.getElementsByName("fuelType")[0].value] ?? 0,
+      fuelType: parseInt(document.getElementsByName("fuelType")[0].value),
       fuelConsumptionRate: parseFloat(
         document.getElementsByName("fuelConsumption")[0].value
       ),
@@ -188,6 +185,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementsByName("oilConsumption")[0].value
       ),
     };
+
     const token = localStorage.getItem("token");
     fetch("https://movesmartapi.runasp.net/api/Vehicles", {
       method: "PUT",
@@ -209,8 +207,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
       .then((data) => {
         console.log("Success:", data);
-        // closePop();
-        refreshData(); // تحديث البيانات بعد الإضافة
+        alert("تم حفظ التعديلات بنجاح ✅");
+        refreshData();
       })
       .catch((error) => {
         console.error("Error:", error);
@@ -220,6 +218,7 @@ document.addEventListener("DOMContentLoaded", function () {
   saveButton?.addEventListener("click", () => {
     editVehicle();
   });
+
 
   backButton?.addEventListener("click", () => {
     window.history.back();

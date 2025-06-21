@@ -174,31 +174,43 @@ function displayCars(filteredList) {
   filteredList.forEach((car) => {
     const carCard = document.createElement("div");
     carCard.classList.add("card");
+    carCard.style.cursor = "pointer";
+
+    const carLink = `../../Pages/car-Managment/carDetails.html?id=${car.vehicleID}&type=${car.isBus ? "bus" : "vehicle"}`;
+    carCard.onclick = () => {
+      window.location.href = carLink;
+    };
 
     if (car.isBus) {
       carCard.innerHTML = `
-        <p><strong></strong> <a href="../../Pages/car-Managment/carDetails.html?id=${
-          car.vehicleID
-        }&type=bus">${car.plateNumbers}</a></p>
+        <p><strong></strong> ${car.plateNumbers}</p>
         <p><strong></strong> ${car.brandName}</p>
         <p><strong></strong> ${car.modelName}</p>
         <p><strong></strong> ${carType[car.vehicleType] || "غير معروف"}</p>
         <p><strong></strong> ${car.associatedHospital}</p>
-        <p class="status ${car.status === 0 ? "active" : "inactive"}">
+        <p class="status ${car.status === 0
+          ? "active"
+          : car.status === 2
+            ? "maintenance"
+            : "inactive"
+        }">
           <strong></strong> ${carstatus[car.status] || "غير معروف"}
         </p>
         <p>السعة: ${car.capacity} | المتاح: ${car.availableSpace}</p>
       `;
     } else {
       carCard.innerHTML = `
-        <p><strong></strong> <a href="../../Pages/car-Managment/carDetails.html?id=${
-          car.vehicleID
-        }&type=vehicle">${car.plateNumbers}</a></p>
+        <p><strong></strong> ${car.plateNumbers}</a></p>
         <p><strong></strong> ${car.brandName}</p>
         <p><strong></strong> ${car.modelName}</p>
         <p><strong></strong> ${carType[car.vehicleType] || "غير معروف"}</p>
         <p><strong></strong> ${car.associatedHospital}</p>
-        <p class="status ${car.status === 0 ? "active" : "inactive"}">
+        <p class="status ${car.status === 0
+          ? "active"
+          : car.status === 2
+            ? "maintenance"
+            : "inactive"
+        }">
           <strong></strong> ${carstatus[car.status] || "غير معروف"}
         </p>
       `;
@@ -313,57 +325,75 @@ function submitVehicle() {
 }
 
 // التحقق من صحة البيانات
+function showError(id, message) {
+  document.getElementById(`error-${id}`).innerText = message || "";
+}
+
 function validate(type = "vehicle") {
-  const carBrand = document.getElementById("car-brand").value;
-  const carModel = document.getElementById("car-model").value;
-  const carNumber = document.getElementById("car-plate").value;
-  const hospital = document.getElementById("car-hospital").value;
-  const task = document.getElementById("car-task").value;
+  const carBrand = document.getElementById("car-brand").value.trim();
+  const carModel = document.getElementById("car-model").value.trim();
+  const carNumber = document.getElementById("car-plate").value.trim();
+  const hospital = document.getElementById("car-hospital").value.trim();
+  const task = document.getElementById("car-task").value.trim();
+
+  const clearAllErrors = () => {
+    showError("car-brand", "");
+    showError("car-model", "");
+    showError("car-plate", "");
+    showError("car-hospital", "");
+    showError("car-task", "");
+    showError("bus-capacity", "");
+    showError("bus-available-space", "");
+  };
+
+  clearAllErrors();
 
   let isValid = true;
-  let errorMessages = [];
 
   if (carBrand.length < 2) {
     isValid = false;
-    errorMessages.push(
-      "البراند نيم يجب ألا يكون فارغًا وطوله يجب أن يكون 2 حرف على الأقل."
-    );
+    showError("car-brand", "البراند نيم يجب أن يكون 2 أحرف على الأقل.");
   }
+
   if (!carModel) {
     isValid = false;
-    errorMessages.push("الموديل نيم يجب ألا يكون فارغًا.");
+    showError("car-model", "الموديل نيم لا يمكن أن يكون فارغًا.");
   }
-  if (!carNumber || !(carNumber.length === 6 || carNumber.length === 7)) {
+
+  const plateRegex = /^[أ-يA-Za-z]{3}\d{4}$/; // 3 حروف + 4 أرقام
+  if (!plateRegex.test(carNumber)) {
     isValid = false;
-    errorMessages.push("رقم السيارة يجب أن يكون 6 أو 7 حروف.");
+    showError("car-plate", "رقم السيارة يجب أن يتكون من 3 حروف و4 أرقام.");
   }
+
   if (!hospital) {
     isValid = false;
-    errorMessages.push("المستشفى يجب ألا يكون فارغًا.");
+    showError("car-hospital", "يرجى تحديد المستشفى.");
   }
+
   if (!task) {
     isValid = false;
-    errorMessages.push("التاسك يجب ألا يكون فارغًا.");
+    showError("car-task", "يرجى تحديد المهمة المرتبطة.");
   }
 
   if (type === "bus") {
-    const capacity = document.getElementById("bus-capacity").value;
-    const availableSpace = document.getElementById("bus-available-space").value;
-    if (!capacity || capacity <= 0) {
+    const capacity = parseInt(document.getElementById("bus-capacity").value);
+    const availableSpace = parseInt(document.getElementById("bus-available-space").value);
+
+    if (isNaN(capacity) || capacity <= 0) {
       isValid = false;
-      errorMessages.push("سعة الباص مطلوبة ويجب أن تكون أكبر من صفر.");
+      showError("bus-capacity", "السعة يجب أن تكون رقمًا موجبًا.");
     }
-    if (availableSpace === "" || availableSpace < 0) {
+
+    if (isNaN(availableSpace) || availableSpace < 0) {
       isValid = false;
-      errorMessages.push("عدد المقاعد المتاحة مطلوب ولا يمكن أن يكون سالب.");
+      showError("bus-available-space", "المقاعد المتاحة يجب ألا تكون سالبة.");
     }
   }
 
-  if (!isValid) {
-    alert(errorMessages.join("\n"));
-  }
   return isValid;
 }
+
 
 // إظهار نافذة الإضافة
 function openPop() {

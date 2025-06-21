@@ -12,7 +12,7 @@
   <div class="container">
     <h2>السيارات</h2>
     <p class="total-cars">إجمالي السيارات: <span id="total-count">0</span></p>
-    
+
     <!-- Actions: Search, Filter, Add, Refresh -->
     <div class="actions">
       <input type="text" id="search" placeholder="بحث..." onkeyup="searchCars()" />
@@ -20,10 +20,11 @@
         <option value="all" selected>الجميع</option>
         <option value="0">متاحة</option>
         <option value="1">غير متاحة</option>
+        <option value="2">قيد الصيانة</option>
       </select>
       <select id="type-filter" onchange="filterCars()">
-        <!-- <option value="all" selected>كل الأنواع</option> -->
-        <option value="vehicle" selected>سيارة</option>
+        <option value="all" selected>كل الأنواع</option>
+        <option value="vehicle">سيارة</option>
         <option value="bus">باص</option>
       </select>
       <button onclick="openPop()">+ إضافة سيارة/باص</button>
@@ -50,54 +51,95 @@
         <option value="vehicle" selected>سيارة</option>
         <option value="bus">باص</option>
       </select>
+
       <div id="vehicle-fields">
         <div class="input-row">
-          <input type="text" id="car-brand" placeholder="العلامة التجارية" />
-          <input type="text" id="car-model" placeholder="موديل السيارة" />
+          <div>
+            <input type="text" id="car-brand" placeholder="العلامة التجارية" />
+            <small class="error" id="error-car-brand"></small>
+          </div>
+          <div>
+            <input type="text" id="car-model" placeholder="موديل السيارة" />
+            <small class="error" id="error-car-model"></small>
+          </div>
         </div>
+
         <div class="input-row">
-          <input type="text" id="car-plate" placeholder="رقم اللوحة" />
-          <select id="car-type">
-            <option value="">نوع السيارة</option>
-            <option value="0">سيدان</option>
-            <option value="1">1 كبينة</option>
-            <option value="2">2 كبينة</option>
-            <option value="3">شاحنة</option>
-            <option value="4">ميكروباص</option>
-            <option value="5">ميني باص</option>
-            <option value="6">اتوبيس</option>
-            <option value="7">اسعاف</option>
-          </select>
+          <div>
+            <input type="text" id="car-plate" placeholder="رقم اللوحة" />
+            <small class="error" id="error-car-plate"></small>
+          </div>
+          <div>
+            <select id="car-type">
+              <option value="">نوع السيارة</option>
+              <option value="0">سيدان</option>
+              <option value="1">1 كبينة</option>
+              <option value="2">2 كبينة</option>
+              <option value="3">شاحنة</option>
+              <option value="4">ميكروباص</option>
+              <option value="5">ميني باص</option>
+              <option value="6">اتوبيس</option>
+              <option value="7">اسعاف</option>
+            </select>
+          </div>
         </div>
+
         <div class="input-row">
-          <input type="text" id="car-hospital" placeholder="المستشفى" />
-          <input type="text" id="car-task" placeholder="المهمة" />
+          <div>
+            <input type="text" id="car-hospital" placeholder="المستشفى" />
+            <small class="error" id="error-car-hospital"></small>
+          </div>
+          <div>
+            <input type="text" id="car-task" placeholder="المهمة" />
+            <small class="error" id="error-car-task"></small>
+          </div>
         </div>
+
         <div class="input-row">
-          <select id="car-status">
-            <option value="">الحالة</option>
-            <option value="0">متاح</option>
-            <option value="1">مشغول</option>
-            <option value="2">في الصيانة</option>
-          </select>
-          <input type="number" id="car-kilometers" placeholder="إجمالي الكيلومترات" />
+          <div>
+            <select id="car-status">
+              <option value="">الحالة</option>
+              <option value="0">متاح</option>
+              <option value="1">مشغول</option>
+              <option value="2">في الصيانة</option>
+            </select>
+          </div>
+          <div>
+            <input type="number" id="car-kilometers" placeholder="إجمالي الكيلومترات" />
+          </div>
         </div>
+
         <div class="input-row">
-          <select id="fuel-type">
-            <option value="">نوع الوقود</option>
-            <option value="0">بنزين</option>
-            <option value="1">ديزل</option>
-          </select>
-          <input type="number" id="fuel-consumption" placeholder="معدل استهلاك الوقود" />
+          <div>
+            <select id="fuel-type">
+              <option value="">نوع الوقود</option>
+              <option value="0">بنزين</option>
+              <option value="1">ديزل</option>
+            </select>
+          </div>
+          <div>
+            <input type="number" id="fuel-consumption" placeholder="معدل استهلاك الوقود" />
+          </div>
         </div>
-        <input type="number" id="oil-consumption" placeholder="معدل استهلاك الزيت" />
+
+        <div>
+          <input type="number" id="oil-consumption" placeholder="معدل استهلاك الزيت" />
+        </div>
       </div>
+
       <div id="bus-fields" style="display:none;">
         <div class="input-row">
-          <input type="number" id="bus-capacity" placeholder="السعة الكلية" />
-          <input type="number" id="bus-available-space" placeholder="المقاعد المتاحة" />
+          <div>
+            <input type="number" id="bus-capacity" placeholder="السعة الكلية" />
+            <small class="error" id="error-bus-capacity"></small>
+          </div>
+          <div>
+            <input type="number" id="bus-available-space" placeholder="المقاعد المتاحة" />
+            <small class="error" id="error-bus-available-space"></small>
+          </div>
         </div>
       </div>
+
       <div class="modal-actions">
         <button onclick="submitVehicle()">حفظ</button>
         <button onclick="closePop()">إلغاء</button>
@@ -105,6 +147,8 @@
     </div>
   </div>
 
+
 </body>
-  <script src="../../Java script/car-Managment/carList.js"></script>
+<script src="../../Java script/car-Managment/carList.js"></script>
+
 </html>

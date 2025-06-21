@@ -16,7 +16,6 @@
   padding: 20px;
 }
 
-/* الجزء العلوي */
 .top-section {
   display: flex;
   align-items: center;
@@ -66,7 +65,6 @@
   margin-bottom: 10px;
 }
 
-/* صورة السائق */
 .profile-pic {
   width: 200px;
   height: 200px;
@@ -75,14 +73,12 @@
   background: none;
 }
 
-/* (زر الرجوع + الأزرار) */
 .left-side {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
 }
 
-/* زر الرجوع */
 .back-btn {
   padding: 10px;
   width: 90px;
@@ -94,7 +90,6 @@
   cursor: pointer;
 }
 
-/* الأزرار */
 .actions {
   display: flex;
   flex-direction: row;
@@ -129,7 +124,6 @@
   color: white;
 }
 
-/* التبويبات وزر الحفظ */
 .tabs-container {
   display: flex;
   align-items: center;
@@ -159,7 +153,6 @@
   transition: transform 0.2s ease-in-out;
 }
 
-/* زر الحفظ */
 .save-btn {
   padding: 10px 20px;
   background: #28a745;
@@ -170,7 +163,6 @@
   border-radius: 5px;
 }
 
-/* ترتيب الحقول */
 .form-container {
   margin-top: 10px;
   display: flex;
@@ -208,7 +200,33 @@ input {
   font-size: 18px;
 }
 
-/* جدول أوامر الشغل */
+.error {
+  color: red;
+  font-size: 13px;
+  margin-top: 5px;
+  display: block;
+}
+
+.input-group select {
+  width: 100%;
+  padding: 8px;
+  margin: 5px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 18px;
+  background-color: #fff;
+  font-family: inherit;
+}
+
+.input-group select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg fill='gray' viewBox='0 0 24 24' width='20' height='20' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: left 8px center;
+  background-size: 20px;
+  padding-right: 30px;
+}
+
 .orders-table {
   width: 100%;
   border-collapse: collapse;

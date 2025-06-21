@@ -1,21 +1,20 @@
-/* body {
-        font-family: 'Cairo', sans-serif;
-        background: #f8f8f8;
-        margin: 0;
-        padding: 0;
-        direction: rtl;
-    } */
+/* قاعدة عامة للجسم */
+body {
+  font-family: "Cairo", sans-serif;
+  background: #f8f8f8;
+  margin: 0;
+  padding: 0;
+  direction: rtl;
+}
 
 .container {
-  width: 95%;  
-  margin: auto;
+  width: 95%;
+  margin: 20px auto;
   background: white;
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  direction: rtl;
   background-color: #f8f8f8;
-  margin: 20px;
   text-align: right;
 }
 
@@ -36,12 +35,13 @@
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
   margin-bottom: 20px;
   align-items: center;
+  gap: 10px;
 }
 
 .actions {
   display: flex;
-  gap: 10px;
   flex-wrap: wrap;
+  gap: 10px;
 }
 
 .actions input {
@@ -61,31 +61,22 @@
 
 .content {
   display: flex;
+  flex-direction: row;
   gap: 20px;
+  flex-wrap: wrap;
 }
 
-.parts-list {
-  width: 30%;
+.parts-list,
+.cards-container {
   background: #fff;
   border-radius: 10px;
   padding: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-  height: fit-content;
+  flex: 1 1 100%;
 }
 
-.parts-list ul {
-  list-style: none;
-  padding: 0;
-}
-
-.parts-list li {
-  padding: 10px;
-  border-bottom: 1px solid #eee;
-  cursor: pointer;
-}
-
+/* الكروت */
 .cards-container {
-  width: 70%;
   display: flex;
   flex-direction: column;
   gap: 15px;
@@ -130,7 +121,7 @@
 }
 
 .hidden {
-  display: none !important; /* نأكد إنها فعلاً بتخفي العنصر */
+  display: none !important;
 }
 
 .popup {
@@ -140,87 +131,142 @@
   left: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
-  display: flex; 
+  display: flex;
   justify-content: center;
   align-items: center;
-  visibility: visible;
-  opacity: 1;
-  transition: opacity 0.3s ease;
+  z-index: 1000;
+  direction: ltr;
 }
 
-
 .popup-content {
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  min-width: 300px;
+  background: #fff;
+  padding: 25px 30px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 15px;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.popup-content h3 {
+  margin-top: 0;
+  color: #444;
+  text-align: center;
+  font-size: 22px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.popup-content label {
+  font-weight: bold;
+  margin-top: 5px;
+  color: #555;
+}
+
+.popup-content input[type="text"],
+.popup-content input[type="number"] {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 15px;
+  transition: border-color 0.3s;
+}
+
+.popup-content input:focus {
+  border-color: #d4af37;
+  outline: none;
 }
 
 .popup-buttons {
   display: flex;
   justify-content: space-between;
-  margin-top: 10px;
+  gap: 10px;
+  margin-top: 15px;
 }
 
-/* Responsive styles */
-@media (max-width: 1024px) {
+.popup-buttons button {
+  flex: 1;
+  padding: 10px 15px;
+  font-size: 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+#addBtnSubmit {
+  background-color: #000702;
+  color: white;
+}
+
+#addBtnSubmit:hover {
+  background-color: #5a6268;
+}
+
+#editBtnSubmit {
+  background-color: #010407;
+  color: white;
+}
+
+#editBtnSubmit:hover {
+  background-color: #0069d9;
+}
+
+.popup-buttons button:last-child {
+  background-color: #010508;
+  color: white;
+}
+
+.popup-buttons button:last-child:hover {
+  background-color: #5a6268;
+}
+
+@keyframes fadeIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .parts-list {
+    flex: 0 0 30%;
+  }
+
+  .cards-container {
+    flex: 0 0 68%;
+  }
+}
+
+@media screen and (max-width: 767px) {
   .content {
     flex-direction: column;
-    gap: 10px;
   }
+
   .parts-list,
   .cards-container {
     width: 100%;
   }
-}
 
-@media (max-width: 768px) {
-  .container {
-    padding: 10px;
-    margin: 10px;
-  }
   .header {
     flex-direction: column;
-    gap: 10px;
-    padding: 10px;
+    align-items: flex-start;
   }
-  .page-title {
-    font-size: 20px;
-  }
-  .card {
-    padding: 12px;
-  }
-}
 
-@media (max-width: 480px) {
-  .container {
-    padding: 5px;
-    margin: 5px;
-  }
-  .header {
-    padding: 6px;
-  }
-  .page-title {
-    font-size: 16px;
-  }
-  .card {
-    padding: 8px;
-    border-radius: 8px;
-  }
-  .popup-content {
-    min-width: unset;
-    width: 95vw;
-    padding: 10px;
-  }
-  .card-buttons {
-    flex-direction: column;
-    gap: 6px;
-  }
   .actions {
     flex-direction: column;
-    gap: 6px;
+    width: 100%;
+  }
+
+  .actions input,
+  .actions button {
+    width: 100%;
   }
 }

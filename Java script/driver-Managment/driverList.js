@@ -1,8 +1,8 @@
 // Navigation functionality
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   const token = localStorage.getItem('token');
   const userRole = localStorage.getItem('userRole');
-  
+
   if (!token) {
     window.location.href = '../../Login.html';
     return;
@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Add click event listener to the page title for navigation
   const pageTitle = document.querySelector('h2');
   pageTitle.style.cursor = 'pointer';
-  pageTitle.addEventListener('click', function() {
+  pageTitle.addEventListener('click', function () {
     window.location.href = `../dash-Boards/${userRole.toLowerCase()}Dashboard.html`;
   });
 });
@@ -26,7 +26,10 @@ function closePop() {
   document.getElementById("add-pop").classList.add("hidden");
 }
 
-function submitDriver() {
+async function submitDriver() {
+  const saveButton = document.querySelector(".pop-actions button:first-child");
+  saveButton.disabled = true; // ⛔ منع الضغط المكرر
+
   const name = document.getElementById("driver-name").value.trim();
   const nationalNo = document.getElementById("nationalNum").value.trim();
   const phone = document.getElementById("driver-phone").value.trim();
@@ -34,14 +37,14 @@ function submitDriver() {
 
   const statusText = document.getElementById("driver-status").value;
   const statusMap = {
-    "متاح": 0,    // Available
-    "غائب": 1,    // Absent
-    "قيد العمل": 2  // Working
+    "متاح": 0,
+    "غائب": 1,
+    "قيد العمل": 2,
   };
   const status = statusMap[statusText];
 
   if (!validate()) {
-    alert("يرجى ملء جميع الحقول بشكل صحيح");
+    saveButton.disabled = false;
     return;
   }
 
@@ -54,16 +57,38 @@ function submitDriver() {
     vehicleID,
   };
 
-  addDriver(newDriver);
+  try {
+    await addDriver(newDriver); // 🚀 المحاولة
 
-  document.getElementById("driver-name").value = "";
-  document.getElementById("nationalNum").value = "";
-  document.getElementById("driver-status").value = "";
-  document.getElementById("driver-phone").value = "";
-  document.getElementById("vehicleID").value = "";
+    // 🧼 تنظيف الحقول
+    document.getElementById("driver-name").value = "";
+    document.getElementById("nationalNum").value = "";
+    document.getElementById("driver-status").value = "";
+    document.getElementById("driver-phone").value = "";
+    document.getElementById("vehicleID").value = "";
 
-  closePop();
+    // ✅ عرض رسالة نجاح
+    const successBox = document.getElementById("success-message");
+    if (successBox) {
+      successBox.classList.remove("hidden");
+      setTimeout(() => {
+        successBox.classList.add("hidden");
+      }, 3000);
+    }
+
+    closePop();
+
+  } catch (error) {
+    console.error("فشل في إضافة السائق:", error);
+
+    // ❌ رسالة تنبيه بالفشل
+    alert("حدث خطأ أثناء حفظ البيانات. حاول مرة أخرى.");
+  } finally {
+    saveButton.disabled = false; // ✅ إعادة التمكين
+  }
 }
+
+
 
 async function loadDriver() {
   try {
@@ -129,20 +154,30 @@ function displayDriver(list) {
     driverCard.classList.add("card");
 
     driverCard.innerHTML = `
-      <p><strong></strong> <a href="../../Pages/driver-Managment/driverDetails.html?id=${
-        driver.driverID
-      }">${driver.name}</a></p>
-      <p class="status ${driver.status === 0 ? "active" : "inactive"}">
-        <strong></strong> ${driverStatusMap[driver.status] || "غير معروف"}
-      </p>
-      <p><strong></strong> ${driver.phone}</p>
-      <p><strong></strong> ${driver.vehicleID}</p>
-    `;
+  <p><strong></strong> ${driver.name}</p>
+  <p class="status ${driver.status === 0 ? "active" : "inactive"}">
+    <strong></strong> ${driverStatusMap[driver.status] || "غير معروف"}
+  </p>
+  <p><strong></strong> ${driver.phone}</p>
+  <p><strong></strong> ${driver.vehicleID}</p>
+`;
+
+    driverCard.style.cursor = "pointer";
+    driverCard.addEventListener("click", () => {
+      window.location.href = `../../Pages/driver-Managment/driverDetails.html?id=${driver.driverID}`;
+    });
 
     container.appendChild(driverCard);
   });
 
   document.getElementById("total-count").innerText = list.length;
+}
+
+function showFieldError(id, message) {
+  const fieldError = document.getElementById(`error-${id}`);
+  if (fieldError) {
+    fieldError.innerText = message || "";
+  }
 }
 
 function validate() {
@@ -151,56 +186,52 @@ function validate() {
   const status = document.getElementById("driver-status").value.trim();
   const phone = document.getElementById("driver-phone").value.trim();
   const vehicleID = document.getElementById("vehicleID").value.trim();
-  const errorMessage = document.getElementById("error-message");
-
-  errorMessage.innerText = "";
-  errorMessage.classList.add("hidden");
 
   let isValid = true;
-  let errorMessages = [];
+
+  // Clear previous errors
+  ["driver-name", "nationalNum", "driver-status", "driver-phone", "vehicleID"].forEach(id => {
+    showFieldError(id, "");
+  });
 
   if (!name || name.length < 2) {
     isValid = false;
-    errorMessages.push(
-      "اسم السائق يجب ألا يكون فارغًا وطوله يجب أن يكون 2 حرف على الأقل."
-    );
-  }
-  if (!nationalNo || nationalNo.length != 14) {
-    isValid = false;
-    errorMessages.push(
-      "رقم الهوية يجب ألا يكون فارغًا وطوله يجب أن يكون 14 رقم على الأقل."
-    );
-  }
-  if (!status) {
-    isValid = false;
-    errorMessages.push("حالة السائق يجب ألا تكون فارغة.");
-  }
-  if (!phone || phone.length != 11) {
-    isValid = false;
-    errorMessages.push("رقم الهاتف يجب أن يكون 11 رقم.");
-  }
-  if (!vehicleID) {
-    isValid = false;
-    errorMessages.push("رقم السيارة يجب ألا يكون فارغًا.");
+    showFieldError("driver-name", "الاسم يجب أن يكون على الأقل حرفين.");
   }
 
-  if (!isValid) {
-    errorMessage.innerText = errorMessages.join("\n");
-    errorMessage.classList.remove("hidden");
+  if (!/^\d{14}$/.test(nationalNo)) {
+    isValid = false;
+    showFieldError("nationalNum", "الرقم القومي يجب أن يكون 14 رقمًا.");
+  }
+
+  if (!status) {
+    isValid = false;
+    showFieldError("driver-status", "يرجى اختيار حالة السائق.");
+  }
+
+  if (!/^01[0125][0-9]{8}$/.test(phone)) {
+    isValid = false;
+    showFieldError("driver-phone", "رقم الهاتف يجب أن يبدأ بـ 01 ويكون 11 رقم.");
+  }
+
+  if (!vehicleID) {
+    isValid = false;
+    showFieldError("vehicleID", "يرجى اختيار رقم السيارة.");
   }
 
   return isValid;
 }
 
+
 async function loadCars() {
-  
+
   try {
     const token = localStorage.getItem("token");
     const response = await fetch(
       "https://movesmartapi.runasp.net/api/Vehicles/All",
       {
         method: "GET",
-        headers: {  Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` },
       }
     );
     const data = await response.json();
@@ -228,22 +259,16 @@ function displayCars(cars) {
 }
 
 async function addDriver(newDriver) {
-  const errorMessage = document.getElementById("error-message");
-
-  errorMessage.innerText = "";
-  errorMessage.classList.add("hidden");
-
-  if (!validate()) return;
-
   try {
     const token = localStorage.getItem("token");
     const response = await fetch(
       "https://movesmartapi.runasp.net/api/drivers",
       {
         method: "POST",
-        headers: { "Content-Type": "application/json",
+        headers: {
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
-         },
+        },
         body: JSON.stringify(newDriver),
       }
     );
@@ -251,12 +276,18 @@ async function addDriver(newDriver) {
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Response Error Text:", errorText);
-      throw new Error("خطأ في إضافة السائق");
+      throw new Error("⚠️ خطأ في إضافة السائق");
     }
 
-    loadDriver();
+    loadDriver(); // تحديث القائمة
   } catch (error) {
-    console.error("خطأ أثناء الإضافة:", error);
+    console.error("❌ خطأ أثناء الإضافة:", error);
+
+    // مثال: عرض رسالة تحت الرقم القومي
+    const errTarget = document.getElementById("error-nationalNum");
+    if (errTarget) {
+      errTarget.innerText = "⚠️ لم يتم حفظ البيانات، حاول مرة أخرى.";
+    }
   }
 }
 
