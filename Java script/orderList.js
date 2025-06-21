@@ -144,12 +144,20 @@ function updateStatusByTime() {
   statusElement.value = calculatedStatus;
 }
 
+switch (userRole) {
+  case ("HospitalManager"):
+    document.getElementById("jobOrder-Btn").style.display = "none";
+    break;
+  default:
+    break;
+}
+
 document.getElementById("jobOrder").addEventListener("click", showJobOrders);
 
 // Handle role-based access for application cards
 document.addEventListener("DOMContentLoaded", function() {
   const userRole = localStorage.getItem("userRole");
-  
+
   // Define which roles can access which applications
   const rolePermissions = {
     "SuperUser": ["jobOrder", "purchaseOrder", "payOrder", "maintananceOrder", "missionOrder"],
@@ -197,15 +205,6 @@ document.addEventListener("DOMContentLoaded", function() {
     }
   });
 });
-
-switch (userRole) {
-  case "HospitalManager":
-    document.getElementById("jobOrder-Btn").style.display = "none";
-  case "AdministrativeSupervisor":
-    document.getElementById("missionOrder").style.display = "none";
-    document.getElementById("missionNoteOrder").style.display = "none";
-  default:
-}
 
 function showAccessDeniedMessage(applicationName) {
   alert(`عذراً، غير مسموح لك بالوصول إلى ${applicationName}. تحتاج صلاحيات أعلى للوصول لهذه الخدمة.`);
@@ -427,9 +426,13 @@ function showJobOrderDetails(order) {
 
       <!-- Action Buttons -->
       <div class="details-actions">
-        <button class="btn btn-primary" onclick='editJobOrder(${JSON.stringify(order)})'>
-          <span>✏️</span> تعديل
-        </button>
+        ${
+          userRole !== "HospitalManager"
+            ? `<button class="btn btn-primary" onclick='editJobOrder(${JSON.stringify(order)})'>
+                <span>✏️</span> تعديل
+              </button>`
+            : ""
+        }
         <button class="btn btn-secondary" onclick="closePopupDetails(this)">
           <span>✕</span> إغلاق
         </button>
@@ -846,8 +849,8 @@ async function submitMissionNote(e) {
     } else {
       alert("حدث خطأ في إرسال الطلب");
     }
-  } catch {
-    alert("حدث خطأ في إرسال الطلب");
+  } catch (err) {
+    console.error("فشل في إرسال الطلب", err);
   }
 }
 
@@ -902,7 +905,6 @@ function closeMissionDetailsPopup() {
   document.getElementById("missionDetailsPopup").classList.add("hidden");
 }
 
-// جلب بيانات مع التوكن
 async function fetchJsonWithToken(url) {
   const token = localStorage.getItem("token");
   const res = await fetch(url, {
@@ -920,49 +922,6 @@ function showMissionNotes() {
   document.getElementById("addMissionNoteSection").style.display = (userRole === "HospitalManager") ? "block" : "none";
 }
 
-function closeMissionNotePopup() {
-  document.getElementById("missionNotePopup").classList.add("hidden");
-}
-
-// جلب كل الطلبات (MissionNotes)
-async function fetchMissionNotes() {
-  const container = document.getElementById("missionNotesContainer");
-  container.innerHTML = "جاري التحميل...";
-  try {
-    const token = localStorage.getItem("token");
-    const res = await fetch(`${missionNotesApi}/All`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    const data = await res.json();
-    console.log("Mission Notes Data:", data);
-    renderMissionNotes(data);
-  } catch (err) {
-    container.innerHTML = "حدث خطأ أثناء تحميل الطلبات";
-  }
-}
-
-// عرض كروت الطلبات بناءً على شكل الداتا اللي جاي من السيرفر
-function renderMissionNotes(data) {
-  const notes = data.$values || [];
-  const container = document.getElementById("missionNotesContainer");
-  container.innerHTML = "";
-  notes.forEach(note => {
-    const app = note.application || {};
-    let statusText = "";
-    if (app.status === 1) statusText = "جديد";
-    else if (app.status === 2) statusText = "جاري التنفيذ";
-    else if (app.status === 3) statusText = "تم التنفيذ";
-    else statusText = "غير معروف";
-    container.innerHTML += `
-      <div class="card" style="padding:10px; background:#f9f9f9; margin-bottom:10px;">
-        <p><strong>رقم الطلب:</strong> ${note.noteID}</p>
-        <p><strong>الوصف:</strong> ${app.applicationDescription || ""}</p>
-        <p><strong>الحالة:</strong> ${statusText}</p>
-        ${userRole === "GeneralSupervisor" ? `<button onclick="openAddMissionOrderFormFromNote(${note.noteID})">إصدار مأمورية</button>` : ""}
-      </div>
-    `;
-  });
-}
 
 // فتح فورم إرسال طلب مأمورية
 function openAddMissionNoteForm() {
@@ -972,37 +931,6 @@ function openAddMissionNoteForm() {
 // غلق فورم إرسال طلب مأمورية
 function closeAddMissionNoteForm() {
   document.getElementById("addMissionNotePopup").classList.add("hidden");
-}
-
-// إرسال طلب مأمورية (MissionNote)
-async function submitMissionNote(e) {
-  e.preventDefault();
-  const token = localStorage.getItem("token");
-  const payload = {
-    application: {
-      creationDate: new Date().toISOString(),
-      status: 1, // جديد
-      applicationType: 1, // نوع الطلب مأمورية
-      applicationDescription: document.getElementById("missionNoteDescription").value,
-      createdByUserID: localStorage.getItem("userId") ? parseInt(localStorage.getItem("userId")) : 0
-    }
-  };
-  try {
-    const res = await fetch(missionNotesApi, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify(payload)
-    });
-    if (res.ok) {
-      alert("تم إرسال الطلب بنجاح");
-      closeAddMissionNoteForm();
-      fetchMissionNotes();
-    } else {
-      alert("حدث خطأ في إرسال الطلب");
-    }
-  } catch {
-    alert("حدث خطأ في إرسال الطلب");
-  }
 }
 
 // فتح فورم إضافة مأمورية من طلب

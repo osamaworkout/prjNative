@@ -86,7 +86,7 @@
 
         <div class="application-card" id="missionNoteOrder">
           <div class="card-icon">📝</div>
-          <h3 class="card-title">طلب مأمورية</h3>
+          <h3 class="card-title">مذكرة مأمورية</h3>
           <p class="card-description">طلبات المأمورية من مديري المستشفيات</p>
           <div class="card-badge active">متاح</div>
         </div>
@@ -348,7 +348,7 @@
         </div>
         <div id="addMissionNoteSection" style="margin-bottom: 12px; text-align: left; display:none;">
           <button class="button" onclick="openAddMissionNoteForm()">
-            ➕ إرسال طلب مأمورية
+            ➕ إرسال مذكرة مأمورية
           </button>
         </div>
         <div id="missionNotesContainer" class="space-y-2"></div>
@@ -359,7 +359,7 @@
     <div id="addMissionNotePopup" class="popup hidden">
       <div class="popup-content job-order-form">
         <div class="form-header">
-          <h2>إرسال طلب مأمورية</h2>
+          <h2>إرسال مذكرة مأمورية</h2>
           <button type="button" class="close-btn" onclick="closeAddMissionNoteForm()">
             ✕
           </button>
@@ -367,7 +367,7 @@
         <form id="missionNoteForm" onsubmit="submitMissionNote(event)">
           <div class="form-section">
             <div class="form-group">
-              <label for="missionNoteDescription">وصف الطلب</label>
+              <label for="missionNoteDescription">وصف مذكرة</label>
               <textarea id="missionNoteDescription" required></textarea>
             </div>
           </div>
@@ -394,91 +394,5 @@
       </div>
     </div>
     <script src="../../Java script/orderList.js"></script>
-    <script>
-      // Handle role-based access for application cards
-      document.addEventListener("DOMContentLoaded", function() {
-        const userRole = localStorage.getItem("userRole");
-        
-        // Define which roles can access which applications
-        const rolePermissions = {
-          // Arabic role names
-          "أدمن": ["jobOrder", "purchaseOrder", "payOrder", "maintananceOrder", "missionOrder"],
-          "سكرتارية": ["jobOrder", "missionOrder"],
-          "مشرف إداري": ["jobOrder", "purchaseOrder", "payOrder"],
-          "مشرف نقل": ["jobOrder", "maintananceOrder"],
-          "مشرف عام": ["jobOrder", "purchaseOrder", "payOrder", "maintananceOrder", "missionOrder"],
-          "سائق": [],
-          "مراقب": ["jobOrder"],
-          
-          // English role names (for compatibility)
-          "Admin": ["jobOrder", "purchaseOrder", "payOrder", "maintananceOrder", "missionOrder"],
-          "SuperUser": ["jobOrder", "purchaseOrder", "payOrder", "maintananceOrder", "missionOrder"],
-          "Secretary": ["jobOrder", "missionOrder"],
-          "AdministrativeSupervisor": ["jobOrder", "purchaseOrder", "payOrder"],
-          "GeneralSupervisor": ["jobOrder", "purchaseOrder", "payOrder", "maintananceOrder", "missionOrder"],
-          "TransportSupervisor": ["jobOrder", "maintananceOrder"],
-          "PatrolsSupervisor": ["jobOrder", "maintananceOrder"],
-          "WorkshopSupervisor": ["jobOrder", "maintananceOrder"],
-          "HospitalManager": ["jobOrder", "purchaseOrder", "payOrder"],
-          "GeneralManager": ["jobOrder", "purchaseOrder", "payOrder", "maintananceOrder", "missionOrder"],
-          "Driver": [],
-          "Observer": ["jobOrder"]
-        };
-        
-        // Add English role names for compatibility
-        rolePermissions["Admin"] = ["jobOrder", "purchaseOrder", "payOrder", "maintananceOrder", "missionOrder"];
-        rolePermissions["SuperUser"] = ["jobOrder", "purchaseOrder", "payOrder", "maintananceOrder", "missionOrder"];
-        rolePermissions["Secretary"] = ["jobOrder", "missionOrder"];
-        rolePermissions["AdministrativeSupervisor"] = ["jobOrder", "purchaseOrder", "payOrder"];
-        rolePermissions["GeneralSupervisor"] = ["jobOrder", "purchaseOrder", "payOrder", "maintananceOrder", "missionOrder"];
-        rolePermissions["TransportSupervisor"] = ["jobOrder", "maintananceOrder"];
-        rolePermissions["PatrolsSupervisor"] = ["jobOrder", "maintananceOrder"];
-        rolePermissions["WorkshopSupervisor"] = ["jobOrder", "maintananceOrder"];
-        rolePermissions["HospitalManager"] = ["jobOrder", "purchaseOrder", "payOrder"];
-        rolePermissions["GeneralManager"] = ["jobOrder", "purchaseOrder", "payOrder", "maintananceOrder", "missionOrder"];
-        rolePermissions["Driver"] = [];
-        rolePermissions["Observer"] = ["jobOrder"];
-        
-        // Get all application cards
-        const applicationCards = document.querySelectorAll('.application-card');
-        
-        applicationCards.forEach(card => {
-          const cardId = card.id;
-          const userPermissions = rolePermissions[userRole] || [];
-          
-          if (!userPermissions.includes(cardId)) {
-            // Disable card for unauthorized users
-            card.style.opacity = '0.6';
-            card.style.cursor = 'not-allowed';
-            card.style.filter = 'grayscale(0.3)';
-            
-            // Update badge to show restricted access
-            const badge = card.querySelector('.card-badge');
-            if (badge && !badge.classList.contains('active')) {
-              badge.textContent = 'غير مسموح';
-              badge.style.background = '#dc3545';
-            }
-            
-            // Remove hover effect
-            card.addEventListener('mouseenter', function() {
-              card.style.transform = 'none';
-              card.style.boxShadow = 'none';
-              card.style.borderColor = '#e9ecef';
-            });
-            
-            // Remove click functionality
-            card.onclick = function(e) {
-              e.preventDefault();
-              alert(`عذراً، غير مسموح لك بالوصول إلى ${card.querySelector('.card-title').textContent}. تحتاج صلاحيات أعلى للوصول لهذه الخدمة.`);
-            };
-          } else if (cardId !== 'jobOrder') {
-            // Other applications - show coming soon message
-            card.onclick = function() {
-              alert(`${card.querySelector('.card-title').textContent} قيد التطوير حالياً. سيتم إتاحة هذه الخدمة قريباً.`);
-            };
-          }
-        });
-      });
-    </script>
   </body>
 </html>
