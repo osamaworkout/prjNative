@@ -60,11 +60,11 @@
           <div class="card-badge active">متاح</div>
         </div>
 
-        <div class="application-card" id="WithdrawOrder" onclick="">
+        <div class="application-card" id="WithdrawOrder">
           <div class="card-icon">💰</div>
           <h3 class="card-title">إذن الصرف</h3>
           <p class="card-description">إدارة طلبات الصرف المالي</p>
-          <div class="card-badge">قريباً</div>
+          <div class="card-badge active">متاح</div>
         </div>
 
         <div class="application-card" id="maintananceOrder" onclick="">
@@ -381,6 +381,106 @@
               class="btn btn-secondary"
               type="button"
               onclick="closeAddPurchaseOrderForm()"
+            >
+              <span>❌</span> إلغاء
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Withdraw Order Popup -->
+    <div id="withdrawOrderPopup" class="popup hidden">
+      <div
+        class="popup-content"
+        style="width: 90%; max-height: 80vh; overflow-y: auto"
+      >
+        <div class="flex-between">
+          <h2>طلبات الصرف</h2>
+          <button onclick="closeWithdrawOrderPopup()">❌</button>
+        </div>
+        <div style="margin-bottom: 12px; text-align: left">
+          <button
+            id="withdrawOrder-Btn"
+            class="button"
+            onclick="openAddWithdrawOrderForm()"
+          >
+            ➕ إضافة طلب صرف
+          </button>
+        </div>
+        <div id="withdrawOrdersContainer" class="space-y-2"></div>
+      </div>
+    </div>
+
+    <!-- Add/Edit Withdraw Order Form -->
+    <div id="addWithdrawOrderPopup" class="popup hidden">
+      <div class="popup-content job-order-form">
+        <div class="form-header">
+          <h2>طلب صرف جديد</h2>
+          <button
+            type="button"
+            class="close-btn"
+            onclick="closeAddWithdrawOrderForm()"
+          >
+            ✕
+          </button>
+        </div>
+        <form id="withdrawOrderForm" onsubmit="submitWithdrawOrder(event)">
+          <div class="form-section">
+            <h3 class="section-title">معلومات الطلب</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="withdrawOrderType">نوع الطلب</label>
+                <select
+                  id="withdrawOrderType"
+                  required
+                  onchange="toggleWithdrawType()"
+                >
+                  <option value="">اختر نوع الطلب</option>
+                  <option value="spare">قطع غيار</option>
+                  <option value="consumable">مستهلكات</option>
+                </select>
+              </div>
+              <div
+                class="form-group"
+                id="withdrawSparePartsGroup"
+                style="display: none"
+              >
+                <label for="withdrawSparePartSelect">اختر قطعة الغيار</label>
+                <select id="withdrawSparePartSelect"></select>
+              </div>
+              <div
+                class="form-group"
+                id="withdrawConsumableGroup"
+                style="display: none"
+              >
+                <label for="withdrawConsumableSelect">اختر المستهلك</label>
+                <select id="withdrawConsumableSelect"></select>
+              </div>
+              <div class="form-group">
+                <label for="withdrawVehicleSelect">اختر السيارة</label>
+                <select id="withdrawVehicleSelect" required>
+                  <option value="">اختر السيارة</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="withdrawOrderDescription">الوصف</label>
+                <textarea
+                  id="withdrawOrderDescription"
+                  required
+                  rows="2"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit">
+              <span>💾</span> حفظ
+            </button>
+            <button
+              class="btn btn-secondary"
+              type="button"
+              onclick="closeAddWithdrawOrderForm()"
             >
               <span>❌</span> إلغاء
             </button>

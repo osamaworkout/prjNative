@@ -952,7 +952,19 @@ function renderPurchaseOrderCards(orders) {
   const container = document.getElementById("purchaseOrdersContainer");
   if (!container) return;
   container.innerHTML = "";
+  const role = localStorage.getItem("userRole")
+
   orders.forEach((order) => {
+    const showCard =
+      role === "Admin" ||
+      (role === "GeneralSupervisor" &&
+        order.approvedByGeneralSupervisor === 0) ||
+      (role === "GeneralManager" &&
+        order.approvedByGeneralSupervisor === 1 &&
+        order.approvedByGeneralManager === 0);
+
+    if (!showCard) return;
+
     const card = document.createElement("div");
     card.className = "card";
     card.style = "padding: 10px; background: #f4f4f4; cursor: pointer;";
@@ -971,6 +983,7 @@ function renderPurchaseOrderCards(orders) {
 }
 
 function showPurchaseOrderDetails(order) {
+  const role = localStorage.getItem("userRole");
   const popup = document.createElement("div");
   popup.className = "popup";
   popup.innerHTML = `
@@ -994,21 +1007,39 @@ function showPurchaseOrderDetails(order) {
             <div class="detail-item"><span class="detail-label">الحالة:</span><span class="detail-value">${mapPurchaseOrderStatus(
               order.application?.status
             )}</span></div>
-           <div class="detail-item"><span class="detail-label">نوع الطلب:</span><span class="detail-value">${
-             order.application?.applicationType === 4 ? "قطع غيار" : "مستهلكات"
-           }</span></div>
+            <div class="detail-item"><span class="detail-label">نوع الطلب:</span><span class="detail-value">${
+              order.application?.applicationType === 4 ? "قطع غيار" : "مستهلكات"
+            }</span></div>
           </div>
         </div>
       </div>
       <div class="details-actions">
-        <button class="btn btn-primary" onclick='editPurchaseOrder(${JSON.stringify(
-          order
-        )})'><span>✏️</span> تعديل</button>
-       ${
-         order.application?.status === 3
-           ? `<button class="btn btn-danger" onclick='deletePurchaseOrder(${order.orderId}, "${order._orderType}")'><span>🗑️</span> حذف</button>`
-           : ""
-       }
+        ${
+          role === "Admin"
+            ? `<button class="btn btn-primary" onclick='editPurchaseOrder(${JSON.stringify(
+                order
+              )})'><span>✏️</span> تعديل</button>`
+            : ""
+        }
+        ${
+          role === "GeneralSupervisor" &&
+          order.approvedByGeneralSupervisor === 0
+            ? `
+          <button class="btn btn-success" onclick='approvePurchaseOrder(${order.orderId}, "${order._orderType}", "supervisor")'>✔️ موافقة</button>
+          <button class="btn btn-danger" onclick='rejectPurchaseOrder(${order.orderId}, "${order._orderType}", "supervisor")'>❌ رفض</button>
+        `
+            : ""
+        }
+        ${
+          role === "GeneralManager" &&
+          order.approvedByGeneralManager === 0 &&
+          order.approvedByGeneralSupervisor === 1
+            ? `
+          <button class="btn btn-success" onclick='approvePurchaseOrder(${order.orderId}, "${order._orderType}", "manager")'>✔️ موافقة</button>
+          <button class="btn btn-danger" onclick='rejectPurchaseOrder(${order.orderId}, "${order._orderType}", "manager")'>❌ رفض</button>
+        `
+            : ""
+        }
         <button class="btn btn-secondary" onclick="closePopupDetails(this)"><span>✕</span> إغلاق</button>
       </div>
     </div>
@@ -1132,7 +1163,59 @@ async function deletePurchaseOrder(id, orderType) {
     alert("حدث خطأ أثناء الحذف");
   }
 }
+async function approvePurchaseOrder(id, type, by) {
+  let url = `https://movesmartapi.runasp.net/api/${
+    type === "spare"
+      ? "SparePartPurchaseOrderService"
+      : "ConsumablePurchaseOrderService"
+  }/${id}`;
+  const response = await fetch(url, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      ...(by === "supervisor"
+        ? { approvedByGeneralSupervisor: 1 }
+        : { approvedByGeneralManager: 1 }),
+    }),
+  });
+  if (response.ok) {
+    alert("تمت الموافقة بنجاح");
+    fetchPurchaseOrders();
+    document.querySelectorAll(".popup").forEach((p) => p.remove());
+  } else {
+    alert("حدث خطأ أثناء الموافقة");
+  }
+}
 
+async function rejectPurchaseOrder(id, type, by) {
+  let url = `https://movesmartapi.runasp.net/api/${
+    type === "spare"
+      ? "SparePartPurchaseOrderService"
+      : "ConsumablePurchaseOrderService"
+  }/${id}`;
+  const response = await fetch(url, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      ...(by === "supervisor"
+        ? { approvedByGeneralSupervisor: 2 }
+        : { approvedByGeneralManager: 2 }),
+    }),
+  });
+  if (response.ok) {
+    alert("تم الرفض بنجاح");
+    fetchPurchaseOrders();
+    document.querySelectorAll(".popup").forEach((p) => p.remove());
+  } else {
+    alert("حدث خطأ أثناء الرفض");
+  }
+}
 // تحويل كود الحالة لنص
 function mapPurchaseOrderStatus(code) {
   switch (code) {
@@ -1144,5 +1227,465 @@ function mapPurchaseOrderStatus(code) {
       return "قيد الانتظار";
     default:
       return "غير معروف";
+  }
+}
+
+async function fillWithdrawVehiclesSelect() {
+  const select = document.getElementById("withdrawVehicleSelect");
+  select.innerHTML = '<option value="">اختر السيارة</option>';
+  const vehicles = await fetchVehicles();
+  console.log("Fetched Vehicles:", vehicles);
+  vehicles.forEach((vehicle) => {
+    select.innerHTML += `<option value="${vehicle.vehicleID}">${
+      vehicle.plateNumbers || vehicle.modelName
+    }</option>`;
+  });
+}
+
+// زر فتح قائمة طلبات الصرف
+document
+  .getElementById("WithdrawOrder")
+  .addEventListener("click", showWithdrawOrders);
+
+function showWithdrawOrders() {
+  document.getElementById("withdrawOrderPopup").classList.remove("hidden");
+  fetchWithdrawOrders();
+}
+
+function closeWithdrawOrderPopup() {
+  document.getElementById("withdrawOrderPopup").classList.add("hidden");
+}
+
+// فتح فورم إضافة/تعديل طلب صرف
+function openAddWithdrawOrderForm(order = null) {
+  document.getElementById("addWithdrawOrderPopup").classList.remove("hidden");
+  document.getElementById("withdrawOrderForm").reset();
+  document.getElementById("withdrawOrderType").value = "";
+  document.getElementById("withdrawSparePartsGroup").style.display = "none";
+  document.getElementById("withdrawConsumableGroup").style.display = "none";
+  fillWithdrawSparePartsSelect();
+  fillWithdrawConsumablesSelect();
+  fillWithdrawVehiclesSelect();
+
+  const form = document.getElementById("withdrawOrderForm");
+  if (order) {
+    if (order.application.applicationType === 3) {
+      document.getElementById("withdrawOrderType").value = "spare";
+      document.getElementById("withdrawSparePartsGroup").style.display =
+        "block";
+      setTimeout(() => {
+        document.getElementById("withdrawSparePartSelect").value =
+          order.requiredItem;
+      }, 300);
+    } else if (order.application.applicationType === 5) {
+      document.getElementById("withdrawOrderType").value = "consumable";
+      document.getElementById("withdrawConsumableGroup").style.display =
+        "block";
+      setTimeout(() => {
+        document.getElementById("withdrawConsumableSelect").value =
+          order.requiredItem;
+      }, 300);
+    }
+    document.getElementById("withdrawOrderDescription").value =
+      order.application.applicationDescription;
+
+    form.dataset.editId = order.withdrawApplicationId;
+    form.dataset.orderId = order.orderId || order.id;
+    form.dataset.applicationId = order.application?.applicationId;
+  } else {
+    form.dataset.editId = "";
+    form.dataset.orderId = "";
+    form.dataset.applicationId = "";
+  }
+}
+
+function toggleWithdrawType() {
+  const type = document.getElementById("withdrawOrderType").value;
+  document.getElementById("withdrawSparePartsGroup").style.display =
+    type === "spare" ? "block" : "none";
+  document.getElementById("withdrawConsumableGroup").style.display =
+    type === "consumable" ? "block" : "none";
+}
+
+// جلب قطع الغيار للصرف
+async function fillWithdrawSparePartsSelect() {
+  const select = document.getElementById("withdrawSparePartSelect");
+  select.innerHTML = '<option value="">جاري التحميل...</option>';
+  try {
+    const res = await fetch("https://movesmartapi.runasp.net/api/SparePart", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    const items = data.$values || data || [];
+    select.innerHTML = '<option value="">اختر قطعة الغيار</option>';
+    items.forEach((item) => {
+      select.innerHTML += `<option value="${item.sparePartId}">${item.partName}</option>`;
+    });
+  } catch {
+    select.innerHTML = '<option value="">تعذر التحميل</option>';
+  }
+}
+
+// جلب المستهلكات للصرف
+async function fillWithdrawConsumablesSelect() {
+  const select = document.getElementById("withdrawConsumableSelect");
+  select.innerHTML = '<option value="">جاري التحميل...</option>';
+  try {
+    const res = await fetch(
+      "https://movesmartapi.runasp.net/api/VehicleConsumable",
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    const data = await res.json();
+    const items = data.$values || data || [];
+    select.innerHTML = '<option value="">اختر المستهلك</option>';
+    items.forEach((item) => {
+      select.innerHTML += `<option value="${item.consumableId}">${item.consumableName}</option>`;
+    });
+  } catch {
+    select.innerHTML = '<option value="">تعذر التحميل</option>';
+  }
+}
+
+// جلب كل طلبات الصرف
+async function fetchWithdrawOrders() {
+  // جلب طلبات المستهلكات
+  const consumableRes = await fetch(
+    "https://movesmartapi.runasp.net/api/ConsumableWithdrawApplicationService",
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  // جلب طلبات قطع الغيار
+  const spareRes = await fetch(
+    "https://movesmartapi.runasp.net/api/SparePartWithdrawApplicationService",
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+
+  let consumableOrders = [];
+  let spareOrders = [];
+
+  if (consumableRes.ok) {
+    const data = await consumableRes.json();
+    consumableOrders = (data.$values || data || []).map((o) => ({
+      ...o,
+      _orderType: "consumable",
+    }));
+  }
+  if (spareRes.ok) {
+    const data = await spareRes.json();
+    spareOrders = (data.$values || data || []).map((o) => ({
+      ...o,
+      _orderType: "spare",
+    }));
+  }
+
+  const orders = [...spareOrders, ...consumableOrders];
+  renderWithdrawOrderCards(orders);
+}
+
+function renderWithdrawOrderCards(orders) {
+  const container = document.getElementById("withdrawOrdersContainer");
+  if (!container) return;
+  container.innerHTML = "";
+  const role = localStorage.getItem("userRole")
+
+  orders.forEach((order) => {
+    const showCard =
+      role === "Admin" ||
+      (role === "GeneralSupervisor" &&
+        order.approvedByGeneralSupervisor === 0) ||
+      (role === "GeneralManager" &&
+        order.approvedByGeneralSupervisor === 1 &&
+        order.approvedByGeneralManager === 0);
+
+    if (!showCard) return;
+
+    const card = document.createElement("div");
+    card.className = "card";
+    card.style = "padding: 10px; background: #f4f4f4; cursor: pointer;";
+    card.innerHTML = `
+      <p><strong>رقم الطلب:</strong> ${order.withdrawApplicationId}</p>
+      <p><strong>الوصف:</strong> ${
+        order.application?.applicationDescription || ""
+      }</p>
+      <p><strong>الحالة:</strong> ${mapPurchaseOrderStatus(
+        order.application?.status
+      )}</p>
+    `;
+    card.onclick = () => showWithdrawOrderDetails(order);
+    container.appendChild(card);
+  });
+}
+
+function showWithdrawOrderDetails(order) {
+  const role = localStorage.getItem("userRole");
+  const popup = document.createElement("div");
+  popup.className = "popup";
+  popup.innerHTML = `
+    <div class="popup-content job-details-popup">
+      <div class="details-header">
+        <h2>تفاصيل طلب الصرف</h2>
+        <button type="button" class="close-btn" onclick="closePopupDetails(this)">✕</button>
+      </div>
+      <div class="details-content">
+        <div class="details-section">
+          <div class="details-grid">
+            <div class="detail-item"><span class="detail-label">رقم الطلب:</span><span class="detail-value">${
+              order.withdrawApplicationId
+            }</span></div>
+            <div class="detail-item"><span class="detail-label">الوصف:</span><span class="detail-value">${
+              order.application?.applicationDescription || ""
+            }</span></div>
+            <div class="detail-item"><span class="detail-label">الحالة:</span><span class="detail-value">${mapPurchaseOrderStatus(
+              order.application?.status
+            )}</span></div>
+            <div class="detail-item"><span class="detail-label">نوع الطلب:</span><span class="detail-value">${
+              order.application?.applicationType === 3 ? "قطع غيار" : "مستهلكات"
+            }</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="details-actions">
+        ${
+          role === "Admin"
+            ? `<button class="btn btn-primary" onclick='editWithdrawOrder(${JSON.stringify(
+                order
+              )})'><span>✏️</span> تعديل</button>`
+            : ""
+        }
+        ${
+          role === "GeneralSupervisor" &&
+          order.approvedByGeneralSupervisor === 0
+            ? `
+          <button class="btn btn-success" onclick='approveWithdrawOrder(${order.withdrawApplicationId}, "${order._orderType}", "supervisor")'>✔️ موافقة</button>
+          <button class="btn btn-danger" onclick='rejectWithdrawOrder(${order.withdrawApplicationId}, "${order._orderType}", "supervisor")'>❌ رفض</button>
+        `
+            : ""
+        }
+        ${
+          role === "GeneralManager" &&
+          order.approvedByGeneralManager === 0 &&
+          order.approvedByGeneralSupervisor === 1
+            ? `
+          <button class="btn btn-success" onclick='approveWithdrawOrder(${order.withdrawApplicationId}, "${order._orderType}", "manager")'>✔️ موافقة</button>
+          <button class="btn btn-danger" onclick='rejectWithdrawOrder(${order.withdrawApplicationId}, "${order._orderType}", "manager")'>❌ رفض</button>
+        `
+            : ""
+        }
+        <button class="btn btn-secondary" onclick="closePopupDetails(this)"><span>✕</span> إغلاق</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(popup);
+}
+
+function editWithdrawOrder(order) {
+  closePopupDetails(event.target);
+  openAddWithdrawOrderForm(order);
+}
+
+// إضافة أو تعديل طلب صرف
+async function submitWithdrawOrder(e) {
+  e.preventDefault();
+  const form = e.target;
+  const editId = form.dataset.editId;
+  const applicationId = form.dataset.applicationId || 0;
+  const userId = getUserIdFromToken();
+  const type = document.getElementById("withdrawOrderType").value;
+  const description = document.getElementById("withdrawOrderDescription").value;
+  const vehicleId = parseInt(
+    document.getElementById("withdrawVehicleSelect").value
+  );
+  console.log("Edit ID:", editId);
+  if (!vehicleId) return alert("اختر السيارة");
+
+  let url = "";
+  let method;
+  let payload = {};
+  const isEdit = !!editId;
+
+  if (type === "spare") {
+    const sparePartId = parseInt(
+      document.getElementById("withdrawSparePartSelect").value
+    );
+    if (!sparePartId) return alert("اختر قطعة الغيار");
+
+    url = `https://movesmartapi.runasp.net/api/SparePartWithdrawApplicationService`;
+    method = isEdit ? "PUT" : "POST";
+
+    payload = isEdit
+      ? {
+          withdrawApplicationId: parseInt(editId),
+          applicationId: parseInt(applicationId),
+          sparePartId,
+          vehicleId,
+          application: {
+            applicationId: parseInt(applicationId),
+            creationDate: new Date().toISOString(),
+            status: 3,
+            applicationType: 3,
+            applicationDescription: description,
+            createdByUserID: parseInt(userId),
+          },
+          approvedByGeneralSupervisor: 0,
+          approvedByGeneralManager: 0,
+          sparePart: null,
+        }
+      : {
+          sparePartId,
+          vehicleId,
+          approvedByGeneralSupervisor: 0,
+          approvedByGeneralManager: 0,
+          application: {
+            applicationId: 0,
+            creationDate: new Date().toISOString(),
+            status: 3,
+            applicationType: 3,
+            applicationDescription: description,
+            createdByUserID: parseInt(userId),
+          },
+        };
+  } else if (type === "consumable") {
+    const consumableId = parseInt(
+      document.getElementById("withdrawConsumableSelect").value
+    );
+    if (!consumableId) return alert("اختر المستهلك");
+
+    url = `https://movesmartapi.runasp.net/api/ConsumableWithdrawApplicationService`;
+    method = isEdit ? "PUT" : "POST";
+
+    payload = isEdit
+      ? {
+          withdrawApplicationId: parseInt(editId),
+          applicationId: parseInt(applicationId),
+          consumableId,
+          vehicleId,
+          application: {
+            applicationId: parseInt(applicationId),
+            creationDate: new Date().toISOString(),
+            status: 3,
+            applicationType: 5,
+            applicationDescription: description,
+            createdByUserID: parseInt(userId),
+          },
+          approvedByGeneralSupervisor: 0,
+          approvedByGeneralManager: 0,
+          consumable: null,
+        }
+      : {
+          consumableId,
+          vehicleId,
+          approvedByGeneralSupervisor: 0,
+          approvedByGeneralManager: 0,
+          application: {
+            applicationId: 0,
+            creationDate: new Date().toISOString(),
+            status: 3,
+            applicationType: 5,
+            applicationDescription: description,
+            createdByUserID: parseInt(userId),
+          },
+        };
+  } else {
+    return alert("اختر نوع الطلب");
+  }
+
+  console.log("Withdraw Payload to be sent:", payload);
+  const response = await fetch(url, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  if (response.ok) {
+    alert("تم حفظ طلب الصرف بنجاح");
+    closeAddWithdrawOrderForm();
+    fetchWithdrawOrders();
+  } else {
+    const err = await response.text();
+    alert("حدث خطأ في حفظ طلب الصرف: " + err);
+  }
+}
+
+async function deleteWithdrawOrder(id, orderType) {
+  if (!confirm("هل أنت متأكد من حذف الطلب؟")) return;
+  console.log("Deleting Withdraw Order:", id);
+  let url = "";
+  if (orderType === "spare") {
+    url = `https://movesmartapi.runasp.net/api/SparePartWithdrawApplicationService/${id}`;
+  } else {
+    url = `https://movesmartapi.runasp.net/api/ConsumableWithdrawApplicationService/${id}`;
+  }
+  const response = await fetch(url, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (response.ok) {
+    alert("تم حذف الطلب بنجاح");
+    fetchWithdrawOrders();
+    document.querySelectorAll(".popup").forEach((p) => p.remove());
+  } else {
+    alert("حدث خطأ أثناء الحذف");
+  }
+}
+
+function closeAddWithdrawOrderForm() {
+  document.getElementById("addWithdrawOrderPopup").classList.add("hidden");
+}
+async function approveWithdrawOrder(id, type, by) {
+  const url = `https://movesmartapi.runasp.net/api/${
+    type === "spare"
+      ? "SparePartWithdrawApplicationService"
+      : "ConsumableWithdrawApplicationService"
+  }/${id}`;
+  const response = await fetch(url, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      ...(by === "supervisor"
+        ? { approvedByGeneralSupervisor: 1 }
+        : { approvedByGeneralManager: 1 }),
+    }),
+  });
+  if (response.ok) {
+    alert("تمت الموافقة بنجاح");
+    fetchWithdrawOrders();
+    document.querySelectorAll(".popup").forEach((p) => p.remove());
+  } else {
+    alert("حدث خطأ أثناء الموافقة");
+  }
+}
+
+async function rejectWithdrawOrder(id, type, by) {
+  const url = `https://movesmartapi.runasp.net/api/${
+    type === "spare"
+      ? "SparePartWithdrawApplicationService"
+      : "ConsumableWithdrawApplicationService"
+  }/${id}`;
+  const response = await fetch(url, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      ...(by === "supervisor"
+        ? { approvedByGeneralSupervisor: 2 }
+        : { approvedByGeneralManager: 2 }),
+    }),
+  });
+  if (response.ok) {
+    alert("تم الرفض بنجاح");
+    fetchWithdrawOrders();
+    document.querySelectorAll(".popup").forEach((p) => p.remove());
+  } else {
+    alert("حدث خطأ أثناء الرفض");
   }
 }
