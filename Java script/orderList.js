@@ -126,7 +126,7 @@ document.addEventListener("DOMContentLoaded", function () {
       "missionOrder",
     ],
     PatrolsSupervisor: ["jobOrder", "missionOrder"],
-    WorkshopSupervisor: ["jobOrder", "maintananceOrder"],
+    WorkshopSupervisor: ["jobOrder", "maintananceOrder", "purchaseOrder", "WithdrawOrder"],
   };
 
   // Get all application cards
@@ -957,6 +957,8 @@ function renderPurchaseOrderCards(orders) {
   orders.forEach((order) => {
     const showCard =
       role === "Admin" ||
+      role === "SuperUser" ||
+      role === "WorkshopSupervisor" ||
       (role === "GeneralSupervisor" &&
         order.approvedByGeneralSupervisor === 0) ||
       (role === "GeneralManager" &&
@@ -1392,6 +1394,8 @@ function renderWithdrawOrderCards(orders) {
   orders.forEach((order) => {
     const showCard =
       role === "Admin" ||
+      role === "SuperUser" ||
+      role === "WorkshopSupervisor" ||
       (role === "GeneralSupervisor" &&
         order.approvedByGeneralSupervisor === 0) ||
       (role === "GeneralManager" &&
