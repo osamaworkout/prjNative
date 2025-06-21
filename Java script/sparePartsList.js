@@ -1,8 +1,8 @@
 // Navigation functionality
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   const token = localStorage.getItem('token');
   const userRole = localStorage.getItem('userRole');
-  
+
   if (!token) {
     window.location.href = '../Login.html';
     return;
@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Add click event listener to the page title for navigation
   const pageTitle = document.querySelector('.page-title');
   pageTitle.style.cursor = 'pointer';
-  pageTitle.addEventListener('click', function() {
+  pageTitle.addEventListener('click', function () {
     window.location.href = `../dash-Boards/${userRole.toLowerCase()}Dashboard.html`;
   });
 });
@@ -262,24 +262,39 @@ async function updatePart() {
 }
 
 // بحث
-// searchInput.oninput = function () {
-//   const keyword = this.value.toLowerCase();
-//   const filtered = parts.filter((p) =>
-//     p.partName.toLowerCase().includes(keyword)
-//   );
-//   partList.innerHTML = "";
-//   cardsContainer.innerHTML = "";
-//   filtered.forEach((part, index) => {
-//     const li = document.createElement("li");
-//     const checkbox = document.createElement("input");
-//     checkbox.type = "checkbox";
-//     checkbox.onclick = () => toggleCard(index);
-//     li.appendChild(checkbox);
-//     li.appendChild(document.createTextNode(` ${part.partName}`));
-//     partList.appendChild(li);
-//   });
-// };
+searchInput.addEventListener("input", function () {
+  const keyword = this.value.toLowerCase();
+  const filtered = parts.filter((p) =>
+    p.partName.toLowerCase().includes(keyword)
+  );
 
+  partList.innerHTML = "";
+  cardsContainer.innerHTML = "";
+
+  if (filtered.length === 0) {
+    partList.innerHTML = "<li>لا توجد نتائج مطابقة.</li>";
+  } else {
+    filtered.forEach((part) => {
+      const originalIndex = parts.indexOf(part); // 👈 هو ده الصح
+      const li = document.createElement("li");
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.onclick = () => toggleCard(originalIndex); // 👈 استخدمه هنا
+      li.appendChild(checkbox);
+      li.appendChild(document.createTextNode(` ${part.partName}`));
+      partList.appendChild(li);
+    });
+  }
+
+  totalSpan.innerText = filtered.length;
+});
+
+window.updatePart = updatePart;
+window.openPop = openPop;
+window.closePop = closePop;
+window.addPart = addPart;
+window.editPart = editPart;
+window.deletePart = deletePart;
 // أول تحميل
 fetchParts();
 

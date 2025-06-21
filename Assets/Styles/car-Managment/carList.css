@@ -80,18 +80,25 @@ h2 {
   padding: 5px 10px;
   border-radius: 15px;
   font-size: 14px;
+  font-weight: bold;
 }
 
 .card .status.active {
   background: #e0ffe0;
-  color: green;
+  color: rgb(0, 0, 0);
   border: 1px solid green;
 }
 
 .card .status.inactive {
   background: #ffe0e0;
-  color: red;
+  color: rgb(0, 0, 0);
   border: 1px solid red;
+}
+
+.card .status.maintenance {
+  color: rgb(0, 0, 0);
+  background: #f8b256;
+  border: 1px solid orange;
 }
 
 /* Actions (Buttons & Search) */
@@ -135,146 +142,176 @@ h2 {
 
 /* تحسين تصميم البوب أب */
 .pop {
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    background-color: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 999;
-    backdrop-filter: blur(3px);
+  position: fixed;
+  overflow: auto;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  backdrop-filter: blur(3px);
 }
 
 .pop-content {
-    background: #fff;
-    padding: 30px;
-    width: 90%;
-    max-width: 500px;
-    border-radius: 15px;
-    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
-    position: relative;
-    animation: slideIn 0.3s ease-out;
+  background: #fff;
+  padding: 30px;
+  width: 90%;
+  overflow-y: auto;
+  padding-right: 20px;
+  max-width: 500px;
+  max-height: 80vh;
+  border-radius: 15px;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+  position: relative;
+  animation: slideIn 0.3s ease-out;
 }
 
 @keyframes slideIn {
-    from {
-        transform: translateY(-20px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .pop-content h3 {
-    margin-bottom: 25px;
-    text-align: center;
-    color: #333;
-    font-size: 1.5rem;
-    border-bottom: 2px solid #eee;
-    padding-bottom: 15px;
+  margin-bottom: 25px;
+  text-align: center;
+  color: #333;
+  font-size: 1.5rem;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 15px;
 }
 
 .pop-content input,
 .pop-content select {
-    width: 100%;
-    margin-bottom: 15px;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 14px;
-    transition: all 0.3s ease;
+  width: 100%;
+  margin-bottom: 15px;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
 }
 
 .pop-content input:focus,
 .pop-content select:focus {
-    border-color: #4a90e2;
-    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1);
-    outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1);
+  outline: none;
 }
 
 .pop-content select {
-    appearance: none;
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: left 12px center;
-    background-size: 1em;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: left 12px center;
+  background-size: 1em;
 }
 
 .modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 25px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 25px;
 }
 
 .modal-actions button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.3s ease;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
 }
 
 .modal-actions button:first-child {
-    background-color: #4a90e2;
-    color: white;
+  background-color: #4a90e2;
+  color: white;
 }
 
 .modal-actions button:first-child:hover {
-    background-color: #357abd;
+  background-color: #357abd;
 }
 
 .modal-actions button:last-child {
-    background-color: #f5f5f5;
-    color: #666;
+  background-color: #f5f5f5;
+  color: #666;
 }
 
 .modal-actions button:last-child:hover {
-    background-color: #e8e8e8;
+  background-color: #e8e8e8;
 }
 
 /* تحسين ظهور واختفاء البوب أب */
 .hidden {
-    display: none !important;
+  display: none !important;
 }
 
 /* تجميع الحقول في صفوف */
 .pop-content {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 .input-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin-bottom: 15px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.pop-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.pop-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.pop-content::-webkit-scrollbar-thumb {
+  background: #c4c4c4;
+  border-radius: 10px;
+}
+
+.pop-content::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+.error {
+  color: red;
+  font-size: 12px;
+  margin-top: 5px;
+  font-weight: bold;
+  display: block;
 }
 
 /* تحسين التجاوب مع الشاشات الصغيرة */
 @media (max-width: 768px) {
-    .pop-content {
-        width: 95%;
-        padding: 20px;
-    }
+  .pop-content {
+    width: 95%;
+    padding: 20px;
+  }
 
-    .input-row {
-        grid-template-columns: 1fr;
-    }
+  .input-row {
+    grid-template-columns: 1fr;
+  }
 
-    .modal-actions {
-        flex-direction: column;
-    }
+  .modal-actions {
+    flex-direction: column;
+  }
 
-    .modal-actions button {
-        width: 100%;
-    }
+  .modal-actions button {
+    width: 100%;
+  }
 }
 
 @media (min-width: 1024px) and (max-width: 1920px) {
@@ -308,5 +345,10 @@ h2 {
   .pop-content {
     width: 400px;
     padding: 30px;
+  }
+}
+@media (max-height: 600px) {
+  .pop-content {
+    max-height: 80vh;
   }
 }

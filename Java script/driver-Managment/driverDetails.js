@@ -40,9 +40,8 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById(
           "driver-phone"
         ).innerText = `رقم الهاتف: ${data.phone}`;
-        document.getElementById("driver-status").innerText = `حالة السائق: ${
-          driverStatusMap[data.status] || "غير محدد"
-        }`;
+        document.getElementById("driver-status").innerText = `حالة السائق: ${driverStatusMap[data.status] || "غير محدد"
+          }`;
         document.querySelector('input[name="name"]').value = data.name || "";
         document.querySelector('input[name="vehicleID"]').value =
           data.vehicleID || "";
@@ -218,7 +217,7 @@ document.addEventListener("DOMContentLoaded", function () {
             newRow.classList.add("vacation-entry");
             const days = Math.ceil(
               Math.abs(new Date(toDate) - new Date(fromDate)) /
-                (1000 * 60 * 60 * 24)
+              (1000 * 60 * 60 * 24)
             );
             newRow.innerHTML = `
             <span>${fromDate}</span>
@@ -311,7 +310,7 @@ document.addEventListener("DOMContentLoaded", function () {
           const toDate = vac.endDate?.split("T")[0];
           const days = Math.ceil(
             Math.abs(new Date(toDate) - new Date(fromDate)) /
-              (1000 * 60 * 60 * 24)
+            (1000 * 60 * 60 * 24)
           );
 
           const newRow = document.createElement("div");
