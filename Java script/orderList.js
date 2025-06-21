@@ -126,7 +126,12 @@ document.addEventListener("DOMContentLoaded", function () {
       "missionOrder",
     ],
     PatrolsSupervisor: ["jobOrder", "missionOrder"],
-    WorkshopSupervisor: ["jobOrder", "maintananceOrder", "purchaseOrder", "WithdrawOrder"],
+    WorkshopSupervisor: [
+      "jobOrder",
+      "maintananceOrder",
+      "purchaseOrder",
+      "WithdrawOrder",
+    ],
   };
 
   // Get all application cards
@@ -952,7 +957,7 @@ function renderPurchaseOrderCards(orders) {
   const container = document.getElementById("purchaseOrdersContainer");
   if (!container) return;
   container.innerHTML = "";
-  const role = localStorage.getItem("userRole")
+  const role = localStorage.getItem("userRole");
 
   orders.forEach((order) => {
     const showCard =
@@ -1027,8 +1032,12 @@ function showPurchaseOrderDetails(order) {
           role === "GeneralSupervisor" &&
           order.approvedByGeneralSupervisor === 0
             ? `
-          <button class="btn btn-success" onclick='approvePurchaseOrder(${JSON.stringify(order)}, "supervisor")'>✔️ موافقة</button>
-          <button class="btn btn-danger" onclick='rejectPurchaseOrder(${JSON.stringify(order)}, "supervisor")'>❌ رفض</button>
+          <button class="btn btn-success" onclick='approvePurchaseOrder(${JSON.stringify(
+            order
+          )}, "supervisor")'>✔️ موافقة</button>
+          <button class="btn btn-danger" onclick='rejectPurchaseOrder(${JSON.stringify(
+            order
+          )}, "supervisor")'>❌ رفض</button>
         `
             : ""
         }
@@ -1037,8 +1046,12 @@ function showPurchaseOrderDetails(order) {
           order.approvedByGeneralManager === 0 &&
           order.approvedByGeneralSupervisor === 1
             ? `
-          <button class="btn btn-success" onclick='approvePurchaseOrder(${JSON.stringify(order)}, "manager")'>✔️ موافقة</button>
-          <button class="btn btn-danger" onclick='rejectPurchaseOrder(${JSON.stringify(order)}, "manager")'>❌ رفض</button>
+          <button class="btn btn-success" onclick='approvePurchaseOrder(${JSON.stringify(
+            order
+          )}, "manager")'>✔️ موافقة</button>
+          <button class="btn btn-danger" onclick='rejectPurchaseOrder(${JSON.stringify(
+            order
+          )}, "manager")'>❌ رفض</button>
         `
             : ""
         }
@@ -1168,27 +1181,29 @@ async function deletePurchaseOrder(id, orderType) {
 async function approvePurchaseOrder(order, by) {
   const orderType = order._orderType;
   const orderId = order.orderId;
-  
+
   let url = `https://movesmartapi.runasp.net/api/${
     orderType === "spare"
       ? "SparePartPurchaseOrderService"
       : "ConsumablePurchaseOrderService"
   }/${orderId}`;
 
-  // Create the complete payload with the approval update
+  const newStatus =
+    by === "manager" && order.approvedByGeneralSupervisor === 1
+      ? 1
+      : order.application.status;
+
   const payload = {
     orderId: orderId,
     requiredItem: order.requiredItem,
     requiredQuantity: order.requiredQuantity,
-    approvedByGeneralSupervisor: by === "supervisor" ? 1 : order.approvedByGeneralSupervisor,
-    approvedByGeneralManager: by === "manager" ? 1 : order.approvedByGeneralManager,
+    approvedByGeneralSupervisor:
+      by === "supervisor" ? 1 : order.approvedByGeneralSupervisor,
+    approvedByGeneralManager:
+      by === "manager" ? 1 : order.approvedByGeneralManager,
     application: {
-      applicationId: order.application.applicationId,
-      creationDate: order.application.creationDate,
-      status: order.application.status,
-      applicationType: order.application.applicationType,
-      applicationDescription: order.application.applicationDescription,
-      createdByUserID: order.application.createdByUserID,
+      ...order.application,
+      status: newStatus,
     },
   };
 
@@ -1200,14 +1215,12 @@ async function approvePurchaseOrder(order, by) {
     },
     body: JSON.stringify(payload),
   });
-  
+
   if (response.ok) {
     alert("تمت الموافقة بنجاح");
     fetchPurchaseOrders();
     document.querySelectorAll(".popup").forEach((p) => p.remove());
   } else {
-    const errorText = await response.text();
-    console.error("Approval error:", errorText);
     alert("حدث خطأ أثناء الموافقة");
   }
 }
@@ -1215,27 +1228,24 @@ async function approvePurchaseOrder(order, by) {
 async function rejectPurchaseOrder(order, by) {
   const orderType = order._orderType;
   const orderId = order.orderId;
-  
+
   let url = `https://movesmartapi.runasp.net/api/${
     orderType === "spare"
       ? "SparePartPurchaseOrderService"
       : "ConsumablePurchaseOrderService"
   }/${orderId}`;
 
-  // Create the complete payload with the rejection update
   const payload = {
     orderId: orderId,
     requiredItem: order.requiredItem,
     requiredQuantity: order.requiredQuantity,
-    approvedByGeneralSupervisor: by === "supervisor" ? 2 : order.approvedByGeneralSupervisor,
-    approvedByGeneralManager: by === "manager" ? 2 : order.approvedByGeneralManager,
+    approvedByGeneralSupervisor:
+      by === "supervisor" ? 2 : order.approvedByGeneralSupervisor,
+    approvedByGeneralManager:
+      by === "manager" ? 2 : order.approvedByGeneralManager,
     application: {
-      applicationId: order.application.applicationId,
-      creationDate: order.application.creationDate,
-      status: order.application.status,
-      applicationType: order.application.applicationType,
-      applicationDescription: order.application.applicationDescription,
-      createdByUserID: order.application.createdByUserID,
+      ...order.application,
+      status: 4, // مرفوض
     },
   };
 
@@ -1247,14 +1257,12 @@ async function rejectPurchaseOrder(order, by) {
     },
     body: JSON.stringify(payload),
   });
-  
+
   if (response.ok) {
     alert("تم الرفض بنجاح");
     fetchPurchaseOrders();
     document.querySelectorAll(".popup").forEach((p) => p.remove());
   } else {
-    const errorText = await response.text();
-    console.error("Rejection error:", errorText);
     alert("حدث خطأ أثناء الرفض");
   }
 }
@@ -1430,7 +1438,7 @@ function renderWithdrawOrderCards(orders) {
   const container = document.getElementById("withdrawOrdersContainer");
   if (!container) return;
   container.innerHTML = "";
-  const role = localStorage.getItem("userRole")
+  const role = localStorage.getItem("userRole");
 
   orders.forEach((order) => {
     const showCard =
@@ -1492,7 +1500,7 @@ function showWithdrawOrderDetails(order) {
       </div>
       <div class="details-actions">
         ${
-          role === "Admin"
+          role === "WorkshopSupervisor"
             ? `<button class="btn btn-primary" onclick='editWithdrawOrder(${JSON.stringify(
                 order
               )})'><span>✏️</span> تعديل</button>`
@@ -1681,24 +1689,44 @@ async function deleteWithdrawOrder(id, orderType) {
 function closeAddWithdrawOrderForm() {
   document.getElementById("addWithdrawOrderPopup").classList.add("hidden");
 }
-async function approveWithdrawOrder(id, type, by) {
+async function approveWithdrawOrder(order, type, by) {
   const url = `https://movesmartapi.runasp.net/api/${
     type === "spare"
       ? "SparePartWithdrawApplicationService"
       : "ConsumableWithdrawApplicationService"
-  }/${id}`;
+  }/${order.withdrawApplicationId}`;
+
+  const newStatus =
+    by === "manager" && order.approvedByGeneralSupervisor === 1
+      ? 1
+      : order.application.status;
+
+  const payload = {
+    withdrawApplicationId: order.withdrawApplicationId,
+    applicationId: order.application.applicationId,
+    ...(type === "spare"
+      ? { sparePartId: order.requiredItem }
+      : { consumableId: order.requiredItem }),
+    vehicleId: order.vehicleId,
+    approvedByGeneralSupervisor:
+      by === "supervisor" ? 1 : order.approvedByGeneralSupervisor,
+    approvedByGeneralManager:
+      by === "manager" ? 1 : order.approvedByGeneralManager,
+    application: {
+      ...order.application,
+      status: newStatus,
+    },
+  };
+
   const response = await fetch(url, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({
-      ...(by === "supervisor"
-        ? { approvedByGeneralSupervisor: 1 }
-        : { approvedByGeneralManager: 1 }),
-    }),
+    body: JSON.stringify(payload),
   });
+
   if (response.ok) {
     alert("تمت الموافقة بنجاح");
     fetchWithdrawOrders();
@@ -1708,24 +1736,39 @@ async function approveWithdrawOrder(id, type, by) {
   }
 }
 
-async function rejectWithdrawOrder(id, type, by) {
+async function rejectWithdrawOrder(order, type, by) {
   const url = `https://movesmartapi.runasp.net/api/${
     type === "spare"
       ? "SparePartWithdrawApplicationService"
       : "ConsumableWithdrawApplicationService"
-  }/${id}`;
+  }/${order.withdrawApplicationId}`;
+
+  const payload = {
+    withdrawApplicationId: order.withdrawApplicationId,
+    applicationId: order.application.applicationId,
+    ...(type === "spare"
+      ? { sparePartId: order.requiredItem }
+      : { consumableId: order.requiredItem }),
+    vehicleId: order.vehicleId,
+    approvedByGeneralSupervisor:
+      by === "supervisor" ? 2 : order.approvedByGeneralSupervisor,
+    approvedByGeneralManager:
+      by === "manager" ? 2 : order.approvedByGeneralManager,
+    application: {
+      ...order.application,
+      status: 4, // مرفوض
+    },
+  };
+
   const response = await fetch(url, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({
-      ...(by === "supervisor"
-        ? { approvedByGeneralSupervisor: 2 }
-        : { approvedByGeneralManager: 2 }),
-    }),
+    body: JSON.stringify(payload),
   });
+
   if (response.ok) {
     alert("تم الرفض بنجاح");
     fetchWithdrawOrders();
