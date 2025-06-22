@@ -802,6 +802,25 @@ async function populateDriverDropdown() {
   }
 }
 
+switch (userRole) {
+  case "GeneralManager":
+    hideElementIfExists("addPurchaseOrderBtn");
+    hideElementIfExists("addWithdrawOrderBtn");
+    break;
+
+  case "GeneralSupervisor":
+    hideElementIfExists("addPurchaseOrderBtn");
+    hideElementIfExists("addWithdrawOrderBtn");
+    break;
+
+  case "HospitalManager":
+    hideElementIfExists("addPurchaseOrderBtn");
+    hideElementIfExists("addWithdrawOrderBtn");
+
+  default:
+    break;
+}
+
 // زر فتح قائمة طلبات الشراء
 document
   .getElementById("purchaseOrder")
@@ -957,16 +976,15 @@ function renderPurchaseOrderCards(orders) {
   const container = document.getElementById("purchaseOrdersContainer");
   if (!container) return;
   container.innerHTML = "";
-  const role = localStorage.getItem("userRole");
 
   orders.forEach((order) => {
     const showCard =
-      role === "Admin" ||
-      role === "SuperUser" ||
-      role === "WorkshopSupervisor" ||
-      (role === "GeneralSupervisor" &&
+      userRole === "Admin" ||
+      userRole === "SuperUser" ||
+      userRole === "WorkshopSupervisor" ||
+      (userRole === "GeneralSupervisor" &&
         order.approvedByGeneralSupervisor === 0) ||
-      (role === "GeneralManager" &&
+      (userRole === "GeneralManager" &&
         order.approvedByGeneralSupervisor === 1 &&
         order.approvedByGeneralManager === 0);
 
@@ -991,6 +1009,7 @@ function renderPurchaseOrderCards(orders) {
 
 function showPurchaseOrderDetails(order) {
   const role = localStorage.getItem("userRole");
+  const status = order.application?.status;
   const popup = document.createElement("div");
   popup.className = "popup";
   popup.innerHTML = `
@@ -1000,32 +1019,34 @@ function showPurchaseOrderDetails(order) {
         <button type="button" class="close-btn" onclick="closePopupDetails(this)">✕</button>
       </div>
       <div class="details-content">
-        <div class="details-section">
-          <div class="details-grid">
-            <div class="detail-item"><span class="detail-label">رقم الطلب:</span><span class="detail-value">${
-              order.orderId
-            }</span></div>
-            <div class="detail-item"><span class="detail-label">الوصف:</span><span class="detail-value">${
-              order.application?.applicationDescription || ""
-            }</span></div>
-            <div class="detail-item"><span class="detail-label">الكمية:</span><span class="detail-value">${
-              order.requiredQuantity
-            }</span></div>
-            <div class="detail-item"><span class="detail-label">الحالة:</span><span class="detail-value">${mapPurchaseOrderStatus(
-              order.application?.status
-            )}</span></div>
-            <div class="detail-item"><span class="detail-label">نوع الطلب:</span><span class="detail-value">${
-              order.application?.applicationType === 4 ? "قطع غيار" : "مستهلكات"
-            }</span></div>
-          </div>
+        <div class="details-grid">
+          <div class="detail-item"><span class="detail-label">رقم الطلب:</span><span class="detail-value">${
+            order.orderId
+          }</span></div>
+          <div class="detail-item"><span class="detail-label">الوصف:</span><span class="detail-value">${
+            order.application?.applicationDescription || ""
+          }</span></div>
+          <div class="detail-item"><span class="detail-label">الكمية:</span><span class="detail-value">${
+            order.requiredQuantity
+          }</span></div>
+          <div class="detail-item"><span class="detail-label">الحالة:</span><span class="detail-value">${mapPurchaseOrderStatus(
+            order.application?.status
+          )}</span></div>
+          <div class="detail-item"><span class="detail-label">نوع الطلب:</span><span class="detail-value">${
+            order.application?.applicationType === 4 ? "قطع غيار" : "مستهلكات"
+          }</span></div>
         </div>
       </div>
       <div class="details-actions">
         ${
-          role === "Admin"
-            ? `<button class="btn btn-primary" onclick='editPurchaseOrder(${JSON.stringify(
-                order
-              )})'><span>✏️</span> تعديل</button>`
+          role === "WorkshopSupervisor" && status === 3
+            ? `
+          <button class="btn btn-primary" onclick='editPurchaseOrder(${JSON.stringify(
+            order
+          )})'>✏️ تعديل</button>
+          <button class="btn btn-danger" onclick='deletePurchaseOrder(${
+            order.orderId
+          }, "${order._orderType}")'>🗑️ حذف</button>`
             : ""
         }
         ${
@@ -1037,8 +1058,7 @@ function showPurchaseOrderDetails(order) {
           )}, "supervisor")'>✔️ موافقة</button>
           <button class="btn btn-danger" onclick='rejectPurchaseOrder(${JSON.stringify(
             order
-          )}, "supervisor")'>❌ رفض</button>
-        `
+          )}, "supervisor")'>❌ رفض</button>`
             : ""
         }
         ${
@@ -1051,11 +1071,10 @@ function showPurchaseOrderDetails(order) {
           )}, "manager")'>✔️ موافقة</button>
           <button class="btn btn-danger" onclick='rejectPurchaseOrder(${JSON.stringify(
             order
-          )}, "manager")'>❌ رفض</button>
-        `
+          )}, "manager")'>❌ رفض</button>`
             : ""
         }
-        <button class="btn btn-secondary" onclick="closePopupDetails(this)"><span>✕</span> إغلاق</button>
+        <button class="btn btn-secondary" onclick="closePopupDetails(this)">✕ إغلاق</button>
       </div>
     </div>
   `;
@@ -1472,6 +1491,7 @@ function renderWithdrawOrderCards(orders) {
 
 function showWithdrawOrderDetails(order) {
   const role = localStorage.getItem("userRole");
+  const status = order.application?.status;
   const popup = document.createElement("div");
   popup.className = "popup";
   popup.innerHTML = `
@@ -1481,38 +1501,43 @@ function showWithdrawOrderDetails(order) {
         <button type="button" class="close-btn" onclick="closePopupDetails(this)">✕</button>
       </div>
       <div class="details-content">
-        <div class="details-section">
-          <div class="details-grid">
-            <div class="detail-item"><span class="detail-label">رقم الطلب:</span><span class="detail-value">${
-              order.withdrawApplicationId
-            }</span></div>
-            <div class="detail-item"><span class="detail-label">الوصف:</span><span class="detail-value">${
-              order.application?.applicationDescription || ""
-            }</span></div>
-            <div class="detail-item"><span class="detail-label">الحالة:</span><span class="detail-value">${mapPurchaseOrderStatus(
-              order.application?.status
-            )}</span></div>
-            <div class="detail-item"><span class="detail-label">نوع الطلب:</span><span class="detail-value">${
-              order.application?.applicationType === 3 ? "قطع غيار" : "مستهلكات"
-            }</span></div>
-          </div>
+        <div class="details-grid">
+          <div class="detail-item"><span class="detail-label">رقم الطلب:</span><span class="detail-value">${
+            order.withdrawApplicationId
+          }</span></div>
+          <div class="detail-item"><span class="detail-label">الوصف:</span><span class="detail-value">${
+            order.application?.applicationDescription || ""
+          }</span></div>
+          <div class="detail-item"><span class="detail-label">الحالة:</span><span class="detail-value">${mapPurchaseOrderStatus(
+            order.application?.status
+          )}</span></div>
+          <div class="detail-item"><span class="detail-label">نوع الطلب:</span><span class="detail-value">${
+            order.application?.applicationType === 3 ? "قطع غيار" : "مستهلكات"
+          }</span></div>
         </div>
       </div>
       <div class="details-actions">
         ${
-          role === "WorkshopSupervisor"
-            ? `<button class="btn btn-primary" onclick='editWithdrawOrder(${JSON.stringify(
-                order
-              )})'><span>✏️</span> تعديل</button>`
+          role === "WorkshopSupervisor" && status === 3
+            ? `
+          <button class="btn btn-primary" onclick='editWithdrawOrder(${JSON.stringify(
+            order
+          )})'>✏️ تعديل</button>
+          <button class="btn btn-danger" onclick='deleteWithdrawOrder(${
+            order.withdrawApplicationId
+          }, "${order._orderType}")'>🗑️ حذف</button>`
             : ""
         }
         ${
           role === "GeneralSupervisor" &&
           order.approvedByGeneralSupervisor === 0
             ? `
-          <button class="btn btn-success" onclick='approveWithdrawOrder(${order.withdrawApplicationId}, "${order._orderType}", "supervisor")'>✔️ موافقة</button>
-          <button class="btn btn-danger" onclick='rejectWithdrawOrder(${order.withdrawApplicationId}, "${order._orderType}", "supervisor")'>❌ رفض</button>
-        `
+          <button class="btn btn-success" onclick='approveWithdrawOrder(${JSON.stringify(
+            order
+          )}, "${order._orderType}", "supervisor")'>✔️ موافقة</button>
+          <button class="btn btn-danger" onclick='rejectWithdrawOrder(${JSON.stringify(
+            order
+          )}, "${order._orderType}", "supervisor")'>❌ رفض</button>`
             : ""
         }
         ${
@@ -1520,12 +1545,15 @@ function showWithdrawOrderDetails(order) {
           order.approvedByGeneralManager === 0 &&
           order.approvedByGeneralSupervisor === 1
             ? `
-          <button class="btn btn-success" onclick='approveWithdrawOrder(${order.withdrawApplicationId}, "${order._orderType}", "manager")'>✔️ موافقة</button>
-          <button class="btn btn-danger" onclick='rejectWithdrawOrder(${order.withdrawApplicationId}, "${order._orderType}", "manager")'>❌ رفض</button>
-        `
+          <button class="btn btn-success" onclick='approveWithdrawOrder(${JSON.stringify(
+            order
+          )}, "${order._orderType}", "manager")'>✔️ موافقة</button>
+          <button class="btn btn-danger" onclick='rejectWithdrawOrder(${JSON.stringify(
+            order
+          )}, "${order._orderType}", "manager")'>❌ رفض</button>`
             : ""
         }
-        <button class="btn btn-secondary" onclick="closePopupDetails(this)"><span>✕</span> إغلاق</button>
+        <button class="btn btn-secondary" onclick="closePopupDetails(this)">✕ إغلاق</button>
       </div>
     </div>
   `;
