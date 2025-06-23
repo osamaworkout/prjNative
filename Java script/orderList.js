@@ -2,7 +2,6 @@
 console.log("Role from localStorage:", localStorage.getItem("userRole"));
 const userRole = localStorage.getItem("userRole");
 const token = localStorage.getItem("token");
-
 // API URLs
 const apiUrl = "https://movesmartapi.runasp.net/api/v1/JobOrder";
 const vehicleApiUrl = "https://movesmartapi.runasp.net/api/Vehicles/All";
@@ -1803,5 +1802,680 @@ async function rejectWithdrawOrder(order, type, by) {
     document.querySelectorAll(".popup").forEach((p) => p.remove());
   } else {
     alert("حدث خطأ أثناء الرفض");
+  }
+}
+
+document
+  .getElementById("maintenanceRequestsCard")
+  .addEventListener("click", showMaintenanceRequests);
+
+function showMaintenanceRequests() {
+  document
+    .getElementById("maintenanceRequestsPopup")
+    .classList.remove("hidden");
+
+  const role = localStorage.getItem("userRole");
+  const addBtn = document.getElementById("addMaintenanceRequestBtn");
+
+  if (role === "WorkshopSupervisor") {
+    addBtn.classList.remove("hidden");
+  } else {
+    addBtn.classList.add("hidden");
+  }
+
+  fetchMaintenanceRequests();
+}
+
+function closeMaintenanceRequestsPopup() {
+  document.getElementById("maintenanceRequestsPopup").classList.add("hidden");
+}
+
+async function fetchMaintenanceRequests() {
+  const container = document.getElementById("maintenanceRequestsContainer");
+  container.innerHTML = "⏳ جاري التحميل...";
+
+  try {
+    const res = await fetch(
+      "https://movesmartapi.runasp.net/api/MaintenanceApplications/All",
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    const contentType = res.headers.get("content-type");
+
+    if (contentType && contentType.includes("application/json")) {
+      const data = await res.json();
+      const requests = data.$values || [];
+
+      if (requests.length === 0) {
+        container.innerHTML = `<p style="text-align:center; color:#999">لا توجد طلبات صيانة حالياً.</p>`;
+        return;
+      }
+      renderMaintenanceRequestCards(requests);
+    }
+    else {
+      container.innerHTML = `<p style="text-align:center; color:#999">لا توجد طلبات صيانة حالياً.</p>`;
+    }
+  } catch (err) {
+    console.error("خطأ في تحميل الطلبات:", err);
+    container.innerHTML = `<p style="color:red; text-align:center;">حدث خطأ أثناء تحميل الطلبات</p>`;
+  }
+}
+
+function renderMaintenanceRequestCards(requests) {
+  const container = document.getElementById("maintenanceRequestsContainer");
+  container.innerHTML = "";
+
+  const role = localStorage.getItem("userRole");
+
+  requests.forEach((req) => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.style =
+      "background: #f9f9f9; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 8px;";
+
+    card.innerHTML = `
+      <p><strong>رقم الطلب:</strong> ${req.maintenanceApplicationID}</p>
+      <p><strong>الوصف:</strong> ${
+        req.application?.applicationDescription || ""
+      }</p>
+      <p><strong>السيارة:</strong> ${req.vehicleID}</p>
+      <p><strong>الحالة:</strong> ${mapApplicationStatus(
+        req.application?.status
+      )}</p>
+      <div class="card-actions" style="margin-top: 8px;">
+        ${
+          role === "WorkshopSupervisor" && req.application?.status === 3
+            ? `
+          <button class="btn btn-secondary" onclick='editMaintenanceRequest(${req.maintenanceApplicationID})'>✏️ تعديل</button>
+          <button class="btn btn-danger" onclick='deleteMaintenanceRequest(${req.maintenanceApplicationID})'>🗑️ حذف</button>`
+            : ""
+        }
+
+        ${
+          role === "GeneralSupervisor" &&
+          req.approvedByGeneralSupervisor === false
+            ? `
+          <button class="btn btn-success" onclick='approveMaintenanceRequest(${req.maintenanceApplicationID}, "supervisor")'>✔️ موافقة</button>
+          <button class="btn btn-danger" onclick='rejectMaintenanceRequest(${req.maintenanceApplicationID}, "supervisor")'>❌ رفض</button>`
+            : ""
+        }
+
+        ${
+          role === "GeneralManager" &&
+          req.approvedByGeneralSupervisor === true &&
+          req.approvedByGeneralManager === false
+            ? `
+          <button class="btn btn-success" onclick='approveMaintenanceRequest(${req.maintenanceApplicationID}, "manager")'>✔️ موافقة</button>
+          <button class="btn btn-danger" onclick='rejectMaintenanceRequest(${req.maintenanceApplicationID}, "manager")'>❌ رفض</button>`
+            : ""
+        }
+      </div>
+    `;
+
+    container.appendChild(card);
+  });
+}
+
+function mapApplicationStatus(status) {
+  switch (status) {
+    case 1:
+      return "مقبول";
+    case 2:
+      return "مرفوض";
+    case 3:
+      return "قيد الانتظار";
+    default:
+      return "غير معروف";
+  }
+}
+
+// ✅ تعديل الطلب
+async function editMaintenanceRequest(id) {
+  try {
+    const res = await fetch(
+      `https://movesmartapi.runasp.net/api/MaintenanceApplications/${id}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    if (!res.ok) throw new Error("فشل تحميل بيانات الطلب");
+    const data = await res.json();
+    openAddMaintenanceRequestForm(data);
+  } catch (err) {
+    console.error("خطأ في تحميل الطلب للتعديل:", err);
+    alert("فشل في تحميل البيانات");
+  }
+}
+
+// ✅ حذف الطلب
+async function deleteMaintenanceRequest(id) {
+  if (!confirm("هل أنت متأكد من حذف طلب الصيانة؟")) return;
+  try {
+    const res = await fetch(
+      `https://movesmartapi.runasp.net/api/MaintenanceApplications/${id}`,
+      {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    if (!res.ok) throw new Error("فشل في الحذف");
+    alert("تم حذف الطلب بنجاح");
+    fetchMaintenanceRequests();
+  } catch (err) {
+    console.error("فشل الحذف:", err);
+    alert("حدث خطأ أثناء الحذف");
+  }
+}
+
+// ✅ الموافقة
+async function approveMaintenanceRequest(id, by) {
+  try {
+    const res = await fetch(
+      `https://movesmartapi.runasp.net/api/MaintenanceApplications/${id}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    const data = await res.json();
+
+    if (by === "supervisor") {
+      data.approvedByGeneralSupervisor = true;
+    }
+    if (by === "manager") {
+      if (data.approvedByGeneralSupervisor !== true) {
+        alert("يجب موافقة المشرف العام أولاً");
+        return;
+      }
+      data.approvedByGeneralManager = true;
+      data.application.status = 1;
+      await updateVehicleStatus(data.vehicleID, "قيد الصيانة");
+    }
+
+    const updateRes = await fetch(
+      `https://movesmartapi.runasp.net/api/MaintenanceApplications`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      }
+    );
+
+    if (!updateRes.ok) throw new Error("فشل الموافقة");
+    alert("تمت الموافقة بنجاح");
+    fetchMaintenanceRequests();
+  } catch (err) {
+    console.error("فشل الموافقة:", err);
+    alert("فشل في إتمام العملية");
+  }
+}
+
+// ✅ الرفض
+async function rejectMaintenanceRequest(id, by) {
+  try {
+    const res = await fetch(
+      `https://movesmartapi.runasp.net/api/MaintenanceApplications/${id}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    if (!res.ok) throw new Error("فشل تحميل الطلب");
+    const data = await res.json();
+
+    if (by === "supervisor") data.approvedByGeneralSupervisor = false;
+    if (by === "manager") data.approvedByGeneralManager = false;
+    data.application = data.application || {};
+    data.application.status = 2;
+
+    const updateRes = await fetch(
+      `https://movesmartapi.runasp.net/api/MaintenanceApplications`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      }
+    );
+
+    if (!updateRes.ok) throw new Error("فشل في الرفض");
+    alert("❌ تم رفض الطلب بنجاح");
+    fetchMaintenanceRequests();
+  } catch (err) {
+    console.error("خطأ أثناء الرفض:", err);
+    alert("❌ فشل في رفض الطلب");
+  }
+}
+
+// ✅ تغيير حالة السيارة
+async function updateVehicleStatus(vehicleId, statusName) {
+  try {
+    const res = await fetch(
+      `https://movesmartapi.runasp.net/api/Vehicles/${vehicleId}/status?newStatus=${encodeURIComponent(
+        statusName
+      )}`,
+      {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    if (!res.ok) throw new Error("فشل تحديث حالة السيارة");
+    console.log("تم تغيير حالة السيارة إلى:", statusName);
+  } catch (err) {
+    console.error("فشل تغيير حالة السيارة:", err);
+  }
+}
+
+// ✅ فتح النموذج
+let isEditingMaintenance = false;
+let editingMaintenanceId = null;
+
+function openAddMaintenanceRequestForm(data = null) {
+  document
+    .getElementById("maintenanceRequestFormPopup")
+    .classList.remove("hidden");
+  document.getElementById("maintenanceRequestForm").reset();
+  fillMaintenanceVehicleSelect();
+
+  const title = document.getElementById("maintenanceFormTitle");
+
+  if (data) {
+    isEditingMaintenance = true;
+    editingMaintenanceId = data.maintenanceApplicationID;
+    title.textContent = "تعديل طلب صيانة";
+    document.getElementById("maintenanceVehicleSelect").value = data.vehicleID;
+    document.getElementById("maintenanceDescription").value =
+      data.application?.applicationDescription || "";
+  } else {
+    isEditingMaintenance = false;
+    editingMaintenanceId = null;
+    title.textContent = "طلب صيانة جديد";
+  }
+}
+
+function closeMaintenanceRequestForm() {
+  document
+    .getElementById("maintenanceRequestFormPopup")
+    .classList.add("hidden");
+}
+
+// ✅ تعبئة قائمة السيارات
+async function fillMaintenanceVehicleSelect() {
+  const select = document.getElementById("maintenanceVehicleSelect");
+  select.innerHTML = `<option value="">جاري التحميل...</option>`;
+
+  try {
+    const res = await fetch(
+      "https://movesmartapi.runasp.net/api/Vehicles/All",
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    const data = await res.json();
+    const vehicles = data.$values || [];
+
+    select.innerHTML = `<option value="">اختر السيارة</option>`;
+    vehicles.forEach((vehicle) => {
+      const opt = document.createElement("option");
+      opt.value = vehicle.vehicleID;
+      opt.textContent = `${vehicle.plateNumbers} - ${vehicle.model || ""}`;
+      select.appendChild(opt);
+    });
+  } catch (err) {
+    console.error("فشل تحميل السيارات", err);
+    select.innerHTML = `<option value="">تعذر تحميل السيارات</option>`;
+  }
+}
+
+// ✅ حفظ الطلب (جديد أو تعديل)
+async function submitMaintenanceRequest(e) {
+  e.preventDefault();
+  const token = localStorage.getItem("token");
+  const userId = getUserIdFromToken();
+
+  const vehicleId = parseInt(
+    document.getElementById("maintenanceVehicleSelect").value
+  );
+  const description = document.getElementById("maintenanceDescription").value;
+
+  const payload = {
+    maintenanceApplicationID: isEditingMaintenance ? editingMaintenanceId : 0,
+    vehicleID: vehicleId,
+    approvedByGeneralSupervisor: false,
+    approvedByGeneralManager: false,
+    application: {
+      applicationId: isEditingMaintenance ? editingMaintenanceId : 0,
+      creationDate: new Date().toISOString(),
+      status: 3,
+      applicationType: 7,
+      applicationDescription: description,
+      createdByUserID: parseInt(userId),
+    },
+  };
+  console.log("🔍 Final payload", payload);
+
+  try {
+    const url = `https://movesmartapi.runasp.net/api/MaintenanceApplications`;
+    const method = isEditingMaintenance ? "PUT" : "POST";
+
+    const res = await fetch(url, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) throw new Error("فشل في الحفظ");
+
+    alert("✅ تم حفظ الطلب بنجاح");
+    closeMaintenanceRequestForm();
+    fetchMaintenanceRequests();
+  } catch (err) {
+    console.error("خطأ في حفظ الطلب:", err);
+    alert("❌ حدث خطأ أثناء الحفظ");
+  }
+}
+
+function getUserIdFromToken() {
+  if (!token) return null;
+
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.nameid;
+  } catch {
+    return null;
+  }
+}
+
+document
+  .getElementById("actualMaintenanceCard")
+  .addEventListener("click", showMaintenanceRecords);
+
+// فتح الكارت الرئيسي
+function showMaintenanceRecords() {
+  document.getElementById("maintenanceRecordsPopup").classList.remove("hidden");
+  fetchMaintenanceRecords();
+}
+
+// إغلاق كارت العرض
+function closeMaintenanceRecordsPopup() {
+  document.getElementById("maintenanceRecordsPopup").classList.add("hidden");
+}
+
+// عرض كل سجلات الصيانة الفعلية
+async function fetchMaintenanceRecords() {
+  const container = document.getElementById("maintenanceRecordsContainer");
+  container.innerHTML = "⏳ جاري التحميل...";
+
+  try {
+    const res = await fetch("https://movesmartapi.runasp.net/api/Maintenance", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!res.ok) throw new Error("فشل في تحميل السجلات");
+
+    const data = await res.json();
+    const records = data.$values || [];
+
+    if (records.length === 0) {
+      container.innerHTML = `<p style="text-align:center; color:#999">لا توجد سجلات صيانة فعلية.</p>`;
+      return;
+    }
+
+    container.innerHTML = "";
+    records.forEach((rec) => {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.style =
+        "background: #f9f9f9; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 8px;";
+
+      card.innerHTML = `
+        <p><strong>رقم الصيانة:</strong> ${rec.maintenanceId}</p>
+        <p><strong>الوصف:</strong> ${rec.description}</p>
+        <p><strong>التاريخ:</strong> ${rec.maintenanceDate?.split("T")[0]}</p>
+        <p><strong>طلب الصيانة المرتبط:</strong> ${
+          rec.maintenanceApplicationId
+        }</p>
+      `;
+
+      container.appendChild(card);
+    });
+  } catch (err) {
+    console.error("فشل تحميل السجلات:", err);
+    container.innerHTML = `<p style="color:red; text-align:center">حدث خطأ أثناء التحميل</p>`;
+  }
+}
+
+// فتح النموذج
+function openAddActualMaintenanceForm() {
+  document
+    .getElementById("actualMaintenanceFormPopup")
+    .classList.remove("hidden");
+  document.getElementById("actualMaintenanceForm").reset();
+  fillMaintenanceApplicationSelect();
+  fillSparePartSelect();
+  fillConsumableSelect();
+}
+
+// إغلاق النموذج
+function closeActualMaintenanceForm() {
+  document.getElementById("actualMaintenanceFormPopup").classList.add("hidden");
+}
+
+// تحميل الطلبات المقبولة فقط وغير مرتبطة بصيانة فعلية
+async function fillMaintenanceApplicationSelect() {
+  const select = document.getElementById("maintenanceApplicationSelect");
+  select.innerHTML = `<option value="">جاري التحميل...</option>`;
+
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch(
+      "https://movesmartapi.runasp.net/api/MaintenanceApplications/All",
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    const data = await res.json();
+    const requests = data.$values || [];
+
+    // فلترة الطلبات المقبولة التي لم يُنشأ لها سجل صيانة بعد
+    const available = [];
+
+    for (const req of requests) {
+      if (req.application?.status === 1) {
+        // التحقق إن مفيش صيانة مرتبطة بالطلب
+        const check = await fetch(
+          `https://movesmartapi.runasp.net/api/Maintenance/maintenance-application-id/${req.maintenanceApplicationID}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        if (check.status === 404) {
+          available.push(req);
+        }
+      }
+    }
+
+    if (available.length === 0) {
+      select.innerHTML = `<option value="">لا توجد طلبات صيانة متاحة</option>`;
+      return;
+    }
+
+    select.innerHTML = `<option value="">اختر طلب صيانة...</option>`;
+    available.forEach((req) => {
+      const opt = document.createElement("option");
+      opt.value = req.maintenanceApplicationID;
+      opt.textContent = `طلب #${req.maintenanceApplicationID} - ${req.vehicleID}`;
+      select.appendChild(opt);
+    });
+  } catch (err) {
+    console.error("فشل تحميل الطلبات:", err);
+    select.innerHTML = `<option value="">تعذر التحميل</option>`;
+  }
+}
+
+// حفظ الصيانة الفعلية
+async function submitActualMaintenance(event) {
+  event.preventDefault();
+  const token = localStorage.getItem("token");
+
+  const applicationId = parseInt(
+    document.getElementById("maintenanceApplicationSelect").value
+  );
+  const date = document.getElementById("maintenanceDate").value;
+  const description = document.getElementById("maintenanceDescription").value;
+
+  const sparePartId = document.getElementById("sparePartSelect").value;
+  const consumableId = document.getElementById("consumableSelect").value;
+
+  const payload = {
+    maintenanceId: 0,
+    maintenanceDate: date,
+    description,
+    maintenanceApplicationId: applicationId,
+  };
+
+  try {
+    // 🛠️ إضافة الصيانة الفعلية
+    const res = await fetch("https://movesmartapi.runasp.net/api/Maintenance", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) throw new Error("فشل في حفظ الصيانة");
+
+    const result = await res.json();
+    const newMaintenanceId = result.maintenanceId;
+
+    // 🔁 تسجيل قطعة الغيار (إن وجدت)
+    if (sparePartId) {
+      await fetch("https://movesmartapi.runasp.net/api/SparePartReplacements", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          replacementId: 0,
+          maintenanceId: newMaintenanceId,
+          sparePartId: parseInt(sparePartId),
+          sparePart: "",
+        }),
+      });
+    }
+
+    // 🔁 تسجيل المستهلك (إن وجد)
+    if (consumableId) {
+      await fetch(
+        "https://movesmartapi.runasp.net/api/ConsumableReplacements",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            replacementId: 0,
+            maintenanceId: newMaintenanceId,
+            consumableId: parseInt(consumableId),
+            consumable: "",
+          }),
+        }
+      );
+    }
+
+    // ✅ تحديث حالة السيارة إلى "متاح"
+    const vehicleId = await getVehicleIdByApplicationId(applicationId);
+    if (vehicleId) {
+      await updateVehicleStatus(vehicleId, "متاح");
+    }
+
+    alert("✅ تم حفظ الصيانة بنجاح");
+    closeActualMaintenanceForm();
+    fetchMaintenanceRecords();
+  } catch (err) {
+    console.error("❌ فشل حفظ الصيانة:", err);
+    alert("حدث خطأ أثناء حفظ الصيانة");
+  }
+}
+
+// استخراج vehicleID من الطلب المرتبط
+async function getVehicleIdByApplicationId(applicationId) {
+  const token = localStorage.getItem("token");
+  try {
+    const res = await fetch(
+      `https://movesmartapi.runasp.net/api/MaintenanceApplications/${applicationId}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    const data = await res.json();
+    return data.vehicleID || null;
+  } catch (err) {
+    console.error("فشل في جلب السيارة المرتبطة:", err);
+    return null;
+  }
+}
+async function fillSparePartSelect() {
+  const select = document.getElementById("sparePartSelect");
+  select.innerHTML = `<option value="">جاري التحميل...</option>`;
+
+  try {
+    const res = await fetch("https://movesmartapi.runasp.net/api/SparePart", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    const parts = data.$values || [];
+
+    select.innerHTML = `<option value="">-- اختر قطعة غيار --</option>`;
+    parts.forEach((part) => {
+      const opt = document.createElement("option");
+      opt.value = part.sparePartID;
+      opt.textContent = part.sparePartName || `قطعة #${part.sparePartID}`;
+      select.appendChild(opt);
+    });
+  } catch (err) {
+    console.error("فشل تحميل قطع الغيار:", err);
+    select.innerHTML = `<option value="">تعذر تحميل القطع</option>`;
+  }
+}
+
+async function fillConsumableSelect() {
+  const select = document.getElementById("consumableSelect");
+  select.innerHTML = `<option value="">جاري التحميل...</option>`;
+
+  try {
+    const res = await fetch(
+      "https://movesmartapi.runasp.net/api/VehicleConsumable",
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    const data = await res.json();
+    const items = data.$values || [];
+
+    select.innerHTML = `<option value="">-- اختر مستهلك --</option>`;
+    items.forEach((item) => {
+      const opt = document.createElement("option");
+      opt.value = item.consumableID;
+      opt.textContent = item.consumableName || `مستهلك #${item.consumableID}`;
+      select.appendChild(opt);
+    });
+  } catch (err) {
+    console.error("فشل تحميل المستهلكات:", err);
+    select.innerHTML = `<option value="">تعذر التحميل</option>`;
   }
 }

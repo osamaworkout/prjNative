@@ -16,32 +16,10 @@
     <div class="page-header">
       <h1 class="page-title">إدارة الطلبات</h1>
       <div class="header-actions">
-        <button class="header-btn" onclick="toggleFilterMenu()">
-          <span class="icon">🔍</span>
-          <span>فلتر</span>
-        </button>
         <button class="header-btn" onclick="refreshRequests()">
           <span class="icon">🔄</span>
           <span>تحديث</span>
         </button>
-        <div id="filterMenu" class="dropdown hidden">
-          <button onclick="showDateInput()">حسب التاريخ</button><br />
-          <input
-            type="date"
-            id="filterDate"
-            class="hidden"
-            onchange="filterByExactDate(this.value)"
-          />
-          <button onclick="showStatusOptions()">حسب الحالة</button>
-          <div id="statusOptions" class="hidden">
-            <select onchange="filterByStatus(this.value)">
-              <option value="">اختر الحالة</option>
-              <option value="مقبول">مقبول</option>
-              <option value="مرفوض">مرفوض</option>
-              <option value="قيد الانتظار">قيد الانتظار</option>
-            </select>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -67,11 +45,20 @@
           <div class="card-badge active">متاح</div>
         </div>
 
-        <div class="application-card" id="maintananceOrder" onclick="">
+        <!-- كارت طلبات الصيانة -->
+        <div class="application-card" id="maintenanceRequestsCard">
           <div class="card-icon">🔧</div>
-          <h3 class="card-title">إذن الصيانة</h3>
-          <p class="card-description">إدارة طلبات صيانة المركبات</p>
-          <div class="card-badge">قريباً</div>
+          <h3 class="card-title">طلبات الصيانة</h3>
+          <p class="card-description">إدارة طلبات الصيانة وإرسالها للموافقة</p>
+          <div class="card-badge active">متاح</div>
+        </div>
+
+        <!-- كارت الصيانة الفعلية -->
+        <div class="application-card" id="actualMaintenanceCard">
+          <div class="card-icon">🛠️</div>
+          <h3 class="card-title">الصيانة الفعلية</h3>
+          <p class="card-description">تسجيل أعمال الصيانة المنفذة للمركبات</p>
+          <div class="card-badge active">متاح</div>
         </div>
 
         <div class="application-card" id="missionOrder">
@@ -488,6 +475,184 @@
         </form>
       </div>
     </div>
+
+    <!-- Popup عرض طلبات الصيانة -->
+    <div id="maintenanceRequestsPopup" class="popup hidden">
+      <div
+        class="popup-content"
+        style="width: 90%; max-height: 80vh; overflow-y: auto"
+      >
+        <div class="flex-between">
+          <h2>طلبات الصيانة</h2>
+          <button onclick="closeMaintenanceRequestsPopup()">❌</button>
+        </div>
+
+        <div style="margin-bottom: 12px; text-align: left">
+          <button
+            id="addMaintenanceRequestBtn"
+            class="button hidden"
+            onclick="openAddMaintenanceRequestForm()"
+          >
+            ➕ إضافة طلب صيانة
+          </button>
+        </div>
+
+        <div id="maintenanceRequestsContainer" class="space-y-2"></div>
+      </div>
+    </div>
+
+    <!-- Popup: نموذج إضافة / تعديل طلب صيانة -->
+    <div id="maintenanceRequestFormPopup" class="popup hidden">
+      <div class="popup-content job-order-form">
+        <div class="form-header">
+          <h2 id="maintenanceFormTitle">طلب صيانة جديد</h2>
+          <button
+            type="button"
+            class="close-btn"
+            onclick="closeMaintenanceRequestForm()"
+          >
+            ✕
+          </button>
+        </div>
+
+        <form
+          id="maintenanceRequestForm"
+          onsubmit="submitMaintenanceRequest(event)"
+        >
+          <div class="form-section">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="maintenanceVehicleSelect">السيارة</label>
+                <select id="maintenanceVehicleSelect" required>
+                  <option value="">جاري التحميل...</option>
+                </select>
+              </div>
+              <div class="form-group full-width">
+                <label for="maintenanceDescription">وصف المشكلة</label>
+                <textarea
+                  id="maintenanceDescription"
+                  rows="3"
+                  required
+                ></textarea>
+              </div>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">💾 حفظ</button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              onclick="closeMaintenanceRequestForm()"
+            >
+              ❌ إلغاء
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Popup عرض سجلات الصيانة الفعلية -->
+    <div id="maintenanceRecordsPopup" class="popup hidden">
+      <div
+        class="popup-content"
+        style="width: 90%; max-height: 80vh; overflow-y: auto"
+      >
+        <div class="flex-between">
+          <h2>سجلات الصيانة الفعلية</h2>
+          <button onclick="closeMaintenanceRecordsPopup()">❌</button>
+        </div>
+
+        <div style="margin-bottom: 12px; text-align: left">
+          <button
+            id="addActualMaintenanceBtn"
+            class="button"
+            onclick="openAddActualMaintenanceForm()"
+          >
+            ➕ إضافة صيانة فعلية
+          </button>
+        </div>
+
+        <div id="maintenanceRecordsContainer" class="space-y-2"></div>
+      </div>
+    </div>
+    <!-- Popup: نموذج إضافة / تعديل صيانة فعلية -->
+    <div id="actualMaintenanceFormPopup" class="popup hidden">
+      <div class="popup-content job-order-form">
+        <div class="form-header">
+          <h2 id="actualMaintenanceFormTitle">إضافة صيانة فعلية</h2>
+          <button
+            type="button"
+            class="close-btn"
+            onclick="closeActualMaintenanceForm()"
+          >
+            ✕
+          </button>
+        </div>
+
+        <form
+          id="actualMaintenanceForm"
+          onsubmit="submitActualMaintenance(event)"
+        >
+          <div class="form-section">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="maintenanceApplicationSelect"
+                  >طلب الصيانة المرتبط</label
+                >
+                <select id="maintenanceApplicationSelect" required>
+                  <option value="">اختر طلب صيانة...</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="maintenanceDate">تاريخ الصيانة</label>
+                <input type="date" id="maintenanceDate" required />
+              </div>
+
+              <div class="form-group full-width">
+                <label for="maintenanceDescription">تفاصيل الصيانة</label>
+                <textarea
+                  id="maintenanceDescription"
+                  rows="3"
+                  required
+                ></textarea>
+              </div>
+              <div class="form-group">
+                <label for="sparePartSelect"
+                  >قطعة الغيار المستخدمة (اختياري)</label
+                >
+                <select id="sparePartSelect">
+                  <option value="">-- اختر قطعة غيار --</option>
+                  <!-- populated via API -->
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="consumableSelect"
+                  >المستهلك المستخدم (اختياري)</label
+                >
+                <select id="consumableSelect">
+                  <option value="">-- اختر مستهلك --</option>
+                  <!-- populated via API -->
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">💾 حفظ</button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              onclick="closeActualMaintenanceForm()"
+            >
+              ❌ إلغاء
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <script src="../../Java script/orderList.js"></script>
   </body>
 </html>
