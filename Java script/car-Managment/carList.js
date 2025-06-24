@@ -154,9 +154,9 @@ function filterCars(searchTerm = "") {
 // عرض السيارات والباصات
 function displayCars(filteredList) {
   const carstatus = {
-    0: "متاحة",
-    1: "مشغولة",
-    2: "قيد الصيانة",
+    1: "متاحة",
+    2: "مشغولة",
+    3: "قيد الصيانة",
   };
   const carType = {
     0: "سيدان",
@@ -188,9 +188,9 @@ function displayCars(filteredList) {
         <p><strong></strong> ${car.modelName}</p>
         <p><strong></strong> ${carType[car.vehicleType] || "غير معروف"}</p>
         <p><strong></strong> ${car.associatedHospital}</p>
-        <p class="status ${car.status === 0
+        <p class="status ${car.status === 1
           ? "active"
-          : car.status === 2
+          : car.status === 3
             ? "maintenance"
             : "inactive"
         }">
@@ -205,9 +205,9 @@ function displayCars(filteredList) {
         <p><strong></strong> ${car.modelName}</p>
         <p><strong></strong> ${carType[car.vehicleType] || "غير معروف"}</p>
         <p><strong></strong> ${car.associatedHospital}</p>
-        <p class="status ${car.status === 0
+        <p class="status ${car.status === 1
           ? "active"
-          : car.status === 2
+          : car.status === 3
             ? "maintenance"
             : "inactive"
         }">

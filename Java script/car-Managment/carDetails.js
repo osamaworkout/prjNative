@@ -4,12 +4,14 @@ document.addEventListener("DOMContentLoaded", function () {
   const saveButton = document.querySelector(".save-btn");
   const printButton = document.querySelector(".print-btn");
   const backButton = document.querySelector(".back-btn");
+  const token = localStorage.getItem("token");
+  console.log("توكن:", token);
 
   function loadCarData() {
     const carstatus = {
-      0: "متاحة",
-      1: "مشغولة",
-      2: "قيد الصيانة",
+      1: "متاحة",
+      2: "مشغولة",
+      3: "قيد الصيانة",
     };
     const fuelType = {
       0: "بنزين",
@@ -46,8 +48,9 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById(
           "car-model"
         ).innerText = `الموديل: ${data.modelName}`;
-        document.getElementById("car-type").innerText = `نوع السيارة: ${carType[data.vehicleType]
-          }`;
+        document.getElementById("car-type").innerText = `نوع السيارة: ${
+          carType[data.vehicleType]
+        }`;
         document.getElementById(
           "total-km"
         ).innerText = `${data.totalKilometersMoved} KM`;
@@ -58,8 +61,10 @@ document.addEventListener("DOMContentLoaded", function () {
           data.brandName || "";
         document.querySelector('input[name="carModel"]').value =
           data.modelName || "";
-        document.querySelector('select[name="carType"]').value = data.vehicleType;
-        document.querySelector('select[name="carCondition"]').value = data.status;
+        document.querySelector('select[name="carType"]').value =
+          data.vehicleType;
+        document.querySelector('select[name="carCondition"]').value =
+          data.status;
         document.querySelector('input[name="carFunction"]').value =
           data.associatedTask || "";
         document.querySelector('input[name="hospital"]').value =
@@ -96,16 +101,28 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function validate() {
-    const carBrand = document.querySelector('input[name="carBrand"]').value.trim();
-    const carModel = document.querySelector('input[name="carModel"]').value.trim();
-    const carNumber = document.querySelector('input[name="carNumber"]').value.trim();
-    const hospital = document.querySelector('input[name="hospital"]').value.trim();
-    const task = document.querySelector('input[name="carFunction"]').value.trim();
+    const carBrand = document
+      .querySelector('input[name="carBrand"]')
+      .value.trim();
+    const carModel = document
+      .querySelector('input[name="carModel"]')
+      .value.trim();
+    const carNumber = document
+      .querySelector('input[name="carNumber"]')
+      .value.trim();
+    const hospital = document
+      .querySelector('input[name="hospital"]')
+      .value.trim();
+    const task = document
+      .querySelector('input[name="carFunction"]')
+      .value.trim();
 
     let isValid = true;
 
     // Clear previous errors
-    ["carBrand", "carModel", "carNumber", "hospital", "carFunction"].forEach(field => showError(field, ""));
+    ["carBrand", "carModel", "carNumber", "hospital", "carFunction"].forEach(
+      (field) => showError(field, "")
+    );
 
     if (carBrand.length < 2) {
       isValid = false;
@@ -137,28 +154,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function editVehicle() {
-    const carStatusMap = {
-      0: "متاحة",
-      1: "مشغولة",
-      2: "قيد الصيانة",
-    };
-    const carTypeMap = {
-      0: "سيدان",
-      1: "واحد كبينة",
-      2: "ثنائي كبينة",
-      3: "شاحنة نقل",
-      4: "ميكروباص",
-      5: "ميني باص",
-      6: "أتوبيس",
-      7: "اسعاف",
-    };
-
-    const fuelTypeMap = {
-      0: "بنزين",
-      1: "سولار",
-      2: "غاز طبيعي",
-    };
-
     // التحقق من صحة البيانات المدخلة
     if (!validate()) {
       return; // إذا كانت البيانات غير صحيحة، لا نتابع
@@ -176,7 +171,9 @@ document.addEventListener("DOMContentLoaded", function () {
       associatedTask: document.getElementsByName("carFunction")[0].value,
       status: parseInt(document.getElementsByName("carCondition")[0].value),
       totalKilometersMoved:
-        parseInt(document.getElementById("total-km").innerText) || 0,
+        parseInt(
+          document.getElementById("total-km").innerText.replace(/\D/g, "")
+        ) || 0,
       fuelType: parseInt(document.getElementsByName("fuelType")[0].value),
       fuelConsumptionRate: parseFloat(
         document.getElementsByName("fuelConsumption")[0].value
@@ -218,7 +215,6 @@ document.addEventListener("DOMContentLoaded", function () {
   saveButton?.addEventListener("click", () => {
     editVehicle();
   });
-
 
   backButton?.addEventListener("click", () => {
     window.history.back();
@@ -268,6 +264,43 @@ document.addEventListener("DOMContentLoaded", function () {
     closeAddBusPopup();
   }
 
+  const deleteButton = document.querySelector(".delete-btn");
+
+  deleteButton?.addEventListener("click", () => {
+    if (!confirm("هل أنت متأكد أنك تريد حذف المركبة؟")) return;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const vehicleID = urlParams.get("id");
+    const type = urlParams.get("type");
+
+    let apiUrl = "";
+    if (type === "bus") {
+      apiUrl = `https://movesmartapi.runasp.net/api/Buses/ByID/${vehicleID}`;
+    } else {
+      apiUrl = `https://movesmartapi.runasp.net/api/Vehicles/ByID/${vehicleID}`;
+    }
+
+    fetch(apiUrl, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    })
+      .then((res) => {
+        if (res.ok) {
+          alert("تم حذف المركبة بنجاح.");
+          window.location.href =
+            type === "bus" ? "busesList.html" : "carsList.html";
+        } else {
+          return res.text().then((text) => {
+            throw new Error(text);
+          });
+        }
+      })
+      .catch((err) => {
+        alert("حدث خطأ أثناء الحذف: " + err.message);
+      });
+  });
   // Close popup when clicking outside
   window.onclick = function (event) {
     const popup = document.getElementById("addBusPopup");

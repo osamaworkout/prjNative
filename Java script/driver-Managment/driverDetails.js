@@ -17,9 +17,9 @@ document.addEventListener("DOMContentLoaded", function () {
   //  تحميل بيانات السائق من localStorage عند فتح الصفحة
   function loadSavedData() {
     const driverStatusMap = {
-      0: "متاح",
-      1: "غائب",
-      2: "مشغول",
+      1: "متاح",
+      2: "غائب",
+      3: "مشغول",
     };
     const urlParams = new URLSearchParams(window.location.search);
     const driverID = urlParams.get("id");
@@ -65,11 +65,11 @@ document.addEventListener("DOMContentLoaded", function () {
       // تحويل الحالة من نص إلى رقم
       const statusText = document.querySelector('input[name="status"]').value;
       const statusMap = {
-        متاح: 0,
-        غائب: 1,
-        مشغول: 2,
+        متاح: 1,
+        غائب: 2,
+        مشغول: 3,
       };
-      const statusCode = statusMap[statusText] ?? 0;
+      const statusCode = statusMap[statusText] ?? 1;
 
       const updatedDriver = {
         driverID: driverID,
@@ -96,7 +96,7 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .then(() => {
           alert("✅ تم حفظ التعديلات بنجاح!");
-          loadSavedData(); // تحديث البيانات من الـ API بعد التعديل
+          loadSavedData();
         })
         .catch((err) => {
           console.error(err);

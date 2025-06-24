@@ -28,7 +28,7 @@ function closePop() {
 
 async function submitDriver() {
   const saveButton = document.querySelector(".pop-actions button:first-child");
-  saveButton.disabled = true; // ⛔ منع الضغط المكرر
+  saveButton.disabled = true;
 
   const name = document.getElementById("driver-name").value.trim();
   const nationalNo = document.getElementById("nationalNum").value.trim();
@@ -37,9 +37,9 @@ async function submitDriver() {
 
   const statusText = document.getElementById("driver-status").value;
   const statusMap = {
-    "متاح": 0,
-    "غائب": 1,
-    "قيد العمل": 2,
+    "متاح": 1,
+    "غائب": 2,
+    "قيد العمل": 3,
   };
   const status = statusMap[statusText];
 
@@ -144,9 +144,9 @@ function displayDriver(list) {
   container.innerHTML = "";
 
   const driverStatusMap = {
-    0: "متاح",     // Available
-    1: "غائب",     // Absent
-    2: "قيد العمل"  // Working
+    1: "متاح",     // Available
+    2: "غائب",     // Absent
+    3: "قيد العمل"  // Working
   };
 
   list.forEach((driver) => {
@@ -155,7 +155,7 @@ function displayDriver(list) {
 
     driverCard.innerHTML = `
   <p><strong></strong> ${driver.name}</p>
-  <p class="status ${driver.status === 0 ? "active" : "inactive"}">
+  <p class="status ${driver.status === 1 ? "active" : driver.status === 2 ? "absent" : "working"}">
     <strong></strong> ${driverStatusMap[driver.status] || "غير معروف"}
   </p>
   <p><strong></strong> ${driver.phone}</p>
