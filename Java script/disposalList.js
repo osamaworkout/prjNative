@@ -41,11 +41,11 @@ document.addEventListener('DOMContentLoaded', function () {
     consumablesCards.innerHTML = "";
 
     filtered.forEach((part) => {
-      const indexInOriginal = consumables.indexOf(part); // ✅ هنا الفرق
+      const indexInOriginal = consumables.indexOf(part); 
       const li = document.createElement("li");
       const checkbox = document.createElement("input");
       checkbox.type = "checkbox";
-      checkbox.onclick = () => toggleCard(indexInOriginal); // ✅ استخدم index الأصلي
+      checkbox.onclick = () => toggleCard(indexInOriginal); 
       li.appendChild(checkbox);
       li.appendChild(document.createTextNode(` ${part.consumableName}`));
       partconsumables.appendChild(li);
@@ -89,6 +89,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (consumables.length === 0) {
       partconsumables.innerHTML = "<li>لا توجد قطع غيار حالياً.</li>";
     } else {
+      console.log(" القطع:", consumables);
       consumables.forEach((part, index) => {
         const li = document.createElement("li");
         const checkbox = document.createElement("input");

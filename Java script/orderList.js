@@ -2,6 +2,7 @@
 console.log("Role from localStorage:", localStorage.getItem("userRole"));
 const userRole = localStorage.getItem("userRole");
 const token = localStorage.getItem("token");
+console.log("token", token);
 // API URLs
 const apiUrl = "https://movesmartapi.runasp.net/api/v1/JobOrder";
 const vehicleApiUrl = "https://movesmartapi.runasp.net/api/Vehicles/All";
@@ -1847,14 +1848,13 @@ async function fetchMaintenanceRequests() {
     if (contentType && contentType.includes("application/json")) {
       const data = await res.json();
       const requests = data.$values || [];
-
+      console.log("Fetched Maintenance Requests:", requests);
       if (requests.length === 0) {
         container.innerHTML = `<p style="text-align:center; color:#999">لا توجد طلبات صيانة حالياً.</p>`;
         return;
       }
       renderMaintenanceRequestCards(requests);
-    }
-    else {
+    } else {
       container.innerHTML = `<p style="text-align:center; color:#999">لا توجد طلبات صيانة حالياً.</p>`;
     }
   } catch (err) {
@@ -1932,6 +1932,8 @@ function mapApplicationStatus(status) {
 }
 
 // ✅ تعديل الطلب
+let editingApplicationId = null;
+
 async function editMaintenanceRequest(id) {
   try {
     const res = await fetch(
@@ -1940,8 +1942,13 @@ async function editMaintenanceRequest(id) {
         headers: { Authorization: `Bearer ${token}` },
       }
     );
+
     if (!res.ok) throw new Error("فشل تحميل بيانات الطلب");
     const data = await res.json();
+
+    editingMaintenanceId = data.maintenanceApplicationID;
+    editingApplicationId = data.application?.applicationId; // ✅ خزن ده
+
     openAddMaintenanceRequestForm(data);
   } catch (err) {
     console.error("خطأ في تحميل الطلب للتعديل:", err);
@@ -1992,6 +1999,23 @@ async function approveMaintenanceRequest(id, by) {
       data.application.status = 1;
       await updateVehicleStatus(data.vehicleID, "قيد الصيانة");
     }
+    const payload = {
+      maintenanceApplicationID: data.maintenanceApplicationID,
+      applicationID: data.application.applicationId,
+      vehicleID: data.vehicleID,
+      approvedByGeneralSupervisor: data.approvedByGeneralSupervisor,
+      approvedByGeneralManager: data.approvedByGeneralManager,
+      application: {
+        applicationId: data.application.applicationId,
+        creationDate: data.application.creationDate,
+        status: data.application.status,
+        applicationType: data.application.applicationType,
+        applicationDescription: data.application.applicationDescription,
+        createdByUserID: data.application.createdByUserID,
+      },
+    };
+
+    console.log("✅ Payload to be sent:", payload);
 
     const updateRes = await fetch(
       `https://movesmartapi.runasp.net/api/MaintenanceApplications`,
@@ -2001,7 +2025,7 @@ async function approveMaintenanceRequest(id, by) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       }
     );
 
@@ -2055,19 +2079,41 @@ async function rejectMaintenanceRequest(id, by) {
 // ✅ تغيير حالة السيارة
 async function updateVehicleStatus(vehicleId, statusName) {
   try {
+    // 1. جيب بيانات السيارة
     const res = await fetch(
-      `https://movesmartapi.runasp.net/api/Vehicles/${vehicleId}/status?newStatus=${encodeURIComponent(
-        statusName
-      )}`,
+      `https://movesmartapi.runasp.net/api/Vehicles/${vehicleId}`,
       {
-        method: "PATCH",
         headers: { Authorization: `Bearer ${token}` },
       }
     );
-    if (!res.ok) throw new Error("فشل تحديث حالة السيارة");
-    console.log("تم تغيير حالة السيارة إلى:", statusName);
+    if (!res.ok) throw new Error("فشل تحميل بيانات السيارة");
+
+    const vehicle = await res.json();
+
+    // 2. حدّد قيمة الحالة الجديدة حسب الاسم
+    const statusMap = {
+      متاحة: 1,
+      "قيد الصيانة": 2,
+      متوقفة: 3,
+    };
+    vehicle.status = statusMap[statusName] || 2;
+
+    const updateRes = await fetch(
+      `https://movesmartapi.runasp.net/api/Vehicles`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(vehicle),
+      }
+    );
+
+    if (!updateRes.ok) throw new Error("فشل تحديث حالة السيارة");
+    console.log("✅ تم تغيير حالة السيارة إلى:", statusName);
   } catch (err) {
-    console.error("فشل تغيير حالة السيارة:", err);
+    console.error("❌ فشل تغيير حالة السيارة:", err);
   }
 }
 
@@ -2144,12 +2190,13 @@ async function submitMaintenanceRequest(e) {
   const description = document.getElementById("maintenanceDescription").value;
 
   const payload = {
-    maintenanceApplicationID: isEditingMaintenance ? editingMaintenanceId : 0,
+    maintenanceApplicationID: editingMaintenanceId ?? 0,
+    applicationID: isEditingMaintenance ? editingApplicationId : 0,
     vehicleID: vehicleId,
     approvedByGeneralSupervisor: false,
     approvedByGeneralManager: false,
     application: {
-      applicationId: isEditingMaintenance ? editingMaintenanceId : 0,
+      applicationId: isEditingMaintenance ? editingApplicationId : 0,
       creationDate: new Date().toISOString(),
       status: 3,
       applicationType: 7,
@@ -2260,8 +2307,8 @@ function openAddActualMaintenanceForm() {
     .classList.remove("hidden");
   document.getElementById("actualMaintenanceForm").reset();
   fillMaintenanceApplicationSelect();
-  fillSparePartSelect();
-  fillConsumableSelect();
+  fillMaintenanceSparePartSelect();
+  fillMaintenanceConsumableSelect();
 }
 
 // إغلاق النموذج
@@ -2275,46 +2322,53 @@ async function fillMaintenanceApplicationSelect() {
   select.innerHTML = `<option value="">جاري التحميل...</option>`;
 
   try {
-    const token = localStorage.getItem("token");
     const res = await fetch(
       "https://movesmartapi.runasp.net/api/MaintenanceApplications/All",
       {
         headers: { Authorization: `Bearer ${token}` },
       }
     );
-
     const data = await res.json();
     const requests = data.$values || [];
-
-    // فلترة الطلبات المقبولة التي لم يُنشأ لها سجل صيانة بعد
     const available = [];
 
     for (const req of requests) {
       if (req.application?.status === 1) {
-        // التحقق إن مفيش صيانة مرتبطة بالطلب
         const check = await fetch(
           `https://movesmartapi.runasp.net/api/Maintenance/maintenance-application-id/${req.maintenanceApplicationID}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
+        const result = await check.json();
 
-        if (check.status === 404) {
-          available.push(req);
+        if (result.$values?.length === 0) {
+          // ✅ جلب بيانات السيارة المرتبطة
+          const vehicleRes = await fetch(
+            `https://movesmartapi.runasp.net/api/Vehicles/${req.vehicleID}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+          const vehicleData = await vehicleRes.json();
+          const plate = vehicleData.plateNumbers || `مركبة #${req.vehicleID}`;
+
+          available.push({
+            id: req.maintenanceApplicationID,
+            plate,
+          });
         }
       }
     }
-
     if (available.length === 0) {
       select.innerHTML = `<option value="">لا توجد طلبات صيانة متاحة</option>`;
       return;
     }
-
     select.innerHTML = `<option value="">اختر طلب صيانة...</option>`;
     available.forEach((req) => {
       const opt = document.createElement("option");
-      opt.value = req.maintenanceApplicationID;
-      opt.textContent = `طلب #${req.maintenanceApplicationID} - ${req.vehicleID}`;
+      opt.value = req.id;
+      opt.textContent = `طلب #${req.id} - ${req.plate}`;
       select.appendChild(opt);
     });
   } catch (err) {
@@ -2326,25 +2380,24 @@ async function fillMaintenanceApplicationSelect() {
 // حفظ الصيانة الفعلية
 async function submitActualMaintenance(event) {
   event.preventDefault();
-  const token = localStorage.getItem("token");
 
   const applicationId = parseInt(
     document.getElementById("maintenanceApplicationSelect").value
   );
-  const date = document.getElementById("maintenanceDate").value;
-  const description = document.getElementById("maintenanceDescription").value;
+  const description = document.getElementById("actualmaintenanceDescription").value;
 
   const sparePartId = document.getElementById("sparePartSelect").value;
   const consumableId = document.getElementById("consumableSelect").value;
 
   const payload = {
     maintenanceId: 0,
-    maintenanceDate: date,
+    maintenanceDate: new Date().toISOString(),
     description,
     maintenanceApplicationId: applicationId,
   };
 
   try {
+    console.log("🚀 Payload to send:", payload);
     // 🛠️ إضافة الصيانة الفعلية
     const res = await fetch("https://movesmartapi.runasp.net/api/Maintenance", {
       method: "POST",
@@ -2429,8 +2482,8 @@ async function getVehicleIdByApplicationId(applicationId) {
     return null;
   }
 }
-async function fillSparePartSelect() {
-  const select = document.getElementById("sparePartSelect");
+async function fillMaintenanceSparePartSelect() {
+  const select = document.getElementById("sparePartMaintenanceSelect");
   select.innerHTML = `<option value="">جاري التحميل...</option>`;
 
   try {
@@ -2438,13 +2491,14 @@ async function fillSparePartSelect() {
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json();
+    console.log("قطع الغيار:", data);
     const parts = data.$values || [];
 
     select.innerHTML = `<option value="">-- اختر قطعة غيار --</option>`;
     parts.forEach((part) => {
       const opt = document.createElement("option");
-      opt.value = part.sparePartID;
-      opt.textContent = part.sparePartName || `قطعة #${part.sparePartID}`;
+      opt.value = part.sparePartId; // ✅ صح
+      opt.textContent = part.partName || `قطعة #${part.sparePartId}`;
       select.appendChild(opt);
     });
   } catch (err) {
@@ -2453,8 +2507,8 @@ async function fillSparePartSelect() {
   }
 }
 
-async function fillConsumableSelect() {
-  const select = document.getElementById("consumableSelect");
+async function fillMaintenanceConsumableSelect() {
+  const select = document.getElementById("consumableMaintenanceSelect");
   select.innerHTML = `<option value="">جاري التحميل...</option>`;
 
   try {
@@ -2465,13 +2519,14 @@ async function fillConsumableSelect() {
       }
     );
     const data = await res.json();
+    console.log("المستهلكات:", data);
     const items = data.$values || [];
 
     select.innerHTML = `<option value="">-- اختر مستهلك --</option>`;
     items.forEach((item) => {
       const opt = document.createElement("option");
-      opt.value = item.consumableID;
-      opt.textContent = item.consumableName || `مستهلك #${item.consumableID}`;
+      opt.value = item.consumableId; // ✅ صح
+      opt.textContent = item.consumableName || `مستهلك #${item.consumableId}`;
       select.appendChild(opt);
     });
   } catch (err) {

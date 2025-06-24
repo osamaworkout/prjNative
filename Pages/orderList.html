@@ -603,35 +603,29 @@
                   <option value="">اختر طلب صيانة...</option>
                 </select>
               </div>
-
-              <div class="form-group">
-                <label for="maintenanceDate">تاريخ الصيانة</label>
-                <input type="date" id="maintenanceDate" required />
-              </div>
-
               <div class="form-group full-width">
                 <label for="maintenanceDescription">تفاصيل الصيانة</label>
                 <textarea
-                  id="maintenanceDescription"
+                  id="actualmaintenanceDescription"
                   rows="3"
                   required
                 ></textarea>
               </div>
               <div class="form-group">
-                <label for="sparePartSelect"
+                <label for="sparePartMaintenanceSelect"
                   >قطعة الغيار المستخدمة (اختياري)</label
                 >
-                <select id="sparePartSelect">
+                <select id="sparePartMaintenanceSelect">
                   <option value="">-- اختر قطعة غيار --</option>
                   <!-- populated via API -->
                 </select>
               </div>
 
               <div class="form-group">
-                <label for="consumableSelect"
+                <label for="consumableMaintenanceSelect"
                   >المستهلك المستخدم (اختياري)</label
                 >
-                <select id="consumableSelect">
+                <select id="consumableMaintenanceSelect">
                   <option value="">-- اختر مستهلك --</option>
                   <!-- populated via API -->
                 </select>
