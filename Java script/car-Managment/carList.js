@@ -277,7 +277,7 @@ function submitVehicle() {
       });
   } else if (type === "bus") {
     // أضف الباص
-    const vehicleData = {
+   const vehicleData = {
       vehicleID: 0,
       brandName: document.getElementById("car-brand").value,
       modelName: document.getElementById("car-model").value,
@@ -305,6 +305,7 @@ function submitVehicle() {
       ),
       vehicle: vehicleData,
     };
+     console.log(busData);
     fetch("https://movesmartapi.runasp.net/api/Buses", {
       method: "POST",
       headers: {
