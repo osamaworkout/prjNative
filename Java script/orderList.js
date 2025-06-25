@@ -1946,7 +1946,7 @@ async function editMaintenanceRequest(id) {
     const data = await res.json();
 
     editingMaintenanceId = data.maintenanceApplicationID;
-    editingApplicationId = data.application?.applicationId; // ✅ خزن ده
+    editingApplicationId = data.application?.applicationId;
 
     openAddMaintenanceRequestForm(data);
   } catch (err) {
@@ -2543,6 +2543,10 @@ document
 
 function showMissionNotes() {
   document.getElementById("missionNotesPopup").classList.remove("hidden");
+  const addnoteBtn = document.getElementById("addMissionNoteBtn");
+  if (userRole !== "HospitalManager") {
+    addnoteBtn.classList.add("hidden");
+  }
   fetchMissionNotes();
 }
 
@@ -2554,7 +2558,6 @@ function closeMissionNotesPopup() {
 async function fetchMissionNotes() {
   const container = document.getElementById("missionNotesContainer");
   container.innerHTML = "جارٍ التحميل...";
-
   try {
     const res = await fetch(
       "https://movesmartapi.runasp.net/api/MissionsNotes/All",
@@ -2578,20 +2581,27 @@ async function fetchMissionNotes() {
       card.className = "card";
       card.style = "padding: 10px; background: #f4f4f4; cursor: pointer;";
 
+      const isManager = userRole === "HospitalManager";
+
       card.innerHTML = `
-        <p><strong>الوصف:</strong> ${
-          note.application.applicationDescription
-        }</p>
-        <p><strong>الحالة:</strong> ${mapStatus(note.application.status)}</p>
-        <div class="details-actions">
-          <button class="btn btn-primary" onclick='editMissionNote(${JSON.stringify(
-            note
-          )})'>✏️ تعديل</button>
-          <button class="btn btn-danger" onclick='cancelMissionNote(${
-            note.noteID
-          })'>❌ إلغاء</button>
-        </div>
-      `;
+    <p><strong>الوصف:</strong> ${
+      note.application.applicationDescription || "—"
+    }</p>
+    <p><strong>الحالة:</strong> ${mapStatus(note.application.status)}</p>
+    ${
+      isManager
+        ? `
+      <div class="details-actions">
+        <button class="btn btn-primary" onclick='editMissionNote(${JSON.stringify(
+          note
+        )})'>✏️ تعديل</button>
+        <button class="btn btn-danger" onclick='cancelMissionNote(${
+          note.noteID
+        })'>❌ إلغاء</button>
+      </div>`
+        : ""
+    }
+  `;
       container.appendChild(card);
     });
   } catch (error) {
@@ -2728,5 +2738,211 @@ function mapStatus(code) {
       return "ملغي";
     default:
       return "غير معروف";
+  }
+}
+
+const missionApi = "https://movesmartapi.runasp.net/api/Mission";
+const missionNotesApi = "https://movesmartapi.runasp.net/api/MissionsNotes/All";
+
+// ✅ إظهار الكارت حسب الدور
+if (
+  ["HospitalManager", "GeneralManager", "GeneralSupervisor"].includes(userRole)
+) {
+  document
+    .getElementById("missionOrder")
+    .addEventListener("click", showMissionOrders);
+} else {
+  document.getElementById("missionOrder").style.display = "none";
+}
+
+function showMissionOrders() {
+  document.getElementById("missionOrderPopup").classList.remove("hidden");
+  fetchMissionOrders();
+
+  // إخفاء زر الإضافة إذا لم يكن GeneralSupervisor
+  if (userRole !== "GeneralSupervisor") {
+    document.getElementById("addMissionOrderBtn").style.display = "none";
+  } else {
+    document.getElementById("addMissionOrderBtn").style.display = "block";
+  }
+}
+
+function closeMissionOrderPopup() {
+  document.getElementById("missionOrderPopup").classList.add("hidden");
+}
+
+function openAddMissionOrderForm() {
+  document.getElementById("addMissionOrderPopup").classList.remove("hidden");
+  document.getElementById("missionOrderForm").reset();
+  document.getElementById("missionOrderForm").dataset.editId = "";
+  document.getElementById("missionOrderFormTitle").textContent =
+    "أمر مأمورية جديد";
+  loadAvailableMissionNotes();
+}
+
+function closeMissionOrderForm() {
+  document.getElementById("addMissionOrderPopup").classList.add("hidden");
+}
+
+// ✅ تحميل الملاحظات الغير مستخدمة في أوامر المأمورية
+async function loadAvailableMissionNotes() {
+  const select = document.getElementById("missionNoteSelect");
+  select.innerHTML = "<option value=''>جارٍ التحميل...</option>";
+
+  try {
+    // جلب كل الملاحظات
+    const notesRes = await fetch(missionNotesApi, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const notesData = await notesRes.json();
+    const notes = notesData.$values || [];
+
+    // جلب كل أوامر المأموريات
+    const missionsRes = await fetch(missionApi, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const missionsData = await missionsRes.json();
+    const missions = missionsData.$values || [];
+
+    // استخراج الـ noteIDs المستخدمة
+    const usedNoteIds = missions
+      .map((m) => m.missoinNoteId)
+      .filter((id) => id != null);
+
+    // فلترة الملاحظات غير المستخدمة
+    const availableNotes = notes.filter(
+      (note) => !usedNoteIds.includes(note.noteID)
+    );
+
+    if (availableNotes.length === 0) {
+      select.innerHTML = "<option value=''>لا توجد ملاحظات متاحة</option>";
+    } else {
+      select.innerHTML = "<option value=''>اختر الملاحظة</option>";
+      availableNotes.forEach((note) => {
+        select.innerHTML += `
+          <option value="${note.noteID}">
+            ${note.application.applicationDescription}
+          </option>`;
+      });
+    }
+  } catch (error) {
+    console.error("❌ خطأ أثناء تحميل الملاحظات:", error);
+    select.innerHTML = "<option value=''>حدث خطأ أثناء التحميل</option>";
+  }
+}
+
+// ✅ جلب أوامر المأموريات
+async function fetchMissionOrders() {
+  const container = document.getElementById("missionOrdersContainer");
+  container.innerHTML = "جارٍ التحميل...";
+
+  try {
+    const res = await fetch(missionApi, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    const orders = data.$values || [];
+
+    container.innerHTML = "";
+
+    if (orders.length === 0) {
+      container.innerHTML = "<p>لا توجد أوامر مأمورية</p>";
+      return;
+    }
+
+    orders.forEach((order) => {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <p><strong>الوجهة:</strong> ${order.destination}</p>
+        <p><strong>من:</strong> ${new Date(
+          order.startDate
+        ).toLocaleDateString()}</p>
+        <p><strong>إلى:</strong> ${new Date(
+          order.endDate
+        ).toLocaleDateString()}</p>
+        ${
+          userRole === "GeneralSupervisor"
+            ? `<div class="details-actions">
+                <button class="btn btn-primary" onclick='editMissionOrder(${JSON.stringify(
+                  order
+                )})'>✏️ تعديل</button>
+                <button class="btn btn-danger" onclick='deleteMissionOrder(${
+                  order.missionId
+                })'>❌ حذف</button>
+              </div>`
+            : ""
+        }
+      `;
+      container.appendChild(card);
+    });
+  } catch (error) {
+    container.innerHTML = "<p style='color:red'>حدث خطأ أثناء جلب البيانات</p>";
+  }
+}
+
+// ✅ تعبئة الفورم عند التعديل
+function editMissionOrder(order) {
+  openAddMissionOrderForm();
+  document.getElementById("missionOrderForm").dataset.editId = order.missionId;
+  document.getElementById("missionNoteSelect").value = order.missoinNoteId;
+  document.getElementById("destination").value = order.destination;
+  document.getElementById("startDate").value = order.startDate.slice(0, 10);
+  document.getElementById("endDate").value = order.endDate.slice(0, 10);
+  document.getElementById("missionOrderFormTitle").textContent =
+    "تعديل أمر مأمورية";
+}
+
+// ✅ إرسال (إضافة أو تعديل)
+async function submitMissionOrder(e) {
+  e.preventDefault();
+
+  const editId = e.target.dataset.editId;
+  const userId = getUserIdFromToken();
+
+  const payload = {
+    missionId: editId ? parseInt(editId) : 0,
+    missoinNoteId: parseInt(document.getElementById("missionNoteSelect").value),
+    startDate: document.getElementById("startDate").value,
+    endDate: document.getElementById("endDate").value,
+    destination: document.getElementById("destination").value,
+    userId: parseInt(userId),
+  };
+  console.log("🚀 Payload to send:", payload);
+  const url = editId ? `${missionApi}/${editId}` : missionApi;
+  const method = editId ? "PUT" : "POST";
+
+  const res = await fetch(url, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (res.ok) {
+    alert("تم الحفظ بنجاح");
+    closeMissionOrderForm();
+    fetchMissionOrders();
+  } else {
+    alert("❌ حدث خطأ أثناء الحفظ");
+  }
+}
+
+// ✅ حذف أمر مأمورية
+async function deleteMissionOrder(id) {
+  if (!confirm("هل أنت متأكد من حذف أمر المأمورية؟")) return;
+
+  const res = await fetch(`${missionApi}/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (res.ok) {
+    alert("تم الحذف بنجاح");
+    fetchMissionOrders();
+  } else {
+    alert("❌ حدث خطأ أثناء الحذف");
   }
 }
