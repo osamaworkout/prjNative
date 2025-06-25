@@ -2,7 +2,6 @@
 console.log("Role from localStorage:", localStorage.getItem("userRole"));
 const userRole = localStorage.getItem("userRole");
 const token = localStorage.getItem("token");
-// console.log("token", token);
 // API URLs
 const apiUrl = "https://movesmartapi.runasp.net/api/v1/JobOrder";
 const vehicleApiUrl = "https://movesmartapi.runasp.net/api/Vehicles/All";
@@ -725,7 +724,7 @@ async function populateVehicleDropdown() {
     vehicleSelect.innerHTML = '<option value="">اختر السيارة</option>';
 
     const availableVehicles = vehicles.filter(
-      (vehicle) => vehicle.status === 0
+      (vehicle) => vehicle.status === 1
     );
 
     if (availableVehicles.length === 0) {
@@ -779,7 +778,7 @@ async function populateDriverDropdown() {
 
     driverSelect.innerHTML = '<option value="">اختر السائق</option>';
 
-    const availableDrivers = drivers.filter((driver) => driver.status === 0);
+    const availableDrivers = drivers.filter((driver) => driver.status === 1);
 
     if (availableDrivers.length === 0) {
       driverSelect.innerHTML =
