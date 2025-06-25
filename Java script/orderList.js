@@ -2383,7 +2383,9 @@ async function submitActualMaintenance(event) {
   const applicationId = parseInt(
     document.getElementById("maintenanceApplicationSelect").value
   );
-  const description = document.getElementById("actualmaintenanceDescription").value;
+  const description = document.getElementById(
+    "actualmaintenanceDescription"
+  ).value;
 
   const sparePartId = document.getElementById("sparePartSelect").value;
   const consumableId = document.getElementById("consumableSelect").value;
@@ -2531,5 +2533,200 @@ async function fillMaintenanceConsumableSelect() {
   } catch (err) {
     console.error("فشل تحميل المستهلكات:", err);
     select.innerHTML = `<option value="">تعذر التحميل</option>`;
+  }
+}
+
+// زر فتح نافذة ملاحظات المأموريات
+document
+  .getElementById("missionNotesCard")
+  .addEventListener("click", showMissionNotes);
+
+function showMissionNotes() {
+  document.getElementById("missionNotesPopup").classList.remove("hidden");
+  fetchMissionNotes();
+}
+
+function closeMissionNotesPopup() {
+  document.getElementById("missionNotesPopup").classList.add("hidden");
+}
+
+// ✅ جلب الملاحظات
+async function fetchMissionNotes() {
+  const container = document.getElementById("missionNotesContainer");
+  container.innerHTML = "جارٍ التحميل...";
+
+  try {
+    const res = await fetch(
+      "https://movesmartapi.runasp.net/api/MissionsNotes/All",
+      {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    const data = await res.json();
+    const notes = data.$values || [];
+
+    container.innerHTML = "";
+
+    if (notes.length === 0) {
+      container.innerHTML = "<p>لا توجد ملاحظات</p>";
+      return;
+    }
+
+    notes.forEach((note) => {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.style = "padding: 10px; background: #f4f4f4; cursor: pointer;";
+
+      card.innerHTML = `
+        <p><strong>الوصف:</strong> ${
+          note.application.applicationDescription
+        }</p>
+        <p><strong>الحالة:</strong> ${mapStatus(note.application.status)}</p>
+        <div class="details-actions">
+          <button class="btn btn-primary" onclick='editMissionNote(${JSON.stringify(
+            note
+          )})'>✏️ تعديل</button>
+          <button class="btn btn-danger" onclick='cancelMissionNote(${
+            note.noteID
+          })'>❌ إلغاء</button>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+  } catch (error) {
+    container.innerHTML =
+      "<p style='color:red'>حدث خطأ أثناء جلب الملاحظات</p>";
+  }
+}
+
+// ✅ فتح فورم الإضافة
+function openAddMissionNoteForm() {
+  document.getElementById("addMissionNotePopup").classList.remove("hidden");
+  document.getElementById("missionNoteForm").reset();
+  document.getElementById("missionNoteForm").dataset.editId = "";
+  document.getElementById("missionNoteForm").dataset.applicationId = ""; // صفّرها
+  document.getElementById("missionNoteFormTitle").textContent = "ملاحظة جديدة";
+}
+
+// ✅ إغلاق فورم الإضافة / التعديل
+function closeMissionNoteForm() {
+  document.getElementById("addMissionNotePopup").classList.add("hidden");
+}
+
+// ✅ إرسال (إضافة أو تعديل)
+async function submitMissionNote(e) {
+  e.preventDefault();
+
+  const editId = e.target.dataset.editId;
+  const userId = getUserIdFromToken();
+  const applicationId = editId ? parseInt(e.target.dataset.applicationId) : 0; // صفر لو إضافة، الرقم لو تعديل
+
+  const payload = {
+    noteID: editId ? parseInt(editId) : 0,
+    applicationID: applicationId,
+    application: {
+      applicationId: applicationId,
+      creationDate: new Date().toISOString(),
+      status: 1, // قيد الانتظار
+      applicationType: 3, // مأمورية
+      applicationDescription: document.getElementById("descriptionInput").value,
+      createdByUserID: parseInt(userId),
+    },
+  };
+
+  console.log("🚀 Payload:", payload);
+
+  const method = editId ? "PUT" : "POST";
+  const url = "https://movesmartapi.runasp.net/api/MissionsNotes";
+
+  const res = await fetch(url, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (res.ok) {
+    alert("تم الحفظ بنجاح");
+    closeMissionNoteForm();
+    fetchMissionNotes();
+  } else {
+    alert("حدث خطأ أثناء الحفظ");
+  }
+}
+
+// ✅ تعديل
+function editMissionNote(note) {
+  openAddMissionNoteForm();
+
+  document.getElementById("descriptionInput").value =
+    note.application.applicationDescription;
+
+  // خزنه في الداتا بدل ما يظهر في input
+  document.getElementById("missionNoteForm").dataset.applicationId =
+    note.application.applicationId;
+
+  document.getElementById("missionNoteForm").dataset.editId = note.noteID;
+  document.getElementById("missionNoteFormTitle").textContent =
+    "تعديل الملاحظة";
+}
+
+// ✅ إلغاء (تغيير الحالة إلى ملغي)
+async function cancelMissionNote(noteID) {
+  if (!confirm("هل أنت متأكد من إلغاء هذه الملاحظة؟")) return;
+
+  const res = await fetch(
+    `https://movesmartapi.runasp.net/api/MissionsNotes/${noteID}`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+  const note = await res.json();
+
+  const payload = {
+    noteID: note.noteID,
+    applicationID: note.application.applicationId,
+    application: {
+      ...note.application,
+      status: 4, // ملغي
+    },
+  };
+
+  const response = await fetch(
+    `https://movesmartapi.runasp.net/api/MissionsNotes`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    }
+  );
+
+  if (response.ok) {
+    alert("تم الإلغاء بنجاح");
+    fetchMissionNotes();
+  } else {
+    alert("حدث خطأ أثناء الإلغاء");
+  }
+}
+
+// ✅ تحويل كود الحالة لنص
+function mapStatus(code) {
+  switch (code) {
+    case 1:
+      return "مقبول";
+    case 2:
+      return "مرفوض";
+    case 3:
+      return "قيد الانتظار";
+    case 4:
+      return "ملغي";
+    default:
+      return "غير معروف";
   }
 }

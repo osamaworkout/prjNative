@@ -67,6 +67,14 @@
           <p class="card-description">إدارة أوامر الشغل والمهام</p>
           <div class="card-badge active">متاح</div>
         </div>
+
+        <!-- كارت ملاحظات المأموريات -->
+        <div class="application-card" id="missionNotesCard">
+          <div class="card-icon">📝</div>
+          <h3 class="card-title">ملاحظات المأموريات</h3>
+          <p class="card-description">إدارة ملاحظات مدير المستشفى</p>
+          <div class="card-badge active">متاح</div>
+        </div>
       </div>
     </div>
 
@@ -626,6 +634,61 @@
               type="button"
               class="btn btn-secondary"
               onclick="closeActualMaintenanceForm()"
+            >
+              ❌ إلغاء
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- نافذة عرض ملاحظات المأموريات -->
+    <div id="missionNotesPopup" class="popup hidden">
+      <div
+        class="popup-content"
+        style="width: 90%; max-height: 80vh; overflow-y: auto"
+      >
+        <div class="flex-between">
+          <h2>ملاحظات المأموريات</h2>
+          <button onclick="closeMissionNotesPopup()">❌</button>
+        </div>
+        <div style="margin-bottom: 12px; text-align: left">
+          <button
+            id="addMissionNoteBtn"
+            class="button"
+            onclick="openAddMissionNoteForm()"
+          >
+            ➕ إضافة ملاحظة
+          </button>
+        </div>
+        <div id="missionNotesContainer" class="space-y-2"></div>
+      </div>
+    </div>
+
+    <!-- نافذة إضافة / تعديل ملاحظة -->
+    <div id="addMissionNotePopup" class="popup hidden">
+      <div class="popup-content">
+        <div class="form-header">
+          <h2 id="missionNoteFormTitle">ملاحظة جديدة</h2>
+          <button
+            type="button"
+            class="close-btn"
+            onclick="closeMissionNoteForm()"
+          >
+            ✕
+          </button>
+        </div>
+        <form id="missionNoteForm" onsubmit="submitMissionNote(event)">
+          <div class="form-group">
+            <label for="descriptionInput">الوصف</label>
+            <textarea id="descriptionInput" required rows="3"></textarea>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit">💾 حفظ</button>
+            <button
+              class="btn btn-secondary"
+              type="button"
+              onclick="closeMissionNoteForm()"
             >
               ❌ إلغاء
             </button>
