@@ -747,16 +747,20 @@
             <select id="missionNoteSelect" required></select>
           </div>
           <div class="form-group">
-            <label for="destination">الوجهة</label>
-            <textarea id="destination" required rows="2"></textarea>
+            <label for="missionVehicleSelect">المركبة</label>
+            <select id="missionVehicleSelect" required></select>
           </div>
           <div class="form-group">
-            <label for="startDate">تاريخ البداية</label>
-            <input type="date" id="startDate" required />
+            <label for="missiondestination">الوجهة</label>
+            <textarea id="missiondestination" required rows="2"></textarea>
           </div>
           <div class="form-group">
-            <label for="endDate">تاريخ النهاية</label>
-            <input type="date" id="endDate" required />
+            <label for="missionstartDate">تاريخ البداية</label>
+            <input type="date" id="missionstartDate" required />
+          </div>
+          <div class="form-group">
+            <label for="missionendDate">تاريخ النهاية</label>
+            <input type="date" id="missionendDate" required />
           </div>
           <div class="form-actions">
             <button class="btn btn-primary" type="submit">💾 حفظ</button>
@@ -772,4 +776,5 @@
       </div>
     </div>
   </body>
+  <script src="../Java script/orderList.js"></script>
 </html>

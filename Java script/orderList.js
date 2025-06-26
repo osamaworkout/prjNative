@@ -2615,7 +2615,7 @@ function openAddMissionNoteForm() {
   document.getElementById("addMissionNotePopup").classList.remove("hidden");
   document.getElementById("missionNoteForm").reset();
   document.getElementById("missionNoteForm").dataset.editId = "";
-  document.getElementById("missionNoteForm").dataset.applicationId = ""; // صفّرها
+  document.getElementById("missionNoteForm").dataset.applicationId = "";
   document.getElementById("missionNoteFormTitle").textContent = "ملاحظة جديدة";
 }
 
@@ -2638,8 +2638,8 @@ async function submitMissionNote(e) {
     application: {
       applicationId: applicationId,
       creationDate: new Date().toISOString(),
-      status: 1, // قيد الانتظار
-      applicationType: 3, // مأمورية
+      status: 1, //  مقبول
+      applicationType: 2, // مأمورية
       applicationDescription: document.getElementById("descriptionInput").value,
       createdByUserID: parseInt(userId),
     },
@@ -2731,9 +2731,9 @@ function mapStatus(code) {
     case 1:
       return "مقبول";
     case 2:
-      return "مرفوض";
-    case 3:
       return "قيد الانتظار";
+    case 3:
+      return "مرفوض";
     case 4:
       return "ملغي";
     default:
@@ -2778,6 +2778,7 @@ function openAddMissionOrderForm() {
   document.getElementById("missionOrderFormTitle").textContent =
     "أمر مأمورية جديد";
   loadAvailableMissionNotes();
+  populateMissionVehiclesSelect();
 }
 
 function closeMissionOrderForm() {
@@ -2885,7 +2886,9 @@ async function fetchMissionOrders() {
 function editMissionOrder(order) {
   openAddMissionOrderForm();
   document.getElementById("missionOrderForm").dataset.editId = order.missionId;
-  document.getElementById("missionNoteSelect").value = order.missoinNoteId;
+  document.getElementById("missionNoteSelect").value = order.missionNoteId;
+  document.getElementById("missionVehicleSelect").value =
+    order.missionVehiclesId;
   document.getElementById("destination").value = order.destination;
   document.getElementById("startDate").value = order.startDate.slice(0, 10);
   document.getElementById("endDate").value = order.endDate.slice(0, 10);
@@ -2900,33 +2903,48 @@ async function submitMissionOrder(e) {
   const editId = e.target.dataset.editId;
   const userId = getUserIdFromToken();
 
+  const startDate = document.getElementById("missionstartDate").value;
+  const endDate = document.getElementById("missionendDate").value;
+  const missiondestination = document.getElementById("missiondestination").value;
+
   const payload = {
     missionId: editId ? parseInt(editId) : 0,
-    missoinNoteId: parseInt(document.getElementById("missionNoteSelect").value),
-    startDate: document.getElementById("startDate").value,
-    endDate: document.getElementById("endDate").value,
-    destination: document.getElementById("destination").value,
+    missionNoteId: parseInt(document.getElementById("missionNoteSelect").value),
+    missionVehiclesId: parseInt(
+      document.getElementById("missionVehicleSelect").value
+    ),
+    startDate: new Date(`${startDate}`).toISOString(),
+    endDate: new Date(`${endDate}`).toISOString(),
+    destination: missiondestination,
     userId: parseInt(userId),
   };
+
   console.log("🚀 Payload to send:", payload);
   const url = editId ? `${missionApi}/${editId}` : missionApi;
   const method = editId ? "PUT" : "POST";
 
-  const res = await fetch(url, {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(payload),
-  });
+  try {
+    const res = await fetch(url, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
 
-  if (res.ok) {
-    alert("تم الحفظ بنجاح");
-    closeMissionOrderForm();
-    fetchMissionOrders();
-  } else {
-    alert("❌ حدث خطأ أثناء الحفظ");
+    if (res.ok) {
+      alert("تم الحفظ بنجاح");
+      closeMissionOrderForm();
+      fetchMissionOrders();
+    } else {
+      const errText = await res.text();
+      console.error("❌ Server error:", errText);
+      alert("❌ حدث خطأ أثناء الحفظ");
+    }
+  } catch (error) {
+    console.error("❌ Failed to fetch", error);
+    alert("❌ حدث خطأ أثناء إرسال البيانات");
   }
 }
 
@@ -2944,5 +2962,25 @@ async function deleteMissionOrder(id) {
     fetchMissionOrders();
   } else {
     alert("❌ حدث خطأ أثناء الحذف");
+  }
+}
+
+async function populateMissionVehiclesSelect() {
+  const select = document.getElementById("missionVehicleSelect");
+  select.innerHTML = "<option value=''>جارٍ التحميل...</option>";
+
+  try {
+    const vehicles = await fetchVehicles(); // موجودة أصلاً عندك
+    const available = vehicles.filter((v) => v.status === 1);
+    select.innerHTML = "<option value=''>اختر السيارة</option>";
+
+    available.forEach((v) => {
+      select.innerHTML += `<option value="${v.vehicleID}">${
+        v.plateNumbers || v.vehicleID
+      }</option>`;
+    });
+  } catch (error) {
+    console.error("❌ خطأ أثناء تحميل السيارات:", error);
+    select.innerHTML = "<option value=''>فشل في تحميل السيارات</option>";
   }
 }
